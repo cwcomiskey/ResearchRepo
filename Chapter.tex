@@ -150,23 +150,27 @@ For this reason the bottom left heat maps in Figures 7 and 8, shown in Figure 9,
 
 % *Alix: ``Great start Chris. --> need to add more about how one would now interpret the ``best'' empirical heat map.
 
+% ====== ========= ======== ======= ======= ======== ======
 \section*{Chapter 2 - Modeling Hitter Success Probabilities} 
 
 
+% ======= ======= ======== ======= ======= ======= ======
 \section{Generalized Linear Model}
 
 Our goal is to create a statistical model for the heat map of success probabilities. Nonparametric methods, while straightforward, sacrifice interpretability; while they achieve a modeled heat map, there may not be interpretable components of the model. Nonparametric models cannot relate spatially varying hitter success probabilities to hitter attributes. We propose a parametric approach using biomechanically interpretable covariates. Existing research analyzes the biomechanics of the baseball swing \citep{Welch1995}, but no research integrates those results with spatial swing outcomes in a statistical model.
 
 
-Consider again batter 425509, veteran Jhonny Peralta, whose data set contains 9,177 swings. Let success indicator variable, $Y_{iklm}$, be a Bernoulli random variable with spatially varying mean \citep{Ross2002}. Subscript $i = 1, \dots, n_{klm}$ indexes Peralta's swings in at bat $k$ against pitcher $l$ in year $m$. Subscript $k = 1, \dots, n_{lm}$ indexes Peralta's at bats against pitcher $l$ in year $m$. Subscript $l = 1, \dots, n_{m}$ indexes pitchers Peralta faced, where $n_{m}$ is the total number of pitchers; and $m = 2007, \dots, 2016$ indexes year. In this study we make the simplifying assumption that location success probabilities depend on only location and hitter. This means we dispense with subscripts $k, l,$ and $m$. We also assume that, given a pitch location $\pmb{s}_{i}$,  swings are independent Bernoulli trials; $Y_{i}|\pmb{s}_{i} \sim \text{Bernoulli}(p_{i})$, where $\text{E}[Y_{i}|\pmb{s}_{i}] = p_{i}$
+Let success indicator variable, $Y_{ijklm}$, be a Bernoulli random variable with spatially varying mean \citep{Ross2002}. Subscript $i = 1, \dots, n_{jklm}$ indexes hitter $j$'s swings in at bat $k$ against pitcher $l$ in year $m$. Subscript $k = 1, \dots, n_{jlm}$ indexes hitter $j$'s at bats against pitcher $l$ in year $m$. Subscript $l = 1, \dots, n_{jm}$ indexes pitchers hitter $j$ faced, where $n_{jm}$ is the total number of pitchers hitter $j$ faced; and $m = 2007, \dots, 2016$ indexes year. Let $\pmb{s}_{ijkl} = (px_{ikl}, pz_{ijkl})\in \pmb{D} \subseteq \pmb{R}^{2}$ be the horizontal and vertical locations, respectively, of pitch $ijkl$ as it passes through the two dimensioned vertical face of the hitting zone. The origin, $\pmb{s}_{\cdot} = (0,0)$, is the midpoint of the front edge of home plate, at ground level. From the pitcher's point of view, pitches to the left (right) of the center of home plate correspond to negative (positive) values of $px_{\cdot}$. Pitches that bounce before reaching home plate correspond to negative values of $pz_{\cdot}$.  
 
-Accordingly, let $i = 1, \dots, 9177$ index Peralta's 9,177 swings on record. Let $\pmb{s}_{i} = (px_{i}, pz_{i})$ be the horizontal and vertical locations, respectively, of pitch $i$ as it passes through the two dimensioned vertical face of the hitting zone. The origin, $\pmb{s} = (0,0)$, is the midpoint of the front edge of home plate, at ground level.  Let $\pmb{X}(\pmb{s}_{i})$ be covariates specific to Johnny Peralta and location $\pmb{s}_{i}$. A Bernoulli random variable suggests, as a starting point, a generalized linear model with logit link function for relating success probability to covariate information: 
+In this study we make the simplifying assumption that location success probabilities depend on only location and hitter. This means we dispense with subscripts $k, l,$ and $m$. We also assume that, given pitch location to hitter $j$, $\pmb{s}_{ij} = (px_{ij}, pz_{ij})$,  swings are independent Bernoulli trials. This gives $Y_{ij}|\pmb{s}_{ij} \sim \text{Bernoulli}(p_{ij})$, where $\text{E}[Y_{i}|\pmb{s}_{ij}] = p_{ij}$
+
+Accordingly, let $i = 1, \dots, n_{j}$ index hitter $j$'s swings, out of $n_{j}$ total swings on record. Let $\pmb{X}_{ij}(\pmb{s}_{i})$ be covariates specific to hitter $j$ and location $\pmb{s}_{ij}$ on swing $i$. A Bernoulli random variable suggests a generalized linear model with logit link function for relating success probability to covariate information: 
 
 \begin{equation}
-\text{logit}(p_{i}|\pmb{X}(\pmb{s}_{i}),\pmb{s}_{i}) = \pmb{X}(\pmb{s}_{i}) \pmb{\beta},
+\text{logit}(p_{ij}|\pmb{X}_{ij}(\pmb{s}_{ij})) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j},
 \end{equation}
 
-where $\pmb{\beta}$ is the vector of coefficient parameters \citep{Myers2012}. The next step is to develop covariates.
+where $\pmb{\beta}_{j}$ is the vector of covariate coefficient parameters specific to hitter $j$ \citep{Myers2012}. Next, we discuss and develop covariates.
 
 \subsection{Biomechanically Interpretable Covariates} % ==============
 
@@ -181,16 +185,19 @@ To illustrate, in Figure 3 we shift the origin to a hitter's approximate center 
 	\includegraphics[scale=.15]{Images/WilliamsPolar.jpg} 
 	\caption{The ground level black dot represents the origin (0,0) in the rectangular coordinate system. The translated origin (red dot) coincides with the hitter's approximate center of gravity, and thus the polar origin. The bold arrows show the origin shift. The length of the arrows moving out from his center of gravity to specific grid locations represent $r$, and the angle between the same two arrows represent $\theta$.}
 	\end{figure} 
-Referring to Figure 3, let $r$ measure the distance from the hitter's center of gravity to the ball at impact, and let $\theta$ be the angle below horizontal of the line segment connecting the center of gravity and the ball at impact. As in golf and tennis, ball location---too far/close to the hitter, or above/below the ideal point of impact--- affects hitting performance. Letting $\pmb{X}(\pmb{s}_{i})$ in (1) be comprised of $r$ and $\theta$ terms provides an exploratory starting point.
+Referring to Figure 3, let $r$ measure the distance from the hitter's center of gravity to the ball at impact, and let $\theta$ be the angle below horizontal of the line segment connecting the center of gravity and the ball at impact. As in golf and tennis, ball location---too far/close to the hitter, or above/below the ideal point of impact--- affects hitting performance. Letting $\pmb{X}_{ij}(\pmb{s}_{ij})$ in (1) be comprised of $r_{ij}$ and $\theta_{ij}$ terms provides an exploratory starting point.
 
-\subsection{Generalized Linear Model with Biomechanically Interpretable Covariates}
+% ===== ======= ====== ====== ===== ====== ====== ======
+\subsection{Generalized Linear Model with Biomechanically Interpretable Covariates} 
 
-Let covariate vector $\pmb{X}(\pmb{s}_{i})$ in (1) be defined as $\pmb{X}(\pmb{s}_{i}) = \{r_{i}, \theta_{i}, r_{i}\theta_{i}, r_{i}^{2}, \theta_{i}^{2}, r_{i}^{2}\theta_{i}^{2}\}$. Substituting into (1) yields:
+Let covariate vector $\pmb{X}_{ij}(\pmb{s}_{ij})$ in (1) be defined as $\pmb{X}_{ij}(\pmb{s}_{ij}) = \{r_{ij}, \theta_{ij}, r_{ij}\theta_{ij}, r_{ij}^{2}, \theta_{ij}^{2}, r_{ij}^{2}\theta_{ij}^{2}\}$. Substituting into (1) yields:
 \begin{equation}
-\text{logit}(p_{i}|\pmb{s}_{i}, r_{i}, \theta_{i}) = \beta_{0} + \beta_{1}r_{i} + \beta_{2} \theta_{i} + \beta_{3} r_{i} \theta_{i} + \beta_{4}r_{i}^{2} + \beta_{5} \theta_{i}^{2} + \beta_{6} r_{i}^{2} \theta_{i}^{2}
+\text{logit}(p_{ij}|\pmb{s}_{ij}, r_{ij}, \theta_{ij}) = \beta_{j0} + \beta_{j1}r_{ij} + \beta_{j2} \theta_{ij} + \beta_{j3} r_{ij} \theta_{ij} + \beta_{j4}r_{ij}^{2} + \beta_{j5} \theta_{ij}^{2} + \beta_{j6} r_{ij}^{2} \theta_{ij}^{2}
 \end{equation}
 
-We fit this model and find maximum likelihood estimates of $\pmb{\beta}$ using an iteratively reweighted least squares algorithm \citep{Myers2012}. 
+Note that given a hitter $j$, and pitch location $\pmb{s}_{ij}$, the elements of $\pmb{X}_{ij}$ are simply a trigonemtric function of $\pmb{s}_{ij}$ and the translated origin. Thus, for convenience, we replace $\text{logit}(p_{ij}|\pmb{s}_{ij}, r_{ij}, \theta_{ij})$ with $\text{logit}(p_{ij}|\pmb{s}_{ij})$ for the remainder of this study.
+
+We choose Johnny Peralta from Chapter 1 to illustrate, and let $j = P$ for convenience. We fit model (2) using Peralta's $n_{P} = 9177$ observed swings, find maximum likelihood estimates of $\pmb{\beta}_{P}$ using an iteratively reweighted least squares algorithm \citep{Myers2012}. 
 
 (IT WOULD BE NICE: EMPIRICAL, ESTIMATES, FITTTED HEAT MAP) \\
 % \centering
@@ -215,9 +222,10 @@ We fit this model and find maximum likelihood estimates of $\pmb{\beta}$ using a
   \caption{}
   
 	\end{figure} 
-
+% ===== ======= ====== ====== ===== ====== ====== ======
 \subsection{Model Evaluation/Validation Here?}
-	
+
+% ===== ======= ====== ====== ===== ====== ====== ======
 \subsubsection{Hosmer-Lemeshow Goodness of Fit Test} % =====
 Generalized Linear Models \citep{Myers2012}
 
@@ -229,23 +237,25 @@ Generalized Linear Models \citep{Myers2012}
   \item p-value = 0.1513
   \end{itemize}
 
-
+% ===== ======= ====== ====== ===== ====== ====== ======
 \section{Spatial Generalized Linear Mixed Model}
 
-Independent of the performace of the previously fit model, we expect there to be unexplained spatial variation in the mean. The covariates are limited in scope and depth, and  Tobler's First Law of Geography tells us that things close together in space tend to behave more similarly than things further apart \citep{Tobler1970}. For these reasons, among others, we enhance the model by adding a spatially correlated random effect.
-
-To explicitly define a spatial model, let $\pmb{s} \in \pmb{D} \subseteq \pmb{R}^{2}$ be the set of all possible pitch locations $\pmb{s}_{i} = (px_{i}, pz_{i})$, on $\pmb{D}$, the two dimensional vertical face of the hitting zone that the pitcher throws his pitches through.
-
+Independent of the performace of the previously fit model, we expect there to be unexplained spatial variation in the mean. The covariates are limited in scope and depth, and  Tobler's First Law of Geography tells us that things close together in space tend to behave more similarly than things further apart \citep{Tobler1970}. For these reasons, among others, we enhance the model by adding a spatially correlated random effect. A Gaussian random field is a popular, effective, and feasible distribution for spatial random effects \cite{Gelfand2010}.
 
 
 \subsection{Gaussian Random Field}
 
-Let random variable $Z_{i}$
+Let random variable $Z_{i}$...
 
-\subsection{Spatial Logistic Regresion Mixed Model}
+\subsection{Spatial Logistic Regresion Model}
 
+Consider model (2) with the additional feature, a spatial random effect, meant to capture unexplained spatial variation in the mean.
 
+\begin{equation}
+\text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + Z_{ij},
+\end{equation}
 
+This somewhat complicated correlation structure 
 
 \bibliography{Baseball}
 
