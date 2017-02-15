@@ -255,7 +255,88 @@ Consider model (2) with the additional feature, a spatial random effect, meant t
 \text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + Z_{ij},
 \end{equation}
 
-This somewhat complicated correlation structure 
+This spatial hierarchical model gives $p_{ij}$ a complicated correlation structure . Bayesian statistical methodologies, primarily Markov chain Monte Carlo (MCMC) methods, are very popular for fitting spatial models of this kind \citep{Banerjee2014}. In fact, complex spatial correlation for big data sets makes MCMC the only practical approach. To estimate model parameters for (4) we first tried the Hamiltonian Monte Carlo algorithm in Stan.
+
+\subsubsection{Markov Chains}
+
+Hierarchical Modeling and Analysis for Spatial Data \citep{Banerjee2014}
+        \begin{itemize} % ===============
+        \item ``Without doubt, the most popular computing tools in Bayesian practice today are Markov chain Monte Carlo (MCMC) methods.'' 
+        \item inference from posteriors of ``...arbitrarily large dimension, essentially by reducing the problem to one of recursively solving a series of lower-dimensional (often unidimensional) problems.'' 
+        \item ``...work by producing not a closed form for posterior, but a sample of values $\{\theta^{(g)}, g = 1, \dots, G\}$ from this distribution.'' ($G$ = number of draws from posterior) 
+        \item Two issues: MCMC algorithms produce {\it correlated} draws from poster (hence thinning, acf(), pacf(), and {\it convergence} diagnosis 
+        \item Two most popular MCMC algorithms: (1) Gibbs sampler (2) Metropolis Hastings algorithm
+        \end{itemize} % ===============
+
+\subsubsection{Hamiltonian Dynamics and Markov Chain Monte Carlo} 
+
+
+
+\footnote{The history and physics presented in this section owe heavily, and are primarily informed by, \citep{Neal2011}} Trying to understand molecular states, \cite{Metropolis1953} created MCMC for ``fast machines.'' Later, modeling molecular motion as a deterministic process, \cite{Alder1959} introduced {\it Hamiltonian dynamics} as an alternate representation of Newtonian mechanics. Almost 30 years later, \cite{Duane1987} combined the two to create ``hybrid Monte Carlo'' to simulate certain quantum mechanical processes. Eventually, \cite{Neal1996} used HMC methods for explicitly statistical applications, studying neural networks.
+
+HMC works by reframing the variables and distribution of interest as part of a physical system. An object in a well defined three dimensional physical space can be completely characterized by its position and momemtum. The variables of interest function as position variables, and auxiliary Gaussian variables serve as momentum variables. Simple updates for the auxiliary variables generate, via a system of differential equations, proposals for Metropolis updates to the more important position variables. The differential equations estimate trajectories of the hypothetical physical object, which will then occupy a new position. This crafty formulation enables distant, yet high probability, proposals for the variables of interest. Note
+
+
+
+\subsection*{MCMC Using Hamiltonian Dynamics \citep{Neal2011}}
+\begin{itemize}
+
+\item Differential equations and ``leapfrog'' scheme, elementary mathematics
+
+\end{itemize}
+Steps.
+      \begin{enumerate}
+      \item ``Define a Hamiltonian function in terms of the probability distribution we wish to sample from.''
+      \item Interested in ``position'' variables. Introduce auxiliary ``momentum'' variables (typically independent Gaussian distributions)
+      \item The HMC method alternates:
+        \begin{enumerate}
+        \item Simple updates for these momentum variables 
+        \item Metropolis updates - computing Hamiltonian dynamic trajectory for new proposal state, leapfrog implementation method, distant proposals w/ high acceptance probability; bypass slow random walk proposal distribution
+        \end{enumerate}
+      \end{enumerate}
+\begin{itemize}
+\item Physical interpretation - frictionless puck on varying height surface. Puck at {\bf position} $q$ with {\bf momentum} $p$ and mass $m$, {\bf potential energy} $U(q)$, {\bf kinetic energy} $K(p) = |p|^{2}/(2m)$.
+\item Wikipedia: ``In statistics, especially in Bayesian statistics, the {\bf kernel} of a probability density function (pdf) or probability mass function (pmf) is the form of the pdf or pmf in which any factors that are not functions of any of the variables in the domain are omitted.''
+
+\item q = position, U(q) = potential energy 
+      \begin{itemize}
+      \item \pmb{q} = variables of interest
+      \item let $U(q) = -\text{log}f_{q}(q)$
+      \end{itemize}
+\item p = momentum, K(p) = kinetic energy
+      \begin{itemize}
+      \item Introduce artificially, same dimension as \pmb{q}
+      \end{itemize}
+\item Partial derivatives determine change over time. For $i = 1,\dots, d$:
+$$ \frac{d q_{i}}{dt} = \frac{\partial H}{\partial p_{i}}$$
+$$ \frac{d p_{i}}{dt} = -\frac{\partial H}{\partial q_{i}}$$
+
+\item $H(q,p) = U(q) + K(p) = -\text{log}f_{q}(q) + p^{T}\pmb{M}^{-1}p/2$
+    \begin{itemize}
+    \item Total = Potential + Kinetic
+    \item $U(q) = -\text{log}f_{q}(q)$
+    \item $K(p) = -\text{log }f_{p}(p) = p^{T}\pmb{M}^{-1}p/2$, (using p $\sim$ N(0,\pmb{M}))
+    \end{itemize}
+\item Rewrite:
+$$ \frac{d q_{i}}{dt} = \frac{\partial H}{\partial p_{i}} = [\pmb{M}^{-1}p]_{i}$$
+$$ \frac{d p_{i}}{dt} = -\frac{\partial H}{\partial q_{i}} =- \frac {\partial U}{\partial q_{i}} $$
+\item Solution: q(t) = ?, p(t) = ?
+
+\item Leapfrog method = for calculating new position (q) and momentum (p) through tiny time steps
+  \begin{itemize}
+  \item for {\bf discretizing Hamilton equations}
+  \item akin to Taylor Series appoximations
+  \item Postion (q) (or momentum (p)) at $t_{0}$ plus time step times rate of change of position (q) (momentum (p)) variable at $t_{0}$
+  \item Leapfrom Method does half step for momentum (p), full step for postion (q), other half step for momentum (p). Damn good.
+
+  \end{itemize}
+\item {\bf Statistical ensemble} - probability distribution for the state of a system (set of all possible copies)
+\item Short version: randomly sample from K(p) (kinetic, momentum), calculate U(k) (potential, position*) --- that's your Metropolis proposal.
+\item {\bf Solve} a differential equation: If $\frac{dq}{dt} = p$, and $\frac{dp}{dt} = q$, then q(t) = ?, and p(t) = ?
+\end{itemize}
+
+
+\subsubsection{Optimizing in Stan}
 
 \bibliography{Baseball}
 
