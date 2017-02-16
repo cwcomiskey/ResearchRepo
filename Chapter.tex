@@ -270,57 +270,40 @@ Hierarchical Modeling and Analysis for Spatial Data \citep{Banerjee2014}
 
 \subsubsection{Hamiltonian Dynamics and Markov Chain Monte Carlo} 
 
+\footnote{The history and physics presented in this section owe heavily, and are primarily informed by, \citep{Neal2011}} Trying to understand molecular states, \cite{Metropolis1953} created MCMC for ``fast machines.'' Later, modeling molecular motion as a deterministic process, \cite{Alder1959} introduced {\it Hamiltonian dynamics} as an alternate representation of Newtonian mechanics. Almost 30 years later, \cite{Duane1987} combined the two to create ``hybrid Monte Carlo'' to simulate certain quantum mechanical processes. Over time, this named morphed into {\it Hamilton} Monte Carlo (HMC), as it is known today. Eventually, \cite{Neal1996} used HMC methods for explicitly statistical applications, studying neural networks.
 
+HMC works by reframing the variables and distribution of interest as part of a physical system. From a physics standpoint, an object in a well defined three dimensional physical space can be completely characterized by its position and momemtum. For HMC, the variables of interest function as position variables, and auxiliary Gaussian variables are introduced serve as momentum variables. Simple updates for the auxiliary momentum variables generate, via a system of differential equations, proposals for Metropolis updates to the more important position variables (which represent the variabls of interest). The differential equation solutions estimate trajectories of the hypothetical physical object, which will then occupy a new position after some chosen time step. This crafty formulation enables distant, yet high probability, proposals for the variables of interest. Note that this contrasts favorably, in terms of mixing, to the random walk proposal generation process commonly used for Metropolis updates.
 
-\footnote{The history and physics presented in this section owe heavily, and are primarily informed by, \citep{Neal2011}} Trying to understand molecular states, \cite{Metropolis1953} created MCMC for ``fast machines.'' Later, modeling molecular motion as a deterministic process, \cite{Alder1959} introduced {\it Hamiltonian dynamics} as an alternate representation of Newtonian mechanics. Almost 30 years later, \cite{Duane1987} combined the two to create ``hybrid Monte Carlo'' to simulate certain quantum mechanical processes. Eventually, \cite{Neal1996} used HMC methods for explicitly statistical applications, studying neural networks.
+\subsubsection*{Hamilton Equations for MCMC}
 
-HMC works by reframing the variables and distribution of interest as part of a physical system. An object in a well defined three dimensional physical space can be completely characterized by its position and momemtum. The variables of interest function as position variables, and auxiliary Gaussian variables serve as momentum variables. Simple updates for the auxiliary variables generate, via a system of differential equations, proposals for Metropolis updates to the more important position variables. The differential equations estimate trajectories of the hypothetical physical object, which will then occupy a new position. This crafty formulation enables distant, yet high probability, proposals for the variables of interest. Note
+Let $q(t)$ be a d-dimensional ($d$ parameters of interest) position vector that is a function of time $t$; and $U(q(t))$ represent the potential energy at time $t$. Let $p(t)$ give the d-dimensional momentum at time $t$, and $K(p(t))$ represent kinetic energy at time $t$. Then the Hamilton equation,
+\begin{equation}
+H(q(t),p(t)) = U(q(t)) + K(p(t)),
+\end{equation}
+measures the total energy of the system. 
 
+For HMC applications, we let the potential energy, $U(q)$, be minus the log of the probability density function of interest, plus any convenient constant \footnote{We omit $t$ for clarity of presentation, here and elsewhere, but position and momentum remain functions of time $t$.}. Typically, HMC procedures define $p$ as a d-dimensional zero mean Gaussian with covariance matrix M, and $K(p)$ as minus the log of the multivariate Gaussian probability density function. This gives:
+\begin{align}
+H(q,p) = -\text{log}f_{q}(q) + p^{T}\pmb{M}^{-1}p/2.
+\end{align}
+
+This clever formulation offers relatively simple partial derivatives for the change in position and momentum over time. For $i = 1,\dots, d$:
+\begin{align}
+\frac{d q_{i}(t)}{dt} &= \frac{\partial H}{\partial p_{i}}, \\
+\frac{d p_{i}(t)}{dt} &= -\frac{\partial H}{\partial q_{i}}.
+\end{align}
+Substituting in Hamilton's equation (5) and simplifying gives
+\begin{align}
+\frac{d q_{i}}{dt} &=  [\pmb{M}^{-1}p]_{i} \\
+\frac{d p_{i}}{dt} &= \frac {\partial \left[ \text{log}f_{q}(q) \right]}{\partial q_{i}}
+\end{align}
+The solutions to these two differential equations, that is $q(t)$ and p(t) such that (8) and (9) hold, give the rate of change in position and momentum at time t. 
 
 
 \subsection*{MCMC Using Hamiltonian Dynamics \citep{Neal2011}}
-\begin{itemize}
-
-\item Differential equations and ``leapfrog'' scheme, elementary mathematics
-
-\end{itemize}
 Steps.
-      \begin{enumerate}
-      \item ``Define a Hamiltonian function in terms of the probability distribution we wish to sample from.''
-      \item Interested in ``position'' variables. Introduce auxiliary ``momentum'' variables (typically independent Gaussian distributions)
-      \item The HMC method alternates:
-        \begin{enumerate}
-        \item Simple updates for these momentum variables 
-        \item Metropolis updates - computing Hamiltonian dynamic trajectory for new proposal state, leapfrog implementation method, distant proposals w/ high acceptance probability; bypass slow random walk proposal distribution
-        \end{enumerate}
-      \end{enumerate}
+
 \begin{itemize}
-\item Physical interpretation - frictionless puck on varying height surface. Puck at {\bf position} $q$ with {\bf momentum} $p$ and mass $m$, {\bf potential energy} $U(q)$, {\bf kinetic energy} $K(p) = |p|^{2}/(2m)$.
-\item Wikipedia: ``In statistics, especially in Bayesian statistics, the {\bf kernel} of a probability density function (pdf) or probability mass function (pmf) is the form of the pdf or pmf in which any factors that are not functions of any of the variables in the domain are omitted.''
-
-\item q = position, U(q) = potential energy 
-      \begin{itemize}
-      \item \pmb{q} = variables of interest
-      \item let $U(q) = -\text{log}f_{q}(q)$
-      \end{itemize}
-\item p = momentum, K(p) = kinetic energy
-      \begin{itemize}
-      \item Introduce artificially, same dimension as \pmb{q}
-      \end{itemize}
-\item Partial derivatives determine change over time. For $i = 1,\dots, d$:
-$$ \frac{d q_{i}}{dt} = \frac{\partial H}{\partial p_{i}}$$
-$$ \frac{d p_{i}}{dt} = -\frac{\partial H}{\partial q_{i}}$$
-
-\item $H(q,p) = U(q) + K(p) = -\text{log}f_{q}(q) + p^{T}\pmb{M}^{-1}p/2$
-    \begin{itemize}
-    \item Total = Potential + Kinetic
-    \item $U(q) = -\text{log}f_{q}(q)$
-    \item $K(p) = -\text{log }f_{p}(p) = p^{T}\pmb{M}^{-1}p/2$, (using p $\sim$ N(0,\pmb{M}))
-    \end{itemize}
-\item Rewrite:
-$$ \frac{d q_{i}}{dt} = \frac{\partial H}{\partial p_{i}} = [\pmb{M}^{-1}p]_{i}$$
-$$ \frac{d p_{i}}{dt} = -\frac{\partial H}{\partial q_{i}} =- \frac {\partial U}{\partial q_{i}} $$
-\item Solution: q(t) = ?, p(t) = ?
 
 \item Leapfrog method = for calculating new position (q) and momentum (p) through tiny time steps
   \begin{itemize}
