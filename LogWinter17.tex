@@ -770,16 +770,20 @@ phi      0.4318 0.2886 0.0014905       0.032011
 
 \subsection*{Miscellaneous}
 \begin{itemize}
-\item Diagnose convergence
+\item ``Approximate Bayesian Inference for Latent Gaussian models using integrated nested Laplace approximations'' \citep{Rue2009} This looks cool. I want to try this.
+\item Review ``posterior predictive distribution'' (need Bayesian book)
+\item Scoring rules, \citep{Bickel2007}
+\item Diagnose {\bf convergence}
 \item ``As with any knot based method, selection of knots is a challenging problem... Suppose for the moment that $m$ is given. We are essentially dealing with a problem that is analogous to a {\bf spatial design problem}...'' \citep{Finley2009}
 \item {\bf Spatial design problem}
 \item ``There is a rich literature in spatial design with is summarized in, e.g., the recent paper of \cite{Xia2006}''
 \item ``Approximately optimal spatial design approaches for environmental health data.'' \citep{Xia2006}
 \item ``Spatial sampling design for parameter estimation of the covariance function'' \citep{Zhu2005}
+\item {\bf KL distance} - ``Expressed in the language of Bayesian inference, the Kullback–Leibler divergence from Q to P, denoted $D_{KL}(P||Q)$, is a measure of the information gained when one revises one's beliefs from the prior probability distribution Q to the posterior probability distribution P. In other words, it is the amount of information lost when Q is used to approximate P.'' (Wikipedia)
 \end{itemize}
 
 % ================= ================ ================= =============== =========
-\subsection*{``Hierarchical Spatial Models... ''\citep{Finley2009_2}; multinomial}
+\subsection*{``Hierarchical spatial models for predicting tree species assemblages across large domains''\citep{Finley2009_2}; multinomial}
 \begin{itemize}
 \item ``While most of the models we formulate can possibly be estimated using maximum likelihood or variants thereof, we adopt a Bayesian approach [e.g., Gelfand et al. (2003)]. This is attractive, as it offers exact inference for the random spatial coefficients, and that too with non-Gaussian data, by delivering an entire posterior distribution at both observed and unobserved locations. Spatial interpolation for processes that are neither observed nor arise as residuals appears inaccessible with classical likelihood-based methods. On the other hand, Bayesian model fitting involves rather specialized Markov chain Monte Carlo (MCMC) methods [see, e.g., Robert and Casella (2005)] that raise concerns about computational expense and reproducibility of inference. These concerns have, however, started to wane with the delivery of relatively simpler R packages (www.r-project.org), including mcmc, MCMCpack, geoRglm and spBayes, that help automate such methods and diagnose convergence.''
 \item ``While our primary contribution here lies in the novel application, we also offer several methodological advancements.''
@@ -806,12 +810,12 @@ phi      0.4318 0.2886 0.0014905       0.032011
   \end{itemize}
 \end{itemize}
 
-\subsection*{Meeting}
+\subsection*{(No) Meeting}
 \begin{itemize}
 \item I think ``var-res-grid centers as knots'' is viable. I could compare to \cite{Nychka1998}. Could/should this be a (Ch 2? Ch 3) contribution? 
 \end{itemize}
 
-\subsection*{Where are we? What's our depth?!} % ============= ============ ========
+\subsection*{Outline} % ============= ============ ========
 \begin{itemize}
 \item Var-Res heat maps
   \begin{itemize}
@@ -845,6 +849,72 @@ phi      0.4318 0.2886 0.0014905       0.032011
       \item \cite{Finley2011} has ``5.1 Model validation and benchmark comparisons'' section
       \item \cite{Finley2011} cites \cite{Gneiting2007} regarding scoring rules, etc., as have 1577 other papers
       \end{itemize}
+\end{itemize}
+
+\subsection*{Scoring rule}
+\begin{itemize}
+\item Wikipedia: ``In decision theory, a score function, or scoring rule, measures the accuracy of probabilistic predictions. It is applicable to tasks in which predictions must assign probabilities to a set of mutually exclusive discrete outcomes. The set of possible outcomes can be either binary or categorical in nature, and the probabilities assigned to this set of outcomes must sum to one (where each individual probability is in the range of 0 to 1). 
+
+...Proper scoring rules are used in meteorology, finance, and pattern classification where a forecaster or algorithm will attempt to minimize the average score to yield refined, calibrated probabilities (i.e. accurate probabilities).''
+\item Wikipedia: ``An example of probabilistic forecasting is in meteorology where a weather forecaster may give the probability of rain on the next day. One could note the number of times that a 25\% probability was quoted, over a long period, and compare this with the actual proportion of times that rain fell. If the actual percentage was substantially different from the stated probability we say that the forecaster is poorly calibrated.''
+\item Examples: logarithmic, Brier/quadratic, spherical
+\item 
+\end{itemize}
+
+\subsection*{Strictly proper scoring rules, prediction, and estimation }
+\citep{Gneiting2007}
+\begin{itemize}
+\item 
+\end{itemize}
+
+
+
+\subsection*{An Algorithm for the Construction of Spatial Coverage Designs... \citep{Nychka1998}}
+\begin{itemize}
+\item ``Space-filling ``coverage'' designs are spatial sampling plans which optimize a distance-based criterion''
+\item 
+\end{itemize}
+
+\subsection*{Spatial Sampling Design}
+\begin{itemize}
+\item Note: Random effect is Gaussian, response is not.
+\item One option: simulation study
+  \begin{enumerate}
+  \item Define multiple knot structures $k = 1,...,n_{k}$
+  \item Generate GRF data, using exponential covariance
+  \item Estimate parameters using each knot structure (Bayesian PPM approach; same code, $X\beta$ fixed), store estimates; 
+  \item Iterate
+  \item Compare (via variance?) results
+  \end{enumerate}
+\item ``2.4 Selection of knots'' \citep{Banerjee2008} is a treasure trove of talk about this.
+\item ``Bayesian Sampling Design'' \citep{Diggle2006} looks pretty applicable. (i) lattice plus close pairs, and (ii) lattice plus infill
+\end{itemize}
+
+\subsection*{As of Now}
+\begin{itemize}
+\item Keep writing
+\item Top two Andy papers; knot selection
+\item Get resume presentable again \checkmark
+\item 
+\item Scoring rules - model evaluation/comparison
+\item Spatial design analysis - knot selection
+\item Keep Git-ing (?)
+\end{itemize}
+
+\subsubsection{Gaussian Predictive Process Models for Large Spatial Data Sets}
+\citep{Banerjee2008}
+\begin{itemize}
+\item ``We project the original process onto a subspace that is generated by realizations of the original process at a specified set of locations.''
+\item ``The w(s) are spatial random effects, providing local adjustment (with structured dependence) to the mean, interpreted as capturing the effect of unmeasured or unobserved covariates with spatial pattern.''
+\item ``We regard the predictive process model as a competing model with computational advantages.''
+\item Other approaches ``may be challenging for the hierarchical models'' here, with ``spatial modelling with random effects at the second stage of the specification. We have no 'data' to provide an empirical covariance function.''
+\item ``A direct assessment of knot performance is comparison of the covariance function of the parent process with that of the predictive process...''
+\item ``There is little additional information in varying $m$ for a given $\phi$ and $\nu$ (Matern params). What matters is the size of the range relative to the spacing of the grid for the knots.''
+\item ``Choice of $m$ is governed by computational cost and sensitivity to choice... implement the analysis over different choices of $m$... consider run time... stability of predictive inference.''
+\item ``...improvement in estimation with increasing number of knots.''
+\item ``Tables 1--3 suggest that estimation is more sensitive to the number of knots than to the underlying design.''
+\item Convergence diagnostics, CODA package
+\item ``With only 36 knots the distance between adjacent knots (40 km) seemed to exceed the effective spatial ranges that were supported by the data and led to unreliable convergence of process parameters.''
 \end{itemize}
 
 % \bibliographystyle{plainnat}
