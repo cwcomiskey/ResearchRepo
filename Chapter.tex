@@ -19,6 +19,12 @@
 \usepackage[english]{babel}
 \usepackage[export]{adjustbox}
 
+\makeatletter
+\def\verbatim@font{\linespread{1}\normalfont\ttfamily}
+\makeatother
+
+\usepackage[toc,page]{appendix}
+
 
 % \setlength{\parindent}{4em}
 % \setlength{\parskip}{1em}
@@ -240,19 +246,24 @@ Generalized Linear Models \citep{Myers2012}
 % ===== ======= ====== ====== ===== ====== ====== ======
 \section{Spatial Generalized Linear Mixed Model}
 
-Independent of the performace of the previously fit model, we expect there to be unexplained spatial variation in the mean. The covariates are limited in scope and depth, and  Tobler's First Law of Geography tells us that things close together in space tend to behave more similarly than things further apart \citep{Tobler1970}. For these reasons, among others, we enhance the model by adding a spatially correlated random effect. A Gaussian random field is a popular, effective, and feasible distribution for spatial random effects \cite{Gelfand2010}.
-
+No matter the performace of the previously fit model, we expect there to be unexplained spatial variation in the mean. The covariates are limited in scope and depth, and Tobler's First Law of Geography tells us that things close together in space tend to behave more similarly than things further apart \citep{Tobler1970}. Accordingly, we enhance the model by adding a spatially correlated random effect, to capture the unexplained spatial variation in the mean \citep{Banerjee2008}. 
 
 \subsection{Gaussian Random Field}
 
-Let random variable $Z_{i}$...
+A Gaussian random field is a popular, effective, and feasible distribution for spatial random effects \citep{Gelfand2010}. Let random variable $\pmb{w}(\pmb{s})$, for $\pmb{s} \in \pmb{D} \subseteq \pmb{R}^{2}$, be distributed multivariate Normal with mean $\pmb{0}$, and covariance matrix $\Sigma(\pmb{\theta})$, where $\pmb{\theta}$ are covariance parameters \citep{Haran2011}.\footnote{Where $\Sigma(\theta)$ is symmetric and positive definite.}
+$$\pmb{w} | \pmb{\theta} \sim MVN(\pmb{0}, \Sigma(\pmb{\theta})) $$
 
-\subsection{Spatial Logistic Regresion Model}
+Including a random effect defined in this way retools (2) as a {\it spatial} generlatized linear {\it mixed} model (SPGLMM).
 
-Consider model (2) with the additional feature, a spatial random effect, meant to capture unexplained spatial variation in the mean.
+\subsection{Spatial Generalized Linear Mixed Model}
+To add a spatial random effect, distributed as a Gaussian random field, to the linear predictor in (2), it remains to define a spatial correlation structure to $\pmb{w}$. Let $w_{ij}$ be defined as in {\bf 5.1}, with an exponential covariance structure. That is, the i,jth element of $\Sigma(\phi, \sigma^{2})$ is:
+\begin{equation}
+\Sigma(\phi, \sigma^{2})_{i,j} = \sigma^{2} exp(-||\pmb{s}_{i} - \pmb{s}_{j}||/\phi),
+\end{equation}
+where $||s_{i} - s_{j}||$ is the Euclidean distance between $\pmb{s}_{i}$ and $\pmb{s}_{j}$, $\sigma^{2}$ is the scale parameter, and $\phi$ is the range parameter.
 
 \begin{equation}
-\text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + Z_{ij},
+\text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + w_{ij},
 \end{equation}
 
 This spatial hierarchical model gives $p_{ij}$ a complicated correlation structure . Bayesian statistical methodologies, primarily Markov chain Monte Carlo (MCMC) methods, are very popular for fitting spatial models of this kind \citep{Banerjee2014}. In fact, complex spatial correlation for big data sets makes MCMC the only practical approach. To estimate model parameters for (4) we first tried the Hamiltonian Monte Carlo algorithm in Stan.
@@ -270,7 +281,7 @@ Hierarchical Modeling and Analysis for Spatial Data \citep{Banerjee2014}
 
 \subsubsection{Hamiltonian Dynamics and Markov Chain Monte Carlo} 
 
-\footnote{The history and physics presented in this section owe heavily, and are primarily informed by, \citep{Neal2011}} Trying to understand molecular states, \cite{Metropolis1953} created MCMC for ``fast machines.'' Later, modeling molecular motion as a deterministic process, \cite{Alder1959} introduced {\it Hamiltonian dynamics} as an alternate representation of Newtonian mechanics. Almost 30 years later, \cite{Duane1987} combined the two to create ``hybrid Monte Carlo'' to simulate certain quantum mechanical processes. Over time, this named morphed into {\it Hamilton} Monte Carlo (HMC), as it is known today. Eventually, \cite{Neal1996} used HMC methods for explicitly statistical applications, studying neural networks.
+\footnote{The history and physics presented in this section owe heavily to, and are primarily informed by, \citep{Neal2011}} Trying to understand molecular states, \cite{Metropolis1953} created MCMC for ``fast machines.'' Later, modeling molecular motion as a deterministic process, \cite{Alder1959} introduced {\it Hamiltonian dynamics} as an alternate representation of Newtonian mechanics. Almost 30 years later, \cite{Duane1987} combined the two to create ``hybrid Monte Carlo'' to simulate certain quantum mechanical processes. Over time, this named morphed into {\it Hamilton} Monte Carlo (HMC), as it is known today. Eventually, \cite{Neal1996} used HMC methods for explicitly statistical applications, studying neural networks.
 
 HMC works by reframing the variables and distribution of interest as part of a physical system. From a physics standpoint, an object in a well defined three dimensional physical space can be completely characterized by its position and momemtum. For HMC, the variables of interest function as position variables, and auxiliary Gaussian variables are introduced serve as momentum variables. Simple updates for the auxiliary momentum variables generate, via a system of differential equations, proposals for Metropolis updates to the more important position variables (which represent the variabls of interest). The differential equation solutions estimate trajectories of the hypothetical physical object, which will then occupy a new position after some chosen time step. This crafty formulation enables distant, yet high probability, proposals for the variables of interest. Note that this contrasts favorably, in terms of mixing, to the random walk proposal generation process commonly used for Metropolis updates.
 
@@ -280,32 +291,31 @@ Let $q(t)$ be a d-dimensional ($d$ parameters of interest) position vector that 
 \begin{equation}
 H(q(t),p(t)) = U(q(t)) + K(p(t)),
 \end{equation}
-measures the total energy of the system. 
+measures the total energy of a system. 
 
-For HMC applications, we let the potential energy, $U(q)$, be minus the log of the probability density function of interest, plus any convenient constant \footnote{We omit $t$ for clarity of presentation, here and elsewhere, but position and momentum remain functions of time $t$.}. Typically, HMC procedures define $p$ as a d-dimensional zero mean Gaussian with covariance matrix M, and $K(p)$ as minus the log of the multivariate Gaussian probability density function. This gives:
+For HMC applications, we let the potential energy, $U(q)$, be minus the log of the probability density function of interest, plus any convenient constant\footnote{We omit $t$ for clarity of presentation, here and elsewhere, but position and momentum remain functions of time $t$.}. Typically, HMC procedures define $p$ as a d-dimensional zero mean Gaussian with covariance matrix M, and $K(p)$ as minus the log of the multivariate Gaussian probability density function. This gives:
 \begin{align}
 H(q,p) = -\text{log}f_{q}(q) + p^{T}\pmb{M}^{-1}p/2.
 \end{align}
 
-This clever formulation offers relatively simple partial derivatives for the change in position and momentum over time. For $i = 1,\dots, d$:
+This clever formulation provides useful partial derivatives for calculating the change in position and momentum over time. For $i = 1,\dots, d$:
 \begin{align}
 \frac{d q_{i}(t)}{dt} &= \frac{\partial H}{\partial p_{i}}, \\
 \frac{d p_{i}(t)}{dt} &= -\frac{\partial H}{\partial q_{i}}.
 \end{align}
 Substituting in Hamilton's equation (5) and simplifying gives
 \begin{align}
-\frac{d q_{i}}{dt} &=  [\pmb{M}^{-1}p]_{i} \\
-\frac{d p_{i}}{dt} &= \frac {\partial \left[ \text{log}f_{q}(q) \right]}{\partial q_{i}}
+\frac{d q_{i}(t)}{dt} &=  [\pmb{M}^{-1}p]_{i} \\
+\frac{d p_{i}(t)}{dt} &= \frac {\partial \left[ \text{log}f_{q}(q) \right]}{\partial q_{i}}
 \end{align}
-The solutions to these two differential equations, that is $q(t)$ and p(t) such that (8) and (9) hold, give the rate of change in position and momentum at time t. 
-
+The solutions to these two differential equations, that is $q(t)$ and p(t) such that (8) and (9) hold, give the instantaneous rate of change of position and momentum at time t. 
 
 \subsection*{MCMC Using Hamiltonian Dynamics \citep{Neal2011}}
 Steps.
 
 \begin{itemize}
 
-\item Leapfrog method = for calculating new position (q) and momentum (p) through tiny time steps
+\item {\bf Leapfrog method} = for calculating new position (q) and momentum (p) through tiny time steps
   \begin{itemize}
   \item for {\bf discretizing Hamilton equations}
   \item akin to Taylor Series appoximations
@@ -313,13 +323,70 @@ Steps.
   \item Leapfrom Method does half step for momentum (p), full step for postion (q), other half step for momentum (p). Damn good.
 
   \end{itemize}
-\item {\bf Statistical ensemble} - probability distribution for the state of a system (set of all possible copies)
+
 \item Short version: randomly sample from K(p) (kinetic, momentum), calculate U(k) (potential, position*) --- that's your Metropolis proposal.
-\item {\bf Solve} a differential equation: If $\frac{dq}{dt} = p$, and $\frac{dp}{dt} = q$, then q(t) = ?, and p(t) = ?
 \end{itemize}
 
 
 \subsubsection{Optimizing in Stan}
+Spatial correlation, notoriously, imposes considerable computational burdens \citep{Banerjee2008}. A Gaussian random field has an $n \times n$ correlation matrix, whose inverse must be evaluated at every MCMC iteration. This feature contributes a considerable portion of the computational cost   These burdens can be mitigated, somewhat, by coding techniques and maneuvers. We highlight some such techniques here, and include the complete .stan script in Appendix A as a reference. 
+
+
+\appendix
+\section{Stan Code for Hamiltonian MCMC}
+\begin{verbatim}
+data {                             
+  int<lower=0> N;                 // N observations
+  int<lower=0> p;                 // p predictors
+  matrix[N,p] Q;                  // QR decomp - Q
+  matrix[p,p] R;                  // QR decomp - R
+  int<lower=0, upper=1> hit[N];   // 0/1 outcomes; array of integers
+  vector[2] px_pz[N];             // N-dim array of 2-dim vectors
+  vector[p] theta_SDs;            // theta prior SDs
+}
+transformed data{
+  matrix[p,p] R_inv;
+  R_inv = inverse(R);
+}
+parameters {                
+  real<lower=0> l;                  // length-scale parameter
+  real<lower = 0> sigma;            // scale parameter
+  real beta0;                       // intercept 
+  vector[p] theta;
+  vector[N] Z;                      // location random effect
+}
+transformed parameters {
+      vector[p] beta;
+      beta = R_inv*theta;
+}
+model {  
+  matrix[N, N] Sigma;
+  matrix[N, N] L;                     // Lwr triangular Cholesky decomp
+  vector[N] Z_mod;
+      
+      l ~ lognormal(-2,1);            // E[l] = 0.223
+      sigma ~ lognormal(-1.5, 1.5);   // E[sigma] = 0.687
+      beta0 ~ normal(0,5);
+      
+      theta[1] ~ normal(0, theta_SDs[1]);
+      theta[2] ~ normal(0, theta_SDs[2]);
+      theta[3] ~ normal(0, theta_SDs[3]);
+      theta[4] ~ normal(0, theta_SDs[4]);
+      theta[5] ~ normal(0, theta_SDs[5]);
+      theta[6] ~ normal(0, theta_SDs[6]);
+      
+      Sigma = cov_exp_quad(px_pz, sigma, l); 
+      for (n in 1:N)
+        Sigma[n, n] = Sigma[n, n] + 1e-6;
+      L = cholesky_decompose(Sigma); // Sigma = LL' 
+      
+      Z ~ normal(0, 1);  // Each element is N(0,1)
+      Z_mod = L * Z; // (Cov matrix Cholesky)*MVN(0,1)
+      
+      hit ~ bernoulli_logit(beta0 + Q*theta + Z_mod);
+}
+\end{verbatim}
+
 
 \bibliography{Baseball}
 
