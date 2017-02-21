@@ -246,27 +246,38 @@ Generalized Linear Models \citep{Myers2012}
 % ===== ======= ====== ====== ===== ====== ====== ======
 \section{Spatial Generalized Linear Mixed Model}
 
-No matter the performace of the previously fit model, we expect there to be unexplained spatial variation in the mean. The covariates are limited in scope and depth, and Tobler's First Law of Geography tells us that things close together in space tend to behave more similarly than things further apart \citep{Tobler1970}. Accordingly, we enhance the model by adding a spatially correlated random effect, to capture the unexplained spatial variation in the mean \citep{Banerjee2008}. 
+No matter the performace of the previously fit model, we expect there to be unexplained spatial variation in the mean. The covariates are limited in scope and depth, and Tobler's First Law of Geography tells us that things close together in space tend to behave more similarly than things further apart \citep{Tobler1970}. Accordingly, we enhance the model to capture the unexplained spatial variation in the mean, and compensate for unobserved covariates, by adding a spatially correlated random effect  \citep{Banerjee2008}. 
 
 \subsection{Gaussian Random Field}
 
-A Gaussian random field is a popular, effective, and feasible distribution for spatial random effects \citep{Gelfand2010}. Let random variable $\pmb{w}(\pmb{s})$, for $\pmb{s} \in \pmb{D} \subseteq \pmb{R}^{2}$, be distributed multivariate Normal with mean $\pmb{0}$, and covariance matrix $\Sigma(\pmb{\theta})$, where $\pmb{\theta}$ are covariance parameters \citep{Haran2011}.\footnote{Where $\Sigma(\theta)$ is symmetric and positive definite.}
+A Gaussian random field is a popular and practical distribution for spatial random effects \citep{Gelfand2010}. Let random variable vector $\pmb{w}(\pmb{s})$, for vector of locations $\pmb{s} \in \pmb{D} \subseteq \pmb{R}^{2}$, be distributed multivariate Normal with mean $\pmb{0}$; with symmetric, positive definite covariance matrix $\Sigma(\pmb{\theta})$, and covariance parameter vector $\pmb{\theta}$ \citep{Haran2011}.
 $$\pmb{w} | \pmb{\theta} \sim MVN(\pmb{0}, \Sigma(\pmb{\theta})) $$
 
-Including a random effect defined in this way retools (2) as a {\it spatial} generlatized linear {\it mixed} model (SPGLMM).
+Including a random effect defined in this way, with a valid covariance matrix, would retool (2) as a {\it spatial} generlatized linear {\it mixed} model (SPGLMM). Next we define the covariance structure we use in this study.
 
-\subsection{Spatial Generalized Linear Mixed Model}
+\subsection{Exponential Covariance}
 To add a spatial random effect, distributed as a Gaussian random field, to the linear predictor in (2), it remains to define a spatial correlation structure to $\pmb{w}$. Let $w_{ij}$ be defined as in {\bf 5.1}, with an exponential covariance structure. That is, the i,jth element of $\Sigma(\phi, \sigma^{2})$ is:
 \begin{equation}
 \Sigma(\phi, \sigma^{2})_{i,j} = \sigma^{2} exp(-||\pmb{s}_{i} - \pmb{s}_{j}||/\phi),
 \end{equation}
 where $||s_{i} - s_{j}||$ is the Euclidean distance between $\pmb{s}_{i}$ and $\pmb{s}_{j}$, $\sigma^{2}$ is the scale parameter, and $\phi$ is the range parameter.
 
+\subsection{Spatial Generalized Linear Mixed Model}
+Inserting $\pmb{w}(\pmb{s})$ to the linear predictor in (1) gives the following spatial generalized linear mixed model (SGLMM):
 \begin{equation}
-\text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + w_{ij},
+\text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + w_{ij}.
 \end{equation}
 
-This spatial hierarchical model gives $p_{ij}$ a complicated correlation structure . Bayesian statistical methodologies, primarily Markov chain Monte Carlo (MCMC) methods, are very popular for fitting spatial models of this kind \citep{Banerjee2014}. In fact, complex spatial correlation for big data sets makes MCMC the only practical approach. To estimate model parameters for (4) we first tried the Hamiltonian Monte Carlo algorithm in Stan.
+This spatial hierarchical model, with its latent Gaussian random field, gives $p_{ij}$ a complicated correlation structure. Bayesian statistical methodologies, primarily Markov chain Monte Carlo (MCMC) methods, are very popular for fitting spatial models of this kind \citep{Banerjee2014}. In fact, MCMC is one of the few practical approaches available to fit a `big n' model with complex spatial correlation. This is because of the `big n problem' \citep{Lindgren2011}. Namely, the computational costs for SPGLMMs increase at a rate of $\mathcal{O}(n^{3})$ (REFERENCE). This rate of increase leads to prohibitively slow model fitting. To attempt to fit SPGLMMs in practical time spans, we try: 
+
+To estimate model parameters for (4) we tried:
+\begin{enumerate}
+\item Computational optimization, C++, an efficient algorithm, with Hamiltonian Monte Carlo in Stan
+\item Dimension reduction with Predictive process models in \verb|spBayes|
+\item INLA SPDEs and \verb|INLA-R|
+\end{enumerate}
+
+Note that the ultimate goal of this research is practical, real-time applications for baseball fans, broadcasts, players, scouts, and teams. Therefore, model fitting speed matters on a finer time scale than academic research demands.  
 
 \subsubsection{Markov Chains}
 
@@ -280,7 +291,6 @@ Hierarchical Modeling and Analysis for Spatial Data \citep{Banerjee2014}
         \end{itemize} % ===============
 
 \subsubsection{Hamiltonian Dynamics and Markov Chain Monte Carlo} 
-
 \footnote{The history and physics presented in this section owe heavily to, and are primarily informed by, \citep{Neal2011}} Trying to understand molecular states, \cite{Metropolis1953} created MCMC for ``fast machines.'' Later, modeling molecular motion as a deterministic process, \cite{Alder1959} introduced {\it Hamiltonian dynamics} as an alternate representation of Newtonian mechanics. Almost 30 years later, \cite{Duane1987} combined the two to create ``hybrid Monte Carlo'' to simulate certain quantum mechanical processes. Over time, this named morphed into {\it Hamilton} Monte Carlo (HMC), as it is known today. Eventually, \cite{Neal1996} used HMC methods for explicitly statistical applications, studying neural networks.
 
 HMC works by reframing the variables and distribution of interest as part of a physical system. From a physics standpoint, an object in a well defined three dimensional physical space can be completely characterized by its position and momemtum. For HMC, the variables of interest function as position variables, and auxiliary Gaussian variables are introduced serve as momentum variables. Simple updates for the auxiliary momentum variables generate, via a system of differential equations, proposals for Metropolis updates to the more important position variables (which represent the variabls of interest). The differential equation solutions estimate trajectories of the hypothetical physical object, which will then occupy a new position after some chosen time step. This crafty formulation enables distant, yet high probability, proposals for the variables of interest. Note that this contrasts favorably, in terms of mixing, to the random walk proposal generation process commonly used for Metropolis updates.
@@ -329,7 +339,41 @@ Steps.
 
 
 \subsubsection{Optimizing in Stan}
-Spatial correlation, notoriously, imposes considerable computational burdens \citep{Banerjee2008}. A Gaussian random field has an $n \times n$ correlation matrix, whose inverse must be evaluated at every MCMC iteration. This feature contributes a considerable portion of the computational cost   These burdens can be mitigated, somewhat, by coding techniques and maneuvers. We highlight some such techniques here, and include the complete .stan script in Appendix A as a reference. 
+`Big n problem' burdens can be mitigated further, by optimizing coding techniques. We highlight some such techniques here, and include the complete .stan script in Appendix A for reference. 
+
+\begin{itemize}
+\item Informative prior on length-scale parameter for identifiability \citep{Gelman}
+\item Diagonal noise; \cite{Trangucci}
+\begin{verbatim}
+for (n in 1:N)
+  Sigma[n, n] = Sigma[n, n] + 1e-6;
+\end{verbatim}
+\item QR factorization: If you still have trouble, running a QR decomposition on your X variables and changing your likelihood to: 
+
+\verb|hit ~ bernoulli_logit(beta0 + Q*theta + Z_mod);|
+
+can also help the sampler run more efficiently. \citep{Trangucci}
+\item Cholesky decomposition, LZ ~ N(*,*), (same as below)
+\item 
+``In general, it's hard to run complex models in Stan without specifying proper priors (rather than uniform, as you have here) for all your coefficients, especially if your coefficients are on different scales.'' \citep{Trangucci}    
+
+I would suggest using a distribution for l with a sharper tail, maybe a log-normal or a normal. If the data isn't informative about your length-scale, you'll need to pin it down with a prior. See if you can come up with plausible upper and lower bounds on your length-scale, and then use a distribution to put soft constraints on l. Without specifying stronger priors on l, you can run into trouble where your GP can act as a second constant term in your regression for large draws of length-scale and large draws of alpha. You should also put priors on sig for this reason. 
+\item Separate intercept from design matrix (manual?)
+\item Linear algebra over loops whenever possible \citep{StantheMAN}.
+\item scalar $>$ vector $>$ matrix \citep{Carpenter}
+
+\verb|y ~ multi_normal(mu, diag_matrix(sigma)); | \\
+it's **much** faster to produce the same result with 
+a vectorized scalar version: \\
+\verb|y ~ normal(mu, sigma);| \\
+
+And, instead of: \\
+\verb|Z ~ multi_normal_cholesky(zero, I_N); // Standard MVN| \\ 
+This is where you just want to do this: \\
+ \verb|Z ~ normal(0, 1);| \\
+That puts an independent standard normal on each component of Z.
+
+\end{itemize}
 
 
 \appendix
