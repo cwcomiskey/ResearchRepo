@@ -343,43 +343,56 @@ Steps.
 
 \subsubsection*{Bayesian Motivated Techniques}
 
-Stan allows a user to omit prior distributions for parameters, but interprets non-inclusion as a non-informative, uniform prior. However, \cite{Gelman}, the first Stan developer, pointed out in correspondence that the exponential covariance length-scale parameter, $\phi$ in equation (3), requires an informative prior for model identifiability (CITATION?). \cite{Trangucci} recommended a sharp tailed prior distribution for the length-scale parameter, such as the normal or log-normal.
+Stan allows a user to omit prior distributions for parameters, but interprets non-inclusion as a non-informative, uniform prior. However, \cite{Gelman}, the first Stan developer, pointed out in correspondence that the exponential covariance length-scale parameter, $\phi$ in equation (3), requires an informative prior for model identifiability (CITATION?). \cite{Trangucci} recommended, in particular, a sharp tailed prior distribution for the length-scale parameter, such as the normal or log-normal, to act as soft upper and lower bound constraints\footnote{``Without stronger priors on l, GP can act as a second constant term in your regression for large draws of length-scale and large draws of alpha.''}. Even further, for practical computing time and convergence considerations, \cite{Trangucci} said complex models such as spatial hierarchical models require proper priors for all $\beta$ coefficients. Using the intial GLM estimates to inform coefficient prior distributions had exactly the intended effects.
 
+\subsubsection*{Computational and Linear Algebra Motivated Techniques}
+For speed and efficiency, the Stan Users Manual recommends pure matrix algebra and vectors, over `for loops' and scalars \cite{StantheMAN}. For example, 
+\begin{verbatim}
+hit ~ bernoulli_logit(X*beta + Z)
+\end{verbatim}
+is faster than
+\begin{verbatim}
+for (n in 1:N)
+        hit[n] = bernoulli_logit(X[n]*beta[n] + Z[n]);
+\end{verbatim}
+Notice that $N \times 1$ column vectors \verb|hit|, \verb|beta|, and \verb|Z| replace scalars \verb|hit[n]|, \verb|beta[n]|, and \verb|Z[n]|; and $N \times p$ matix \verb|X| replaces $1 \times p$ row vector \verb|X[n]|.
 
-\cite{Trangucci} said complex models, such as spatial hierarchical models, essentially require proper priors for all $\beta$ coefficients.
+\cite{Trangucci} also suggested a QR factorization on covariate matrix $\pmb{X}$, in the linear predictor, to increase computational efficiency. A QR factorization consists of factoring an $n \times p$ matrix into the product of an $n \times p$ orthogonal matrix $\pmb{Q}$ and a $p \times p$ upper triangular matrix $\pmb{R}$, such that $\pmb{X} = \pmb{QR}$. 
+\begin{align}
+\pmb{X} &= \pmb{QR} \\
+\pmb{X \beta} &= \pmb{QR \beta}
+\end{align}
+To reparameterize for model fitting, let $\pmb{\theta} = \pmb{R \beta}$, so that $\pmb{\beta} = \pmb{R^{-1}\theta}$, which gives
+\begin{align}
+\pmb{X \beta} &= \pmb{Q \theta}, \text{ and } \\
+\text{logit}(p_{ij}|\pmb{s}_{ij}) &= \pmb{Q}_{ij}(\pmb{s}_{ij}) \pmb{\theta}_{j} + w_{ij}.
+\end{align}
+Now prior information about $\pmb{\beta}$ should be incorporated into and given in the prior distributions of $\pmb{\theta}$. Consider non-informative prior distributions on $p$ dimensional parameter vector $\pmb{\beta}$,
+$$ \pmb{\beta} \sim N(\pmb{0}, \sigma^{2}\pmb{I}_{p}), $$
+where $\pmb{I}_{p}$ is the $p \times p$ identity matrix, and $\pmb{0}$ is a $p \times 1$ zero vector. Notice the intended variance of the non-informative prior must be modified for $\pmb{\theta}$.
+\begin{align}
+\text{Var}(\pmb{\theta}) &= \text{Var}(\pmb{R \beta}) \\
+&= \pmb{R}\text{Var}(\pmb{\beta})\pmb{R}' \\
+&= \pmb{R}\sigma^{2}\pmb{I}_{p}\pmb{R}' \\
+&= \sigma^{2} \pmb{R}\pmb{R}'
+\end{align}
 
-
-        \begin{itemize}
-        \item ``In general, it's hard to run complex models in Stan without specifying proper priors (rather than uniform, as you have here) for all your coefficients...'' \citep{Trangucci}    
-        \begin{itemize}
-        \item distribution for l with a sharper tail, maybe a log-normal or a normal. 
-        \item If data isn't informative about length-scale, need informative prior. 
-        \item Try determine plausible upper and lower bounds on your length-scale, and then use a distribution to put soft constraints on l. 
-        \item Without stronger priors on l, GP can act as a second constant term in your regression for large draws of length-scale and large draws of alpha. 
-        \item You should also put priors on sig for this reason. 
-        \end{itemize}
-
-\item Diagonal noise; \citep{Trangucci2017}
+We add noise to the covariance matrix diagonal with the following snippet of code.
 \begin{verbatim}
 for (n in 1:N)
   Sigma[n, n] = Sigma[n, n] + 1e-6;
 \end{verbatim}
+This added diagonal noise guarantees that the covariance matrix assembled by \verb|cov_exp_quad(...)| remains numerically positive-definite \cite{Trangucci2017}. This \verb|cov_exp_quad(...)| function can generate numerically non-positive-definite matrices when operating at high dimensions.
 
-\item QR factorization: If you still have trouble, running a QR decomposition on your X variables and changing your likelihood to:
-\verb|hit ~ bernoulli_logit(beta0 + Q*theta + Z_mod);|
-can also help the sampler run more efficiently. \citep{Trangucci}
-\item Cholesky decomposition, LZ ~ N(*,*), (same as below)
-\item Separate intercept from design matrix (manual?)
-\item Linear algebra over loops whenever possible \citep{StantheMAN}.
+Finally, \cite{Carpenter} recommended a Cholesky decomposition and tactical reparameterization, noting the efficiency of a vectorized scalar approach.
+\begin{verbatim}
+L = cholesky_decompose(Sigma);  
+Z ~ normal(0, 1);  
+Z_mod = L * Z; 
+hit ~ bernoulli_logit(Q*theta + Z_mod);
+\end{verbatim}
+The first line performs a Cholesky decomposition on the covariance matrix \verb|Sigma|. A Cholesky decomposition factors symmetric matrix \verb|Sigma| such that $\Sigma = \text{\pmb{LL}}'$. The second, ``vectorized scalar'' line generates $n$ standard normal random variables, by reusing \verb|normal(0, 1)| for every element of \verb|Z|. These two lines remove the dependence of random vector \pmb{Z}, which must be generated, on unknown parameters to be estimated \cite{Trangucci2017}. The third line transforms \verb|Z| to have the desired distribution. Note that $\text{Var}(\text{\pmb{LZ}}) = \text{\pmb{L}} \text{I}_{n}\text{\pmb{L}}' = \Sigma$, so that $\pmb{LZ} \sim N(\pmb{0}, \Sigma)$ as desired.
 
-\item scalar $>$ vector $>$ matrix \citep{Carpenter}
-      \begin{itemize}
-      \item \verb|y ~ multi_normal(mu, diag_matrix(sigma));| \\
-      it's **much** faster to produce the same result with a vectorized scalar version: \verb|y ~ normal(mu, sigma);| \\
-      \item And, instead of: \verb|Z ~ multi_normal_cholesky(zero, I_N);|, use: \verb|Z ~ normal(0, 1);|, which puts an independent standard normal on each component of Z.
-      \end{itemize}
-
-\end{itemize}
 
 
 \appendix
