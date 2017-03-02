@@ -36,21 +36,8 @@
 \begin{document}
 \maketitle{}
 
-% \section{Outline}
-% \begin{itemize}
-% \item Data visualization intro
-% \item What a heat map is.
-% \item How it works.
-% \item How it doesn't work.
-% \item How we can fix it.
-% \item Stopping rule, subdivision algorithm.
-% \item Example.
-% \item Example.
-% \end{itemize}
+\tableofcontents
 
-\section*{Chapter 1} % ==================== ==================== 
-
-% \section{Empirical Heat Maps \\ Resolution Selection and Innovation}
 
 \section{Introduction}
 Graphical displays are an irreplaceable tool for the statistician, and the statistical community. They allow us to quickly communicate information about a data set to another statistician, or, perhaps even more importantly, to non-statisticians. As technology generates more data the importance of this area of statistics expands, statistical analysis becomes more widespread, and our graphic-making abilities improve. The R data visualization package \verb|ggplot2| highlights (i) the importance of graphical diplays, because it is among the most downloaded R packages; and (ii) the need for innovation in this area, because its popularity explosion signals it met a need.
@@ -58,7 +45,7 @@ Graphical displays are an irreplaceable tool for the statistician, and the stati
 In this chapter we focus on one type of graphical display, the heat map. We show the way it fails to adequately communicate spatial data dispersion and distribution attributes, and we innovate a solution. This innovation improves our ability to communicate spatial data density and dispersion attributes to the viewer using a heat map.
 
 
-\section{Heat Maps} % ==================== ====================
+\section{Conventional Heat Maps} % ==================== 
 
 We start with a baseball heat map example, as baseball data motivates this research. Consider the empirical heat map in Figure 1, of the two dimensioned vertical face of the strike zone, where grid box colors represent empirical batting averages at pitch locations. In Figure 1 we show PITCHf/x\textsuperscript{\textregistered} data on 1,932 right-handed hitters, taking 1,582,581 swings between 2008 and 2015.  Let $b = 1, \dots, 627$ index grid boxes. Let $i = 1, \dots, 1,582,581$ index swings, and define $n_{b} = \displaystyle\sum_{i} \text{I}_{\{i \in b \}}$ as the total number of swings in box $b$.
 Define a Bernoulli random variable, $S_{i}$, that equals one for swing success and zero for swing failure, and let $\hat{p}_{b} = \frac{1}{n_{b}} \displaystyle\sum_{i} S_{i} \cdot \text{I}_{\{i \in b \}}$ be the empirical box $b$ success probability. Figure 1 displays the resulting empirical heat map for 1,932 right-handed hitters, taking 1,582,581 swings between 2008 and 2015. The heat map graphic maps the empirical success probability, $\hat{p}_{b}$, of hitters swinging at pitches that passed through the space represented by that grid box, to a color on a spectrum.
@@ -100,7 +87,7 @@ In this way, due to the particular dispersion of the data, a heat map at any res
 
 It is unclear which of these five resolutions best combines spatially precise estimates of $p$ where possible, and box sample sizes with $\text{Var}(\hat{p}_{b})$ in a desirable range. The viewer interested in the center of the strike zone should prefer the last ({\bf need labels} heat map, as the box sample sizes are sufficient to provide such spatially specific low variance estimates. The boxes closer to the edges of the strike zone contain higher variance, and thus less reliable estimates, due to prohibitively small sample sizes. We propose a new heat map approach that combines resolutions according to the data's varying spatial density.
 
-\subsection{Variable Resolution Empirical Heat Maps} % ======== ==============
+\subsection{Empirical Heat Maps - Variable Resolution} % ==========
 
 Consider again the heat map in Figure 2. Notice box (1,1) contains data on 22 swings, a sample size where subdividing would yield sample sizes uselessly small, and thus estimate variances prohibitively high. Box (2,3), in contrast, contains data on 1694 swings, which would support estimates that are more spatially accurate without $\text{Var}(\hat{p}_{b})$ increasing past acceptable levels. We propose defining a stopping rule and a subdividing method, and subdividing boxes further accordingly. For example, in Figure 4 we subdivide, into four equally sized boxes, all boxes where $n_{b} > 200$, . One iteration through all boxes at their current size, subdividing according to this rule, converts the heat map on the left to the heat map on the right.
         \begin{figure}[H]
@@ -155,6 +142,8 @@ For this reason the bottom left heat maps in Figures 7 and 8, shown in Figure 9,
 % *Alix: ``I wonder if there's any literature on the physics from a hitter's perspective in terms of how small a difference in location is even detectable.
 
 % *Alix: ``Great start Chris. --> need to add more about how one would now interpret the ``best'' empirical heat map.
+
+\subsection{Heat Map Confidence Intervals with Shiny}
 
 % ====== ========= ======== ======= ======= ======== ======
 \section*{Chapter 2 - Modeling Hitter Success Probabilities} 
@@ -244,25 +233,27 @@ Generalized Linear Models \citep{Myers2012}
   \end{itemize}
 
 % ===== ======= ====== ====== ===== ====== ====== ======
-\section{Spatial Generalized Linear Mixed Model}
+\section{Spatial Generalized Linear Mixed Models}
+
+\subsection{Introduction}
 
 No matter the performace of the previously fit model, we expect there to be unexplained spatial variation in the mean. The covariates are limited in scope and depth, and Tobler's First Law of Geography tells us that things close together in space tend to behave more similarly than things further apart \citep{Tobler1970}. Accordingly, we enhance the model to capture the unexplained spatial variation in the mean, and compensate for unobserved covariates, by adding a spatially correlated random effect  \citep{Banerjee2008}. 
 
-\subsection{Gaussian Random Field}
+\subsubsection{Gaussian Random Field}
 
 A Gaussian random field is a popular and practical distribution for spatial random effects \citep{Gelfand2010}. Let random variable vector $\pmb{w}(\pmb{s})$, for vector of locations $\pmb{s} \in \pmb{D} \subseteq \pmb{R}^{2}$, be distributed multivariate Normal with mean $\pmb{0}$; with symmetric, positive definite covariance matrix $\Sigma(\pmb{\theta})$, and covariance parameter vector $\pmb{\theta}$ \citep{Haran2011}.
 $$\pmb{w} | \pmb{\theta} \sim MVN(\pmb{0}, \Sigma(\pmb{\theta})) $$
 
 Including a random effect defined in this way, with a valid covariance matrix, would retool (2) as a {\it spatial} generlatized linear {\it mixed} model (SPGLMM). Next we define the covariance structure we use in this study.
 
-\subsection{Exponential Covariance}
+\subsubsection{Exponential Covariance}
 To add a spatial random effect, distributed as a Gaussian random field, to the linear predictor in (2), it remains to define a spatial correlation structure to $\pmb{w}$. Let $w_{ij}$ be defined as in {\bf 5.1}, with an exponential covariance structure. That is, the i,jth element of $\Sigma(\phi, \sigma^{2})$ is:
 \begin{equation}
 \Sigma(\phi, \sigma^{2})_{i,j} = \sigma^{2} exp(-||\pmb{s}_{i} - \pmb{s}_{j}||/\phi),
 \end{equation}
 where $||s_{i} - s_{j}||$ is the Euclidean distance between $\pmb{s}_{i}$ and $\pmb{s}_{j}$, $\sigma^{2}$ is the scale parameter, and $\phi$ is the range parameter.
 
-\subsection{Spatial Generalized Linear Mixed Model}
+\subsubsection{Spatial Generalized Linear Mixed Model}
 Inserting $\pmb{w}(\pmb{s})$ to the linear predictor in (1) gives the following spatial generalized linear mixed model (SGLMM):
 \begin{equation}
 \text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + w_{ij}.
@@ -289,13 +280,18 @@ Hierarchical Modeling and Analysis for Spatial Data \citep{Banerjee2014}
         \item Two issues: MCMC algorithms produce {\it correlated} draws from poster (hence thinning, acf(), pacf(), and {\it convergence} diagnosis 
         \item Two most popular MCMC algorithms: (1) Gibbs sampler (2) Metropolis Hastings algorithm
         \end{itemize} % ===============
+        
+\subsubsection{``Big N Problem''} % =================
+        
+\subsection{Method 1 - HMC in Stan} % =================
 
 \subsubsection{Hamiltonian Dynamics and Markov Chain Monte Carlo} 
+
 \footnote{The history and physics presented in this section owe heavily to, and are primarily informed by, \citep{Neal2011}} Trying to understand molecular states, \cite{Metropolis1953} created MCMC for ``fast machines.'' Later, modeling molecular motion as a deterministic process, \cite{Alder1959} introduced {\it Hamiltonian dynamics} as an alternate representation of Newtonian mechanics. Almost 30 years later, \cite{Duane1987} combined the two to create ``hybrid Monte Carlo'' to simulate certain quantum mechanical processes. Over time, this named morphed into {\it Hamilton} Monte Carlo (HMC), as it is known today. Eventually, \cite{Neal1996} used HMC methods for explicitly statistical applications, studying neural networks.
 
 HMC works by reframing the variables and distribution of interest as part of a physical system. From a physics standpoint, an object in a well defined three dimensional physical space can be completely characterized by its position and momemtum. For HMC, the variables of interest function as position variables, and auxiliary Gaussian variables are introduced serve as momentum variables. Simple updates for the auxiliary momentum variables generate, via a system of differential equations, proposals for Metropolis updates to the more important position variables (which represent the variabls of interest). The differential equation solutions estimate trajectories of the hypothetical physical object, which will then occupy a new position after some chosen time step. This crafty formulation enables distant, yet high probability, proposals for the variables of interest. Note that this contrasts favorably, in terms of mixing, to the random walk proposal generation process commonly used for Metropolis updates.
 
-\subsubsection*{Hamilton Equations for MCMC}
+\subsubsection{Hamilton Equations for MCMC} % =================
 
 Let $q(t)$ be a d-dimensional ($d$ parameters of interest) position vector that is a function of time $t$; and $U(q(t))$ represent the potential energy at time $t$. Let $p(t)$ give the d-dimensional momentum at time $t$, and $K(p(t))$ represent kinetic energy at time $t$. Then the Hamilton equation,
 \begin{equation}
@@ -320,7 +316,7 @@ Substituting in Hamilton's equation (5) and simplifying gives
 \end{align}
 The solutions to these two differential equations, that is $q(t)$ and p(t) such that (8) and (9) hold, give the instantaneous rate of change of position and momentum at time t. 
 
-\subsection*{MCMC Using Hamiltonian Dynamics \citep{Neal2011}}
+\subsubsection{MCMC Using Hamiltonian Dynamics \citep{Neal2011}} % =================
 Steps.
 
 \begin{itemize}
@@ -338,14 +334,14 @@ Steps.
 \end{itemize}
 
 
-\subsubsection{Optimizing in Stan}
+\subsubsection{Optimizing in Stan} % =================
 `Big n' computational burdens can also be mitigated somewhat, by certain program specific coding techniques. These techniques, as well as other techniques aimed to encourage model convergence, bolstered our modelling efforts. We highlight some such techniques for Stan here, and include the complete .stan script in Appendix A for reference. 
 
-\subsubsection*{Bayesian Motivated Techniques}
+\subsubsection{Bayesian Motivated Techniques} % =================
 
 Stan allows a user to omit prior distributions for parameters, but interprets non-inclusion as a non-informative, uniform prior. However, \cite{Gelman}, the first Stan developer, pointed out in correspondence that the exponential covariance length-scale parameter, $\phi$ in equation (3), requires an informative prior for model identifiability (CITATION?). \cite{Trangucci} recommended, in particular, a sharp tailed prior distribution for the length-scale parameter, such as the normal or log-normal, to act as soft upper and lower bound constraints\footnote{``Without stronger priors on l, GP can act as a second constant term in your regression for large draws of length-scale and large draws of alpha.''}. Even further, for practical computing time and convergence considerations, \cite{Trangucci} said complex models such as spatial hierarchical models require proper priors for all $\beta$ coefficients. Using the intial GLM estimates to inform coefficient prior distributions had exactly the intended effects.
 
-\subsubsection*{Computational and Linear Algebra Motivated Techniques}
+\subsubsection{Computational and Linear Algebra Motivated Techniques} % =================
 For speed and efficiency, the Stan Users Manual recommends pure matrix algebra and vectors, over `for loops' and scalars \cite{StantheMAN}. For example, 
 \begin{verbatim}
 hit ~ bernoulli_logit(X*beta + Z)
@@ -393,10 +389,12 @@ hit ~ bernoulli_logit(Q*theta + Z_mod);
 \end{verbatim}
 The first line performs a Cholesky decomposition on the covariance matrix \verb|Sigma|. A Cholesky decomposition factors symmetric matrix \verb|Sigma| such that $\Sigma = \text{\pmb{LL}}'$. The second, ``vectorized scalar'' line generates $n$ standard normal random variables, by reusing \verb|normal(0, 1)| for every element of \verb|Z|. These two lines remove the dependence of random vector \pmb{Z}, which must be generated, on unknown parameters to be estimated \cite{Trangucci2017}. The third line transforms \verb|Z| to have the desired distribution. Note that $\text{Var}(\text{\pmb{LZ}}) = \text{\pmb{L}} \text{I}_{n}\text{\pmb{L}}' = \Sigma$, so that $\pmb{LZ} \sim N(\pmb{0}, \Sigma)$ as desired.
 
+\subsection{Method 2 - Predictive Process Models in spBayes} % =================
 
+\subsection{Method 3 - INLA and SPDEs} % =================
 
 \appendix
-\section{Stan Code for Hamiltonian MCMC}
+\section{Stan Code for Hamiltonian MCMC} % =================
 \begin{verbatim}
 data {                             
   int<lower=0> N;                 // N observations
@@ -450,7 +448,9 @@ model {
 }
 \end{verbatim}
 
+\section{R Code, spBayes for Predictive Process Models} % =================
 
+\section{R Code, R-INLA for INLA}
 \bibliography{Baseball}
 
 \end{document}
