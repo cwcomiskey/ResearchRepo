@@ -257,7 +257,7 @@ Inserting $\pmb{w}(\pmb{s})$ to the linear predictor in (1) gives the following 
 \text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + w_{ij}.
 \end{equation}
 
-This spatial hierarchical model, with its latent Gaussian random field, gives $p_{ij}$ a complicated correlation structure. Bayesian statistical methodologies, primarily Markov chain Monte Carlo (MCMC) methods, are very popular for fitting spatial models of this kind \citep{Banerjee2014}. In fact, MCMC is one of the few practical approaches available to fit a `big n' model with complex spatial correlation. This is because of the `big n problem' \citep{Lindgren2011}. Namely, the computational costs for SPGLMMs increase at a rate of $\mathcal{O}(n^{3})$ (REFERENCE). This rate of increase leads to prohibitively slow model fitting. To attempt to fit SPGLMMs in practical time spans, we try: 
+This spatial hierarchical model, with its latent Gaussian random field, gives $p_{ij}$ a complicated correlation structure. Bayesian statistical methodologies, primarily Markov chain Monte Carlo (MCMC) methods, are very popular for fitting spatial models of this kind \citep{Banerjee2014}. In fact, MCMC is one of the few practical approaches available to fit a `big n' model with complex spatial correlation. This is because of the `big n problem' \citep{Lindgren2011}. Namely, the computational costs for SPGLMMs increase at a rate of $\mathcal{O}(n^{3})$ (REFERENCE). This rate of increase leads to prohibitively slow model fitting. To attempt to fit SPGLMMs in practically useful time spans, we try: 
 
 To estimate model parameters for (4) we tried:
 \begin{enumerate}
@@ -407,29 +407,32 @@ $$ r \propto \frac{f(\pmb{Y}|\pmb{\theta}_{i})f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}
 
 \section{Method 2 - Predictive Process Models in spBayes} % =========
 
-Predictive process models provide a method for attempting to overcome the ``big N problem'' in the case of Bayesian hierarchical models with latent Gaussian random effects. Numerous methods exist, for example \citep{Cressie2008}, (CITE OTHERS), but predictive process models provide a competitive modeling approach with computational advantages for hierarchical models with a Gaussian random field (GRF) at the second level of specification \citep{Banerjee2008}. Latent GRFs prove challenging because they are only implicityly observed, through a binomial response in our case. This means their parameters, known as hyperparameters, are explicitly specified at the third level of the hierarchical model. ``Gaussian Predictive Process Models for Large Spatial Data Sets'' provides the blueprint for the procedure, which achieves dimension reduction by projecting the original process onto a lower dimensioned subspace \citep{Banerjee2008}. In particular, it does so at a chosen locations called knots. Consider again the SPGLMM,
-\begin{equation}
-\text{logit}(p_{ij}|s_{ij}) = \pmb{X}_{ij}(s_{ij}) \pmb{\beta}_{j} + w(s_{ij}).
-\end{equation}
-To facilitate explanation, let $s_{ij}$ denote location $ij$, keeping in mind that $s_{ij}$ is still a two-dimensioned vector. Therefore, let $\pmb{s}$ denote the $n \times 1$ vector of all locations where we observed a $Y_{ij}$. Then we have a Gaussian random field,
-$$\pmb{w}(\pmb{s}) | \pmb{\theta} \sim GRF(\pmb{0}, \pmb{C}(\pmb{\theta})), $$ 
-where \pmb{0} is an $n \times 1$ zero vector, and $\pmb{C}(\pmb{\theta})$ is an $n \times n$, symmetric, positive-definite covariance matrix with covariance parameters $\pmb{\theta}$. Element $(a,b)$ of $\pmb{C}(\pmb{\theta})$ gives the covariance of random effects at locations $s_{a}$ and $s_{b}$, denoted $C(s_{a}, s_{b})$. 
+Predictive process models provide a method for attempting to overcome the ``big N problem'' in the case of Bayesian hierarchical models with latent Gaussian random effects. Numerous methods exist, for example \citep{Cressie2008}, (CITE OTHERS), but predictive process models provide a competitive modeling approach with computational advantages for hierarchical models with a Gaussian random field (GRF) at the second level of specification \citep{Banerjee2008}. Latent GRFs prove challenging because they are only implicitly observed, through a binomial response in our case. This means their parameters, known as hyperparameters, are explicitly specified at the third level of the hierarchical model. ``Gaussian Predictive Process Models for Large Spatial Data Sets'' provides the blueprint for the procedure, which achieves dimension reduction by projecting the original process onto a lower dimensioned subspace \citep{Banerjee2008}. In particular, it does so at a chosen locations called knots. 
 
-Let $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ be a set of locations, not necessarily a subset of observed locations, chosen as knots. 
+\subsection{PPM Procedure}
+
+Consider again the SPGLMM (5), and Gaussian random field $\pmb{w}(\pmb{s})$.
+\begin{align}
+\text{logit}(p_{ij}|s_{ij}) &= \pmb{X}_{ij}(s_{ij}) \pmb{\beta}_{j} + w(\pmb{s}_{ij}) \\
+\pmb{w}(\pmb{s}) | \pmb{\theta} &\sim \text{GRF}(\pmb{0}, \pmb{C}(\pmb{\theta}))
+\end{align}
+
+Equation (20) is defined as in (5), and $n \times 1$ vector of random effects $\pmb{w}$ at locations $\pmb{s}$, conditioned on covariance parameters $\pmb{\theta}$, constitutes a GRF.\footnote{Where possible we adopt the PPM notation of \citep{Banerjee2008}}  Let $n \times 1$ zero vector $\pmb{0}$ be the stationary GRF mean, with $n \times n$, symmetric, positive-definite covariance matrix $\pmb{C}(\pmb{\theta})$. Let $C(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})$ denote the covariance of random effects at locations $\pmb{s}_{i}$ and $\pmb{s}_{j}$ so that $C(\pmb{\theta}) = [C(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})]_{i,j=1}^{n}$.
+
+Let $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ be a set of $m$ chosen knot locations, which may or may not be a subset of observed locations. We denote knot location random effects with $m \times 1$ vector $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m}$, and their $m \times m$ covariance matrix and elements as $\pmb{C}^{*}(\pmb{\theta}) = \left[C(\pmb{s}_{i}^{*}, \pmb{s}_{j}^{*})\right]_{i,j = 1}^{m}$. The knot structure implies a distinct $m$-dimensional GRF, where $m < n$:
+\begin{equation}
+\pmb{w}^{*}|\pmb{\theta} \sim \text{GRF}\{\pmb{0}, \pmb{C}^{*}(\pmb{\theta})\}
+\end{equation}
+The predictive process modelling procedure uses the $m$ selected knots, the covariance structure of the parent process, and kriging \footnote{See Appendix ?? for kriging details.} to interpolate $w$ at site $\pmb{s}_{0}$. Call this interpolated random effect $\tilde{w}(\pmb{s}_{0})$ and define it as:
+\begin{equation}
+\tilde{w}(\pmb{s}_{0}) = E[w(\pmb{s}_{0})|\pmb{w}^{*}]= \pmb{c}^{T}(\pmb{s}_{0};\pmb{\theta}) \cdot \pmb{C}^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*}
+\end{equation}
+
+
 
 \begin{enumerate}
-\item $C(\pmb{\theta}) = [C(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})]_{i,j=1}^{n}$
 
-\item $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ (knots)
-\item $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m}$ (random effect at knots)
-\item $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m} \sim \text{MVN}\{\pmb{0}, \pmb{C}^{*}(\pmb{\theta})\}$
-            \begin{itemize}
-            \item $\pmb{C}^{*}(\pmb{\theta}) = \left[C(\pmb{s}_{i}^{*}, \pmb{s}_{j}^{*})\right]_{i,j = 1}^{m}$ (Covariance of knots with themselves; $m \times m$)
-            \end{itemize}
-\item $\tilde{w}(\pmb{s}_{0}) = E[w(\pmb{s}_{0})|\pmb{w}^{*}]= \pmb{c}^{T}(\pmb{s}_{0};\pmb{\theta}) \cdot \pmb{C}^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*}$
-            \begin{itemize}
             \item $\pmb{c}(\pmb{s}_{0};\pmb{\theta}) = \left[C(\pmb{s}_{0}, \pmb{s}_{j}^{*}; \pmb{\theta})\right]_{j = 1}^{m}$ (covariance of $\pmb{s}_{0}$ with knots; $m \times 1$ vector)
-            \end{itemize}
 \item $\tilde{w}(\pmb{s}) \sim \text{GP}\{0, \tilde{C}(\cdot)\}$
               \begin{itemize}
               \item $\tilde{w}(\pmb{s})$ is predictive process
@@ -505,6 +508,49 @@ model {
 \section{R Code, spBayes for Predictive Process Models} % =================
 
 \section{R Code, R-INLA for INLA}
+% To facilitate explanation, let location $ij$ vector $\pmb{s}_{ij}$ now be denoted $s_{ij}$, keeping in mind that $s_{ij}$ is still a two-dimensioned vector. Instead, let $\pmb{s}$ denote the $n \times 1$ vector of all locations where we observed a $Y_{ij}$. 
+
+\section{Kriging}
+
+From: ``Statistical Methods for Spatial Data Analysis'' \citep{Schabenberger2004}
+
+The mean is known---Simple Kriging
+\begin{enumerate}
+\item Spatial data: $\mathbf{Z(s)} = [Z(s_{1}), Z(s_{2}),\hdots, Z(s_{n})]'$
+
+\item Assume: $\mathbf{Z(s) = \mu(s) + e(s)}$, $\mathbf{e(s) \sim (0, \Sigma)}$, where $\mathbf{0, \Sigma}$ known.
+
+\item Goal: find predictor $p(\mathbf{Z};s_{0})$, of $Z(s_{0})$, that minimizes $E\left[ \left(p(\mathbf{Z};s_{0}) - Z(s_{0}) \right)^{2}\right]$ 
+
+\item Consider only linear predictors of the form: $p(\mathbf{Z};s_{0}) = \lambda_{0} + \mathbf{\lambda 'Z(s)}$
+
+\item Expand, simplify, set derivative equal to zero.
+
+\item Note: Var$[Z(s_{0})] = \sigma^{2}$, and $\mathbf{\vec{\sigma} =}$Cov$[\mathbf{Z(s)},Z(s_{0})]$.
+
+\item $\mathbf{\vec{\sigma} =}$Cov$[\mathbf{Z(s)},Z(s_{0})]$
+
+\item Estimators for unknown $\mathbf{\lambda}s$:
+$$ \lambda_{0} = \mu(s_{0}) - \mathbf{\lambda'\mu(s)} $$
+$$ \mathbf{\lambda = \Sigma^{-1}\vec{\sigma}} $$
+
+\item Optimal predictor: \\ 
+$p(\mathbf{Z};s_{0}) = \mu(s_{0}) - \mathbf{\lambda'\mu(s)} + \mathbf{\lambda}'\mathbf{Z(s)} \\
+p(\mathbf{Z};s_{0}) = \mu(s_{0}) - (\mathbf{\Sigma^{-1}\vec{\sigma}})'\mathbf{\mu(s)} + (\mathbf{\Sigma^{-1}\vec{\sigma}})'\mathbf{Z(s)} \\
+p(\mathbf{Z};s_{0}) = \mu(s_{0}) + \mathbf{ \vec{\sigma}'\Sigma^{-1}(Z(s) - \mu(s)) }$
+
+\item Pay special attention to: $\mathbf{ \vec{\sigma}'\Sigma^{-1}Z(s)}$
+  \begin{itemize}
+  \item Recall: $\mathbf{\vec{\sigma} =}$Cov$[\mathbf{Z(s)},Z(s_{0})]$
+  \item Data: $\mathbf{Z(s)} = [Z(s_{1}), Z(s_{2}),\hdots, Z(s_{n})]'$
+  \item Random effect: $\mathbf{e(s) \sim (0, \Sigma)}$
+  \end{itemize}
+
+\item Look familiar?
+
+\item {\bf Best} predictor under squared error loss {\it if } $\mathbf{Z(s)}$ is GRF .
+\end{enumerate}
+
 \bibliography{Baseball}
 
 \end{document}
