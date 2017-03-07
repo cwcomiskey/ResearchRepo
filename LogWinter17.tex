@@ -787,8 +787,8 @@ phi      0.4318 0.2886 0.0014905       0.032011
 \subsection*{``Hierarchical spatial models for predicting tree species assemblages across large domains''\citep{Finley2009_2}; multinomial}
 \begin{itemize}
 \item ``While most of the models we formulate can possibly be estimated using maximum likelihood or variants thereof, we adopt a Bayesian approach [e.g., Gelfand et al. (2003)]. This is attractive, as it offers exact inference for the random spatial coefficients, and that too with non-Gaussian data, by delivering an entire posterior distribution at both observed and unobserved locations. Spatial interpolation for processes that are neither observed nor arise as residuals appears inaccessible with classical likelihood-based methods. On the other hand, Bayesian model fitting involves rather specialized Markov chain Monte Carlo (MCMC) methods [see, e.g., Robert and Casella (2005)] that raise concerns about computational expense and reproducibility of inference. These concerns have, however, started to wane with the delivery of relatively simpler R packages (www.r-project.org), including mcmc, MCMCpack, geoRglm and spBayes, that help automate such methods and diagnose convergence.''
-\item ``While our primary contribution here lies in the novel application, we also offer several methodological advancements.''
-\item ``Three MCMC chains of 75,000 iterations were run for each model. Then posterior inference was based on 3 × 50,000 = 150,000 post burn-in samples.''
+\item ``While our {\bf primary contribution here lies in the novel application}, we also offer several methodological advancements.''
+\item ``Three MCMC chains of 75,000 iterations were run for each model. Then posterior inference was based on 3 $\times$ 50,000 = 150,000 post burn-in samples.''
 \item Justifications (pg 7) for PPMs over other methods, for dealing with large spatial datasets: (i) adapts easily to multivariate processes, (ii) spatial interpolation convenient, (iii) non-Gaussian, (iv) Flexible, multi-parameter with several hyperparameters (over INLA, Integrated Nested Laplace Approximations)
 \item ``With irregular locations, however, we may encounter substantial areas of sparse observations where placing would amount to “wastage,” possibly leading to inflated variance estimates and slower convergence. More practical space-covering designs [e.g., Royle and Nychka (1998)] can yield a representative collection of knots that better cover the domain.''
     \begin{itemize}
@@ -908,20 +908,10 @@ phi      0.4318 0.2886 0.0014905       0.032011
 \item Convergence diagnostics, CODA package
 \item ``With only 36 knots the distance between adjacent knots (40 km) seemed to exceed the effective spatial ranges that were supported by the data and led to unreliable convergence of process parameters.''
 \item ``Our examples in Section 5.1 showed that even with fairly complex underlying spatial structures the predictive process model could effectively capture most of the spatial parameters with 529 knots (irrespectively of whether the total number of locations was 3000 or 15000).
-\item ``In fact, the predictive process approach within a full MCMC implementation is perhaps limited to the order of 104 observations on modest single-processor machines.''
+\item ``In fact, the predictive process approach within a full MCMC implementation is perhaps limited to the order of $10^{4}$ observations on modest single-processor machines.''
 \end{itemize}
 
 \section*{20 February 2017}
-
-
-
-
-\subsection*{An explicit link between Gaussian fields and Gaussian Markov random fields: the stochastic partial differential equation approach \citep{Lindgren2011}}
-\begin{itemize}
-\item ``A GMRF is a discretely indexed Gaussian field x, where the full conditionals'' depend only on a small set of symmetric neighbor relationships, which yields sparse matrices that lend themselves to approximations---INLA
-\item The GMRF ``computational gain comes from the fact that the zero pattern of the precision matrix Q (the inverse covariance matrix) relates directly to the notion of neighbours...''
-\item Matrix {\bf Q: the inverse covariance matrix}
-\end{itemize}
 
 \subsection*{Debashis meeting}
 \begin{itemize}
@@ -953,16 +943,15 @@ $$f(x) = \mathcal{O}(g(x)) \text{ as } x \rightarrow \inf \text{ iff } \exists M
 \item Gaussian Markov Random Field 
   \begin{itemize}
   \item $\pmb{x} = \{ x_{i}:i \in \mathscr{V} \}$
-  \item ``$\pmb{x}$ is a $n = |\mathscr{V}|$-dimensional with additional conditional independence/Markov properties'' 
+  \item ``$\pmb{x}$ is a $n = |\mathscr{V}|$-dimensional Gaussian random vector with additional conditional independence/Markov properties'' 
   \item $\mathscr{V} = \{1,\dots,n\}$
   \item Graph $\mathscr{G} = \{ \mathscr{V}, \mathscr{E} \}$, with vertices, edges.
   \item ``Two nodes, $x_{i}$ and $x_{j}$ are conditionally independent given the remaining elements of $\pmb{x}$, if and only if $\{i, j\} \notin \mathscr{E}$.
   \item ``Then $\pmb{x}$ is a GMRF with respect to $\mathscr{G}$.''
-  \item ``The 
+  \item ``The edges in $\mathscr{E}$ are in one-to-one correspondence with the non-zero elements of the precision matrix of $\pmb{x}$, $\pmb{Q}$, in the sense that $\{ i, j \} \in \mathscr{E}$ if and only if $Q_{ij} \neq 0 \text{ for } i \neq j$.''
+  \item ``When $\{i,j\} \in \mathscr{E}$ we say that $i$ and $j$ are neighbours, which we denote $i \sim j$.''
   \end{itemize}
   
-  
-
 \item Nice destription of hierarchical model architecture... ``One of the main areas of application for GMRFs is that of (Bayesian) hierarchical models. A hierarchical model is characterised by {\bf several stages} of observables and parameters. The {\bf first stage}, typically, consists of distributional assumptions for the observables conditionally on latent parameters. For example if we observe a time series of counts y, we may assume, for $y_{i}$, $i \in D \subset R^{?}$ a Poisson distribution with unknown mean  $\lambda_{i}$. Given the parameters of the observation model, we often assume the observations to be conditionally independent. The {\bf second stage} consists of a prior model for the latent parameters $\lambda_{i}$ or, more often, for a particular function of them. For example, in the Poisson case we can choose an exponential link and model the random variables $x_{i} = log(\lambda_{i})$. At this stage {\bf GMRFs provide a flexible tool to model the dependence} between the latent parameters and thus, implicitly, the dependence between the observed data. This dependence can be of various kind, such as temporal, spatial, or even spatiotemporal. The {\bf third stage} consists of prior distributions for the unknown hyperparameters  . These are typically precision parameters in the GMRF.''
 \item ``We propose a deterministic alternative to MCMC based inference... computed almost instant[ly]... proves to be quite accurate.''
 \item Oops. {\bf Gaussian Markov Random Field $\neq$ Gaussian Random Field}; \\
@@ -972,31 +961,67 @@ GMRF has different properties; think graph theory edges, and non-edge-connected 
 \subsection*{Miscellaneous}
 \begin{itemize}
 \item Covariance tapering? $d < d_{0} \rightarrow d = 0$, then what?
+\item {\bf range parameter: the Euclidean distance where $x(s_{0})$ and $x(s_{1})$ are almost independent.} \citep{Lindgren2011}
 \end{itemize}
 
+\section*{Meeting}
+\begin{itemize}
+\item I {\bf CAN} make {\bf half} of my talk ``Lessons Learned''!!
+\item ``Lessons Learned'' 
+  \begin{itemize}
+  \item Zero-th problem (Journal club)
+  \item JSM talk, already published -- do a lit review!
+  \item Write and show
+  \item ``Secrets of Research Success'' -Hugh Kearns
+  \item Koutsoyiannis
+  \item Richard Feynman
+  \item ``Thinking, Fast and Slow''
+  \item ``Set a pace you can keep.''
+  \end{itemize}
+\item INLA
+\item ``You're ready to be done.'' -Alix, as in ``You have gained the research skills you need to go out there and be successful.''
+\item ``This is great! You're coming in here telling {\bf  me} what your dissertation is!''
+\item My plan for chapters is legit.
+\item Talked about family, job search, research, seminar talk, Chris Wolf.
+\item
+\end{itemize}
 
+\section*{Week of March 6, 2017}
+
+\subsection*{An explicit link between Gaussian fields and Gaussian Markov random fields: the stochastic partial differential equation approach \citep{Lindgren2011}}
+\begin{itemize}
+\item ``A GMRF is a discretely indexed Gaussian field x, where the full conditionals'' depend only on a small set of symmetric neighbor relationships, which yields sparse matrices that lend themselves to approximations---INLA
+\item The GMRF ``computational gain comes from the fact that the zero pattern of the precision matrix Q (the inverse covariance matrix) relates directly to the notion of neighbours...''
+\item Matrix {\bf Q: the inverse covariance matrix}
+\item ``The result is a basis function representation with piecewise linear basis functions, and Gaussian weights with Markov dependencies determined by a general triangulation of the domain.'' \citep{Lindgren2011}
+  \begin{itemize}
+  \item Recall ``basis'' from linear algebra, where a set of linearly independent vectors span a space
+  \item function space - space of {\it functions}
+  \item basis functions - a set of functions from which can build any function in the function space
+  \end{itemize}
+\end{itemize}
+
+\subsection*{Bayesian Spatial Modelling with R-INLA \citep{Lindgren2015}}
+\begin{itemize}
+\item ``...as discussed in Lindgren et al. (2011), one can express a large class of random field models as solutions to continuous domain stochastic partial differential equations (SPDEs), and write down explicit links between the parameters of each SPDE and the elements of precision matrices for weights in a discrete basis function representation.''
+\end{itemize}
 
 \subsection*{As of Now}
 \begin{itemize}
-\item INLA INLA INLA
-  \begin{itemize}
-  \item How do INLA models work?  
-  \item How do \verb|inla.models()| work? 
-  \item How does \verb|f()| in model statement work?
-  \item How do I specificy Exponential within \verb|matern2d|?
-  \item Which parameter is which, in the Matern covariance function, and in \verb|matern2d|?
-  \end{itemize}
 \item Keep writing
+\item MOOCs - C++, Machine Learning, Python, , GitHub
+\item INLA and SPDEs; R-INLA is not easy
+  \begin{itemize}
+  \item ``The result is a basis function representation with piecewise linear basis functions, and Gaussian weights with Markov dependencies determined by a general triangulation of the domain.'' \citep{Lindgren2011}
+  \end{itemize}
+\item Lay ``not until summer/fall'' groundwork?
 \item 
-\item Scoring rules - model evaluation/comparison
-\item Spatial design analysis - knot selection
-\item Convergence diagnostics
-\item Keep Git-ing (?)
+\item Scoring rules - model evaluation/comparison (two papers)
+\item Spatial design analysis - knot selection (two papers)
+\item Convergence diagnostics (CODA package, Finley paper)
 \end{itemize}
 
 % \bibliographystyle{plainnat}
 \bibliography{Baseball}
-
-
 
 \end{document}
