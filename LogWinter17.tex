@@ -1004,16 +1004,64 @@ GMRF has different properties; think graph theory edges, and non-edge-connected 
 \subsection*{Bayesian Spatial Modelling with R-INLA \citep{Lindgren2015}}
 \begin{itemize}
 \item ``...as discussed in Lindgren et al. (2011), one can express a large class of random field models as solutions to continuous domain stochastic partial differential equations (SPDEs), and write down explicit links between the parameters of each SPDE and the elements of precision matrices for weights in a discrete basis function representation.''
+\item ``As discussed in the introduction, {\bf an alternative to traditional covariance based modelling is to use SPDEs}, but carry out the practical computations using Gaussian Markov random field (GMRF) representations. This is done by approximating the full set of spatial random functions with weighted sums of simple basis functions, which allows us to hold on to the continuous interpretation of space, while the {\bf computational algorithms} only see discrete structures with Markov properties. Beyond the main paper Lindgren et al. (2011), this is further discussed by Simpson, Lindgren, and Rue (2012a,b).''
+\item ``The simplest model for (spatial field) $x(\pmb{s})$ currently implemented in R-INLA is the SPDE/GMRF version of the stationary Matern family, obtained as the stationary solutions to
+$$ (\kappa^{2} - \Delta)^{\alpha/2}(\tau x(\pmb{s})) = \mathcal{W}(\pmb{s})\text{, } \pmb{s} \in \Omega $$ where
+    \begin{itemize}
+    \item $\Delta$ is the Laplacian
+    \item $\kappa$ is the spatial scale parameter
+    \item $\alpha$ controls the smoothness of the realisations
+    \item $\tau$ controls the variance
+    \item $\Omega$ is the spatial domain
+    \item $\mathcal{W}(\pmb{s})$ is a Gaussian spatial white noise process
+    \end{itemize}
+Whittle (1954, 1963) shows stationary solutions on $\mathbb{R}^{d}$ have Matern covariances,
+$$\text{COV}(x(\pmb{0}), x(\pmb{s})) = \frac{\sigma^{2}}{2^{\nu - 1}\Gamma(\nu)}(\kappa||s||)^{\nu}K_{\nu}(\kappa||s||)$$
+The parameters in the two formulations are coupled so that the Matern smoothness is $\nu = \alpha - d/2$ and marginal variance is
+$$\sigma^{2} = \frac{\Gamma(\nu)}{\Gamma(\alpha)(4\pi)^{d/2}\kappa^{2\nu}\tau^{2}}$$
+Exponential covariance: $\nu = 1/2$; (i) for $d = 1 \rightarrow  \alpha = 1$, (ii) for $d = 2 \rightarrow \alpha = 3/2$'' (all from \citep{Lindgren2015})
+\item ``The models discussed in \cite{Lindgren2011} and implemented in R-INLA are built on a basis representation
+$$ x(\pmb{s}) = \sum_{k=1}^{n} \psi_{k}(\pmb{s})x_{k}$$
+where
+      \begin{itemize}
+      \item $\psi_{k}(\cdot)$ are deterministic basis functions, and
+      \item the joint distribution of the weight vector $\pmb{x} = \{x_{1},\dots,x_{n}\}$ is chosen so that the distribution of the functions $x(\pmb{s})$ approximates the distribution of solutions to the SPDE on the domain.''
+      \item piecewise polynomial basis functions
+      \item use Finite Element Method - project the SPDE onto the basis representation 
+      \end{itemize}
+
+\end{itemize}
+
+\subsection*{Progress}
+I got \verb|inla(...)| to run!!
+\begin{verbatim}
+n=100
+a=1
+b=1
+z = rnorm(n)
+eta = a + b*z
+Ntrials = sample(c(1,5,10,15), size=n, replace=TRUE) 
+prob = exp(eta)/(1 + exp(eta))
+y = rbinom(n, size=Ntrials, prob = prob)
+data = list(y=y,z=z, obs = 1:n)
+# models <- inla.models()$latent
+# names(models)
+formula = y ~ 1 + z + f(obs, model = "matern2d", nrow = 10, ncol = 10)
+result = inla(formula, family = "binomial", data = data, Ntrials=Ntrials, verbose = FALSE)
+summary(result)
+\end{verbatim}
+Now...
+\begin{itemize}
+\item Generate data with latent GRF with Matern covariance, fit model, understand how it is working, if it is working.
+\item YES!!
 \end{itemize}
 
 \subsection*{As of Now}
 \begin{itemize}
-\item Keep writing
-\item MOOCs - C++, Machine Learning, Python, , GitHub
-\item INLA and SPDEs; R-INLA is not easy
-  \begin{itemize}
-  \item ``The result is a basis function representation with piecewise linear basis functions, and Gaussian weights with Markov dependencies determined by a general triangulation of the domain.'' \citep{Lindgren2011}
-  \end{itemize}
+\item Apply to box store jobs
+\item Finally sort of caught up with writing. Now what? Start/continue filling in gaps? Or focus on INLA?
+\item MOOCs - C++, Machine Learning, Python, GitHub
+\item INLA and R-INLA 
 \item Lay ``not until summer/fall'' groundwork?
 \item 
 \item Scoring rules - model evaluation/comparison (two papers)
