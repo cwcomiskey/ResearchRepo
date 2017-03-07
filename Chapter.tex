@@ -242,7 +242,7 @@ A Gaussian random field is a popular and practical distribution for spatial rand
 \pmb{w} | \pmb{\theta} \sim MVN(\pmb{0}, \Sigma(\pmb{\theta})) 
 \end{equation}
 
-Including a random effect defined in this way, with a valid covariance matrix, would retool (2) as a {\it spatial} generlatized linear {\it mixed} model (SPGLMM). Next we define the covariance structure we use in this study.
+Including a random effect defined in this way, with a valid covariance matrix, would retool (2) as a {\it spatial} generlatized linear {\it mixed} model (SGLMM). Next we define the covariance structure we use in this study.
 
 \subsection{Exponential Covariance}
 To add a spatial random effect, distributed as a Gaussian random field, to the linear predictor in (2), it remains to define a spatial correlation structure to $\pmb{w}$. Let $w_{ij}$ be defined as in {\bf 5.1}, with an exponential covariance structure. That is, the i,jth element of $\Sigma(\phi, \sigma^{2})$ is:
@@ -254,10 +254,10 @@ where $||s_{i} - s_{j}||$ is the Euclidean distance between $\pmb{s}_{i}$ and $\
 \subsection{Spatial Generalized Linear Mixed Model}
 Inserting $\pmb{w}(\pmb{s})$ to the linear predictor in (1) gives the following spatial generalized linear mixed model (SGLMM):
 \begin{equation}
-\text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + w_{ij}.
+\text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + w(\pmb{s}_{ij}).
 \end{equation}
 
-This spatial hierarchical model, with its latent Gaussian random field, gives $p_{ij}$ a complicated correlation structure. Bayesian statistical methodologies, primarily Markov chain Monte Carlo (MCMC) methods, are very popular for fitting spatial models of this kind \citep{Banerjee2014}. In fact, MCMC is one of the few practical approaches available to fit a `big n' model with complex spatial correlation. This is because of the `big n problem' \citep{Lindgren2011}. Namely, the computational costs for SPGLMMs increase at a rate of $\mathcal{O}(n^{3})$ (REFERENCE). This rate of increase leads to prohibitively slow model fitting. To attempt to fit SPGLMMs in practically useful time spans, we try: 
+This spatial hierarchical model, with its latent Gaussian random field, gives $p_{ij}$ a complicated correlation structure. Bayesian statistical methodologies, primarily Markov chain Monte Carlo (MCMC) methods, are very popular for fitting spatial models of this kind \citep{Banerjee2014}. In fact, MCMC is one of the few practical approaches available to fit a `big n' model with complex spatial correlation. This is because of the `big n problem' \citep{Lindgren2011}. Namely, the computational costs for SGLMMs increase at a rate of $\mathcal{O}(n^{3})$ (REFERENCE). This rate of increase leads to prohibitively slow model fitting. To attempt to fit SGLMMs in practically useful time spans, we try: 
 
 To estimate model parameters for (4) we tried:
 \begin{enumerate}
@@ -407,48 +407,49 @@ $$ r \propto \frac{f(\pmb{Y}|\pmb{\theta}_{i})f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}
 
 \section{Method 2 - Predictive Process Models in spBayes} % =========
 
-Predictive process models provide a method for attempting to overcome the ``big N problem'' in the case of Bayesian hierarchical models with latent Gaussian random effects. Numerous methods exist, for example \citep{Cressie2008}, (CITE OTHERS), but predictive process models provide a competitive modeling approach with computational advantages for hierarchical models with a Gaussian random field (GRF) at the second level of specification \citep{Banerjee2008}. Latent GRFs prove challenging because they are only implicitly observed, through a binomial response in our case. This means their parameters, known as hyperparameters, are explicitly specified at the third level of the hierarchical model. ``Gaussian Predictive Process Models for Large Spatial Data Sets'' provides the blueprint for the procedure, which achieves dimension reduction by projecting the original process onto a lower dimensioned subspace \citep{Banerjee2008}. In particular, it does so at a chosen locations called knots. 
+Predictive process models (PPMs) provide a method for attempting to circumvent the ``big N problem'' in the case of Bayesian hierarchical models with latent Gaussian random effects. Numerous methods exist, for example \citep{Cressie2008}, (CITE OTHERS), but predictive process models provide a competitive modeling approach with computational advantages for hierarchical models with a Gaussian random field (GRF) at the second level of specification \citep{Banerjee2008}. Latent GRFs prove challenging because they are only implicitly observed, through a binomial response in our case. This means the GRF parameters (hyperparameters) and their prior distributions comprise the third level of the hierarchical model. Gaussian PPMs achieve dimension reduction by projecting the original process onto a lower dimensioned subspace, at a set of locations called knots \citep{Banerjee2008}. 
 
 \subsection{PPM Procedure}
 
-Consider again the SPGLMM (5), and Gaussian random field $\pmb{w}(\pmb{s})$.
+Consider again the SGLMM (5), and Gaussian random field $\pmb{w}(\pmb{s})$.
 \begin{align}
-\text{logit}(p_{ij}|s_{ij}) &= \pmb{X}_{ij}(s_{ij}) \pmb{\beta}_{j} + w(\pmb{s}_{ij}) \\
+\text{logit}(p_{ij}|\pmb{s}_{ij}) &= \pmb{X}_{ij}(s_{ij}) \pmb{\beta}_{j} + w(\pmb{s}_{ij}) \\
 \pmb{w}(\pmb{s}) | \pmb{\theta} &\sim \text{GRF}(\pmb{0}, \pmb{C}(\pmb{\theta}))
 \end{align}
 
-Equation (20) is defined as in (5), and $n \times 1$ vector of random effects $\pmb{w}$ at locations $\pmb{s}$, conditioned on covariance parameters $\pmb{\theta}$, constitutes a GRF.\footnote{Where possible we adopt the PPM notation of \citep{Banerjee2008}}  Let $n \times 1$ zero vector $\pmb{0}$ be the stationary GRF mean, with $n \times n$, symmetric, positive-definite covariance matrix $\pmb{C}(\pmb{\theta})$. Let $C(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})$ denote the covariance of random effects at locations $\pmb{s}_{i}$ and $\pmb{s}_{j}$ so that $C(\pmb{\theta}) = [C(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})]_{i,j=1}^{n}$.
+Define (20) as in (5), and (21) shows $n \times 1$ vector of random effects $\pmb{w}$ at locations $\pmb{s}$, conditioned on covariance parameters $\pmb{\theta}$, constitutes a GRF. Let $n \times 1$ zero vector $\pmb{0}$ be the stationary GRF mean, with $n \times n$, symmetric, positive-definite covariance matrix $\pmb{C}(\pmb{\theta})$. Let $C(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})$ denote the covariance of random effects at locations $\pmb{s}_{i}$ and $\pmb{s}_{j}$, so that $C(\pmb{\theta}) = [C(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})]_{i,j=1}^{n}$.
 
-Let $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ be a set of $m$ chosen knot locations, which may or may not be a subset of observed locations. We denote knot location random effects with $m \times 1$ vector $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m}$, and their $m \times m$ covariance matrix and elements as $\pmb{C}^{*}(\pmb{\theta}) = \left[C(\pmb{s}_{i}^{*}, \pmb{s}_{j}^{*})\right]_{i,j = 1}^{m}$. The knot structure implies a distinct $m$-dimensional GRF, where $m < n$:
+To define the PPM, start with knot locations. Let $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ be a set of $m < n$ chosen knot locations, which may or may not be a subset of observed locations. We denote knot location random effects with $m \times 1$ vector $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m}$, and the $m \times m$ knot covariance matrix and its elements as $\pmb{C}^{*}(\pmb{\theta}) = \left[C(\pmb{s}_{i}^{*}, \pmb{s}_{j}^{*})\right]_{i,j = 1}^{m}$. The knot random effects form a distinct $m$-dimensional GRF.
 \begin{equation}
 \pmb{w}^{*}|\pmb{\theta} \sim \text{GRF}\{\pmb{0}, \pmb{C}^{*}(\pmb{\theta})\}
 \end{equation}
-The predictive process modelling procedure uses the $m$ selected knots, the covariance structure of the parent process, and kriging \footnote{See Appendix ?? for kriging details.} to interpolate $w$ at site $\pmb{s}_{0}$. Call this interpolated random effect $\tilde{w}(\pmb{s}_{0})$ and define it as:
+The predictive process modelling procedure uses the $m$ selected knots, the covariance structure of the parent process, and kriging to interpolate $w$ at site $\pmb{s}_{0}$ \citep{Schabenberger2004}; See Appendix ?? for kriging details. Let $\tilde{w}(\pmb{s}_{0})$ represent this interpolated random effect, and let $\pmb{c}(\pmb{s}_{0};\pmb{\theta}) = \left[C(\pmb{s}_{0}, \pmb{s}_{j}^{*}; \pmb{\theta})\right]_{j = 1}^{m}$ be an $m \times 1$  covariance vector giving the covariance of the $\pmb{s}_{0}$ random effect with the knot random effects.
+\begin{align}
+\tilde{w}(\pmb{s}_{0}) &= E[w(\pmb{s}_{0})|\pmb{w}^{*}] \\ 
+&= \pmb{c}^{T}(\pmb{s}_{0};\pmb{\theta}) \cdot \pmb{C}^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*}
+\end{align}
+For a GRF, the weights of linear combination (24) minimize the squared error loss function among all linear predictors \citep{Schabenberger2004}; and notice that the linear combination varies spatially. Accordingly, predictive process $\tilde{w}(\pmb{s})$ defines another GRF and covariance matrix.
+\begin{align}
+\tilde{\pmb{w}}(\pmb{s}) &\sim \text{GRF}\{0, \tilde{C}(\cdot)\} \\
+\tilde{C}(\pmb{s}, \pmb{s}'; \pmb{\theta}) &= \pmb{c}^{T}(\pmb{s};\pmb{\theta}) \cdot \pmb{C}^{*-1}(\pmb{\theta}) \cdot \pmb{c}(\pmb{s}';\pmb{\theta})
+\end{align}
+To reiterate, $m \times 1$ vector $\pmb{c}(\pmb{s};\pmb{\theta}) = \left[C(\pmb{s}, \pmb{s}_{j}^{*})\right]_{j = 1}^{m}$ gives the covariance of the random effect at $\pmb{s}$ with knot random effects. Finally, the predictive process model:
+
 \begin{equation}
-\tilde{w}(\pmb{s}_{0}) = E[w(\pmb{s}_{0})|\pmb{w}^{*}]= \pmb{c}^{T}(\pmb{s}_{0};\pmb{\theta}) \cdot \pmb{C}^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*}
+\text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + \tilde{w}(\pmb{s})
 \end{equation}
 
 
 
-\begin{enumerate}
 
-            \item $\pmb{c}(\pmb{s}_{0};\pmb{\theta}) = \left[C(\pmb{s}_{0}, \pmb{s}_{j}^{*}; \pmb{\theta})\right]_{j = 1}^{m}$ (covariance of $\pmb{s}_{0}$ with knots; $m \times 1$ vector)
-\item $\tilde{w}(\pmb{s}) \sim \text{GP}\{0, \tilde{C}(\cdot)\}$
-              \begin{itemize}
-              \item $\tilde{w}(\pmb{s})$ is predictive process
-              \item $\tilde{C}(\pmb{s}, \pmb{s}'; \pmb{\theta}) = \pmb{c}^{T}(\pmb{s};\pmb{\theta}) \cdot \pmb{C}^{*-1}(\pmb{\theta}) \cdot \pmb{c}(\pmb{s}';\pmb{\theta})$ ({\bf game changer})
-              \item $\pmb{c}(\pmb{s};\pmb{\theta}) = \left[C(\pmb{s}, \pmb{s}_{j}^{*})\right]_{j = 1}^{m}$ (covariance of $\pmb{s}$ with knots)
-              
-              \end{itemize}
-\item $Y(\pmb{s}) = \pmb{x}^{T}(\pmb{s})\pmb{\beta} + \tilde{w}(\pmb{s}) + \epsilon(\pmb{s})$
-              \begin{itemize}
-              \item {\bf Predictive process model}
-              \item $\tilde{w}(\pmb{s})$ is spatially varying linear transformation of $\pmb{w}$.
-              \end{itemize}
-\end{enumerate}
+\subsection{Improved Predictive Process Models}
+
+
 
 
 \section{Method 3 - INLA and SPDEs} % =================
+
+\subsection{Gaussian Markov Random Fields}
 
 \appendix
 \section{Stan Code for Hamiltonian MCMC} % =================
