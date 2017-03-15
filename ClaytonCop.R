@@ -1,0 +1,6 @@
+install.packages("copula")
+library("copula")
+install.packages("scatterplot3d")
+library("scatterplot3d")
+clayton.cop <- claytonCopula(1, dim = 3)
+cop <- rCopula(1000, clayton.cop)

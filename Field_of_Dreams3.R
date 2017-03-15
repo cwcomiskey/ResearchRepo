@@ -4,7 +4,7 @@ library("dplyr")
 library("reshape2")
 library("rstan")
 
-hitter <- read.csv("~/Desktop/Research/Data/hitter.csv")
+hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
 
 # POLAR GLM =======================================
 
