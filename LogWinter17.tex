@@ -1090,6 +1090,31 @@ $$ Y_{t} = \int_{0}^{t} H_{s} dX_{s} $$
 Integrand and integrator are stochastic processes.
 \end{itemize}
 
+\section*{March 16, 2017}
+* {\bf Smoothness} = differentiability, \# of continuous derivatives (Wikipedia) \\
+
+* {\bf Stochastic calculus} = ``branch of mathematics that operates on stochastic processes. It allows a consistent theory of integration to be defined for integrals of stochastic processes with respect to stochastic processes. It is used to model systems that behave randomly.
+
+The best-known stochastic process to which stochastic calculus is applied is the Wiener process (named in honor of Norbert Wiener), which is used for modeling Brownian motion as described by Louis Bachelier in 1900 and by Albert Einstein in 1905 and other physical diffusion processes in space of particles subject to random forces. Since the 1970s, the Wiener process has been widely applied in financial mathematics and economics to model the evolution in time of stock prices and bond interest rates.
+The main flavours of stochastic calculus are the Ito calculus and its variational relative the Malliavin calculus.'' (Wikipedia) \\
+
+* {\bf Finite element method} - ``a numerical method for solving problems of engineering and mathematical physics... The finite element method formulation of the problem results in a system of algebraic equations. The method yields approximate values of the unknowns at discrete number of points over the domain.[1] To solve the problem, it subdivides a large problem into smaller, simpler parts that are called finite elements. The simple equations that model these finite elements are then assembled into a larger system of equations that models the entire problem. FEM then uses variational methods from the calculus of variations to approximate a solution by minimizing an associated error function.'' (Wikipedia) \\
+
+\section*{MEETING}
+* Graduate this summer. Pay for three credits out of pocket. \\
+* Need to email committee, see when members are available. \\
+* Need to investigate the term options, see which term I will enroll for. \\
+* Need to procure insurance for the summer. \\
+     - Need to talk to insurance office about this \\
+* April 24 Seminar: Alix is reneging on "Lessons Learned" portion \\
+     - Jeffrey really impressed her with his talk, and thus Lan impressed her.  \\
+     - ...so she wants to show me off, in a sense. \\
+     - I gotta keep doing what I did to get to the majors. \\ 
+     - ...Don't do anything different. Stick with your approach. \\
+* Alix really thinks ``so much of life is just showing up.'' \\
+* Fall GTA is off the table. \\
+* Alix wants me to come up with a timeline of when I will give she and Charlotte my Chapter 1, Chapter 2, Chapter 3 drafts; I agreed to middle of Spring term to provide this timeline. (deadline for the timeline) \\
+
 \section*{March 27, 2017}
 
 \subsection*{Lecture Slides - GMRF, Dependent Spatial Data}
@@ -1104,20 +1129,103 @@ $$ (\kappa^{2} - \Delta)^{\alpha/2}x(\pmb{s}) = \mathcal{W}(\pmb{s})\text{, } $$
       \item $\alpha = \nu + d/2$
       \item $\Delta$ is Laplacian: $ \Delta = \sum_{i} \frac{\partial^{2}}{\partial x_{i}^{2}} $
       \end{itemize}
-\item Construct GMRF from SPDE
+\end{itemize}
+\subsubsection*{Construct GMRF from SPDE}
       \begin{itemize}
-      \item Construct the solution as a finite basis expansion
-      $$ x(\pmb{s}) = \sum_{k} \psi_{k}(\pmb{s})x_{k}$$ 
+      \item Construct the solution as a finite basis expansion:
+      $$ x(\pmb{s}) = \sum_{k} \psi_{k}(\pmb{s})x_{k},$$ 
       with a suitable distribution for the weights $\{x_{k}\}$.
       \item Sotchastic weak solution given by weights $\{x_{k}\}$ such that the joint distribution fulfills
       $$ \sum_{i} \left< \psi_{j}, (\kappa^{2} - \Delta)^{\alpha/2} \psi_{i} x_{i} \right> \overset{D}{=} \langle \psi_{j}, \mathcal{W} \rangle \text{  } \forall \pmb{j}$$
+      \item SOLUTION. \\The distribution of the weights:
+      \begin{align}
+      & \pmb{x} \in N(0, \pmb{Q}^{-1}) \\
+      & \alpha = 1: \pmb{Q}_{1,\kappa} = \pmb{K} \\
+      & \alpha = 2: \pmb{Q}_{2,\kappa} = \pmb{K} \pmb{C}^{-1} \pmb{K}  \\
+      & \alpha = 3, 4, \hdots : \pmb{Q}_{\alpha,\kappa} = \pmb{K} \pmb{C}^{-1} \pmb{Q}_{\alpha - 2,\kappa} \pmb{C}^{-1} \pmb{K},  
+      \end{align}
+      where
+      \begin{align}
+      \pmb{C}_{i,j} & = \langle \psi_{i}, \psi_{j} \rangle \\
+      \pmb{K}_{i,j} & = \langle \psi_{i}, (\kappa^{2} - \Delta)\psi_{j} \rangle \\
+      & = \kappa^{2} \langle \psi_{i}, \psi_{j} \rangle - \langle \psi_{i}, \Delta \psi_{j} \rangle \\
+      & = \kappa^{2} \pmb{C}_{i,j} + \pmb{G}_{i,j}
+      \end{align}
+      \item $\pmb{C}^{-1}$ dense, so replace $\pmb{C}$ with diagonal matrix $\widetilde{\pmb{C}}_{i,i} = \langle \psi_{i}, \pmb{1} \rangle$
       \end{itemize}
+\subsubsection*{Example: Lattice on $\mathbb{R}^{2}$, step size h, regular triangulation}
+
+\begin{itemize}
+\item $\pmb{Q}_{2, \kappa} = \kappa^{4} h^{2} + 2 \kappa^{2}(-\Delta) + \frac{1}{h^{2}} \Delta^{2}$
+\item $\pmb{Q}_{2, \kappa} \approx \kappa^{4} h^{2} M_{0} + 2 \kappa^{2} M_{1} + \frac{1}{h^{2}} M_{2}$
+
+\item $M_{0} = 
+        \begin{bmatrix}
+        &    &   &    &     \\ 
+        &   &  &   &     \\ 
+        &  & 1 &  &    \\ 
+        &   &  &   &     \\ 
+        &   &   &    & 
+        \end{bmatrix}
+     $
+\item     $-\Delta \approx M_{1} = 
+        \begin{bmatrix}
+        &    &  &    &     \\ 
+        &   & -1 &   &     \\ 
+       & -1 & 4 & -1 &    \\ 
+        &   & -1 &   &     \\ 
+        &    &   &    & 
+     \end{bmatrix} $
+      
+     
+\item $ \Delta^{2} \approx M_{2} = 
+        \begin{bmatrix}
+        &    & 1  &    &     \\ 
+        & 2  & -8 & 2  &     \\ 
+      1 & -8 & 20 & -8 & 1   \\ 
+        & 2  & -8 & 2  &     \\ 
+        &    & 1  &    & 
+     \end{bmatrix} $
+
+\item Matrix form, matrix $\pmb{A}$:
+  \begin{itemize}
+  \item $ A_{i \cdot} = \big[ \psi_{1} (\pmb{u}_{i}), \dots, \psi_{N}(\pmb{u}_{i}) \big] $
+  \item $x \in N(\mu, \pmb{Q}^{-1})$
+  \item $\pmb{y} = \pmb{Ax} + \pmb{\epsilon}$
+  \end{itemize}
+
+\end{itemize}  
+
+\subsection*{Spatial Data Analysis: Matern, Whittle, Stochastic Laplace}
+\citep{Schabenberger2004}
+\begin{itemize}
+\item Matern ($\theta$ range, smoothness $\nu$)
+$$ C(h) = \sigma^{2}\frac{1}{\Gamma(\nu)}\left(\frac{\theta h}{2}\right)^{\nu}2K_{\nu}(\theta h) \text{,   } \nu >0, \theta > 0 $$
+\item Whittle Model ($\nu = 1$) (Whittle: ``elementary model'' in $\mathbb{R}^{2}$) \\
+Covariance, Correlation:
+$$ C(h) = \sigma^{2}\theta h K_{1}(\theta h) $$
+$$ R(h) = \theta h K_{1}(\theta h) $$
+Stochastic Laplace equation (Z: Matern, $\epsilon$: white noise):
+$$ \left( \frac{\partial^{2}}{\partial x^{2}} + \frac{\partial^{2}}{\partial y^{2}} - \theta^{2} \right) Z(x,y) = \epsilon(x,y) $$
 \end{itemize}
+
+
 
 \subsection*{Lecture Slides - GMRFs}
 \citep{Lindstrom2014}
 \begin{itemize}
-\item
+\item Kriging, ``Big N'', GMRFs (1-dim AR1 is simplest example), precision matrix $Q = \Sigma^{-1}$, neighbours simplify conditional expectation $\rightarrow$ sparse precision matrix, brief computational details, create Q from Matern as solution to SPDE 
+\item Matern produces Markov field for $\nu \in \mathbb{Z}$ for $\mathbb{R}^{2}$
+\item Construct a discrete approximation of the continuous field using basis functions, $\{\psi_{k} \}$, and weights $\{ w_{k} \}$, 
+$$ x(\pmb{s}) = \sum_{k} \psi_{k}(\pmb{s}) w_{k} $$
+\item Find distribution of $w_{k}$ by solving 
+$$ (\kappa^{2} - \Delta)^{\alpha/2}x(\pmb{s}) = \mathcal{W}(\pmb{s})$$
+\item {\bf Stochastic weak solution} to the SPDE:
+      $$ \left[ \left< \psi_{j}, (\kappa^{2} - \Delta)^{\alpha/2} \psi_{i} x_{i} \right> \right]_{k = 1, \hdots, n} \overset{D}{=} [ \langle \psi_{j}, \mathcal{W} \rangle ]_{k = 1, \hdots, n} $$
+      ...for each set of test functions $\{\psi_{k}\}$.
+\item Definition:
+$$ \langle f, g \rangle = \int f(\pmb{u}) g(\pmb{u}) d\pmb{u} $$ \citep{Lindgren2011}
+
 \end{itemize}
 
 \subsection*{Lecture Slides - Latent Gaussian Processes and SPDEs}
