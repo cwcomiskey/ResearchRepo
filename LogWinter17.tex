@@ -811,11 +811,6 @@ phi      0.4318 0.2886 0.0014905       0.032011
   \end{itemize}
 \end{itemize}
 
-\subsection*{(No) Meeting}
-\begin{itemize}
-\item I think ``var-res-grid centers as knots'' is viable. I could compare to \cite{Nychka1998}. Could/should this be a (Ch 2? Ch 3) contribution? 
-\end{itemize}
-
 \subsection*{Dissertation (Middle Chunks) Outline} % ============= ============ ========
 \begin{itemize}
 \item Var-Res heat maps
@@ -859,7 +854,6 @@ phi      0.4318 0.2886 0.0014905       0.032011
 ...Proper scoring rules are used in meteorology, finance, and pattern classification where a forecaster or algorithm will attempt to minimize the average score to yield refined, calibrated probabilities (i.e. accurate probabilities).''
 \item Wikipedia: ``An example of probabilistic forecasting is in meteorology where a weather forecaster may give the probability of rain on the next day. One could note the number of times that a 25\% probability was quoted, over a long period, and compare this with the actual proportion of times that rain fell. If the actual percentage was substantially different from the stated probability we say that the forecaster is poorly calibrated.''
 \item Examples: logarithmic, Brier/quadratic, spherical
-\item 
 \end{itemize}
 
 \subsection*{Strictly proper scoring rules, prediction, and estimation }
@@ -873,7 +867,6 @@ phi      0.4318 0.2886 0.0014905       0.032011
 \subsection*{An Algorithm for the Construction of Spatial Coverage Designs... \citep{Nychka1998}}
 \begin{itemize}
 \item ``Space-filling ``coverage'' designs are spatial sampling plans which optimize a distance-based criterion''
-\item 
 \end{itemize}
 
 \subsection*{Spatial Sampling Design}
@@ -913,6 +906,8 @@ phi      0.4318 0.2886 0.0014905       0.032011
 
 \section*{20 February 2017}
 
+\section*{****************** Begin INLA-SPDE-RINLA ***************}
+
 \subsection*{Debashis meeting}
 \begin{itemize}
 \item INLA is oversold; Does Matern $\nu = 1, 2, 3$ only (no exponential, $\nu = 1/2$)
@@ -924,9 +919,9 @@ phi      0.4318 0.2886 0.0014905       0.032011
 \item MCMC might work better with sparse cov matrix, R has a package for sparse matrices; does Stan use sparse matrices?
 \end{itemize}
 
-\section*{Week of February 27, 2017}
+\section*{February 27, 2017}
 
-\subsubsection*{Matern Covariance}
+\subsubsection*{Matern Covariance (1)}
 $$ C_{\nu}(d) = \sigma^{2} \frac{2^{1 - \nu}}{\Gamma(\nu)} \left( \sqrt{2 \nu} \frac{d}{\rho} \right)^{\nu} K_{\nu} \left( \sqrt{2\nu}\frac{d}{\rho} \right) $$
 Where $\Gamma$ is the gamma function, and $K_{\nu}$ is the modified Bessel function, $\rho$ and $\nu$ are non-negative covariance parameters
 \begin{itemize}
@@ -983,10 +978,9 @@ GMRF has different properties; think graph theory edges, and non-edge-connected 
 \item ``This is great! You're coming in here telling {\bf  me} what your dissertation is!''
 \item My plan for chapters is legit.
 \item Talked about family, job search, research, seminar talk, Chris Wolf.
-\item
 \end{itemize}
 
-\section*{Week of March 6, 2017}
+\section*{March 6, 2017}
 
 \subsection*{An explicit link between Gaussian fields and Gaussian Markov random fields: the stochastic partial differential equation approach \citep{Lindgren2011}}
 \begin{itemize}
@@ -999,12 +993,28 @@ GMRF has different properties; think graph theory edges, and non-edge-connected 
   \item function space - space of {\it functions}
   \item basis functions - a set of functions from which can build any function in the function space
   \end{itemize}
+
+\item Matern (2):
+$$r(\pmb{u}, \pmb{v}) = \frac{\sigma^{2}}{2^{\nu - 1}\Gamma(\nu)}(\kappa||\pmb{u} - \pmb{v}||)^{\nu}K_{\nu}(\kappa||\pmb{u} - \pmb{v}||)$$
+      \begin{itemize}
+      \item scaling parameter $\kappa = \rho$ range parameter
+      \item Empirically derived: $\rho = \sqrt{8\nu}/\kappa$
+      \end{itemize}
+\item Linear fractional SPDE:
+$$ (\kappa^{2} - \Delta)^{\alpha/2} x(\pmb{u}) = \mathcal{W}(\pmb{u}) $$
+      \begin{itemize}
+      \item $\alpha = \nu + d/2$
+      \end{itemize}
+\item $\Delta$ is Laplacian:
+$$ \Delta = \sum_{i=1}^{d} \frac{\partial^{2}}{\partial x_{i}^{2}} $$
+\item Marginal Variance:
+$$\sigma^{2} = \frac{\Gamma(\nu)}{\Gamma(\nu + d/2)(4\pi)^{d/2}\kappa^{2\nu}}$$
 \end{itemize}
 
 \subsection*{Bayesian Spatial Modelling with R-INLA \citep{Lindgren2015}}
 \begin{itemize}
 \item ``...as discussed in Lindgren et al. (2011), one can express a large class of random field models as solutions to continuous domain stochastic partial differential equations (SPDEs), and write down explicit links between the parameters of each SPDE and the elements of precision matrices for weights in a discrete basis function representation.''
-\item ``As discussed in the introduction, {\bf an alternative to traditional covariance based modelling is to use SPDEs}, but carry out the practical computations using Gaussian Markov random field (GMRF) representations. This is done by approximating the full set of spatial random functions with weighted sums of simple basis functions, which allows us to hold on to the continuous interpretation of space, while the {\bf computational algorithms} only see discrete structures with Markov properties. Beyond the main paper Lindgren et al. (2011), this is further discussed by Simpson, Lindgren, and Rue (2012a,b).''
+\item ``As discussed in the introduction, {\bf an alternative to traditional covariance based modelling is to use SPDEs}, but carry out the practical computations using Gaussian Markov random field (GMRF) representations. This is done by {\bf approximating the full set of spatial random functions with weighted sums of simple basis functions}, which allows us to hold on to the continuous interpretation of space, while the {\bf computational algorithms} only see discrete structures with Markov properties. Beyond the main paper Lindgren et al. (2011), this is further discussed by Simpson, Lindgren, and Rue (2012a,b).''
 \item ``The simplest model for (spatial field) $x(\pmb{s})$ currently implemented in R-INLA is the SPDE/GMRF version of the stationary Matern family, obtained as the stationary solutions to
 $$ (\kappa^{2} - \Delta)^{\alpha/2}(\tau x(\pmb{s})) = \mathcal{W}(\pmb{s})\text{, } \pmb{s} \in \Omega $$ where
     \begin{itemize}
@@ -1019,7 +1029,7 @@ Whittle (1954, 1963) shows stationary solutions on $\mathbb{R}^{d}$ have Matern 
 $$\text{COV}(x(\pmb{0}), x(\pmb{s})) = \frac{\sigma^{2}}{2^{\nu - 1}\Gamma(\nu)}(\kappa||s||)^{\nu}K_{\nu}(\kappa||s||)$$
 The parameters in the two formulations are coupled so that the Matern smoothness is $\nu = \alpha - d/2$ and marginal variance is
 $$\sigma^{2} = \frac{\Gamma(\nu)}{\Gamma(\alpha)(4\pi)^{d/2}\kappa^{2\nu}\tau^{2}}$$
-Exponential covariance: $\nu = 1/2$; (i) for $d = 1 \rightarrow  \alpha = 1$, (ii) for $d = 2 \rightarrow \alpha = 3/2$'' (all from \citep{Lindgren2015})
+Exponential covariance: $\nu = 1/2$; (i) for $d = 1 \rightarrow  \alpha = 1$, (ii) for $d = 2 \rightarrow \alpha = 3/2$''
 \item ``The models discussed in \cite{Lindgren2011} and implemented in R-INLA are built on a basis representation
 $$ x(\pmb{s}) = \sum_{k=1}^{n} \psi_{k}(\pmb{s})x_{k}$$
 where
@@ -1029,44 +1039,118 @@ where
       \item piecewise polynomial basis functions
       \item use Finite Element Method - project the SPDE onto the basis representation 
       \end{itemize}
-
+\item 
 \end{itemize}
 
-\subsection*{Progress}
+\subsection*{Miscellaneous}
 I got \verb|inla(...)| to run!!
-\begin{verbatim}
-n=100
-a=1
-b=1
-z = rnorm(n)
-eta = a + b*z
-Ntrials = sample(c(1,5,10,15), size=n, replace=TRUE) 
-prob = exp(eta)/(1 + exp(eta))
-y = rbinom(n, size=Ntrials, prob = prob)
-data = list(y=y,z=z, obs = 1:n)
-# models <- inla.models()$latent
-# names(models)
-formula = y ~ 1 + z + f(obs, model = "matern2d", nrow = 10, ncol = 10)
-result = inla(formula, family = "binomial", data = data, Ntrials=Ntrials, verbose = FALSE)
-summary(result)
-\end{verbatim}
-Now...
 \begin{itemize}
-\item Generate data with latent GRF with Matern covariance, fit model, understand how it is working, if it is working.
-\item YES!!
+\item \verb|geoR| package
+\item I am trying to generate Matern data with \verb|grf(...)|, then estimate parameters with \verb|inla(...)|. However, basic input to \verb|inla(...)| implies INLA, without SPDE connection, and thus data on a grid. This means using my actual pitch locations from \verb|hitter| will not work. \\
+\item Try to generate data on a grid, use \verb|inla(...)| to estimate parameters
+\item inverse Precision matrix equals covariance matrix: $Q^{-1} = \Sigma$
+\item Precision matrix Q equals inverse covariance matrix: $Q = \Sigma^{-1}$
 \end{itemize}
 
+\subsection*{Simulate Matern data}
+\verb|geoR| package, \verb|grf(...)| function \\
+Matern (3)
+$$ \rho(u; \phi, \kappa) = \{2^{\kappa-1}\Gamma(\kappa)\}^{-1}(u/\phi)^{\kappa}K_{\kappa}(u/\phi)$$
+  \begin{itemize}
+  \item $u$ - vector/matrix/array with distances between pairs of data locations
+  \item $\phi$ - range parameter, $>0$
+  \item $\kappa$ - smoothness parameter, $>0$
+  \item $K_{\kappa}(\cdot)$ - modified Bessel function of third kind of order $\kappa$
+  \end{itemize}
+  
+\subsection*{Matern (4)}
+\citep{Schabenberger2004}
+$$ C(h) = \sigma^{2}\frac{1}{\Gamma(\nu)}\left(\frac{\theta h}{2}\right)^{\nu}2K_{\nu}(\theta h) \text{,   } \nu >0, \theta > 0 $$
+\begin{itemize}
+\item $\theta$ governs range of spatial dependence
+\item $\nu$: smoothness increases with $\nu$
+\item Page 143: The Matern Class of Covariance Functions
+\item Page 199: ${\bf THREE}$ Matern parameterizations
+\item Page 210: Bessel Functions
+\item Whittle Model, $\nu = 1$ (INLA/SPDE world, I think)
+$$ C(h) = \sigma^{2}\theta h K_{1}(\theta h) $$
+Whittle considered this the ``elementary model'' in $\mathbb{R}^{2}$
+\end{itemize}
+
+\subsection*{Stochastic Calculus}
+
+Stochastic Differential Equation (wikipedia)
+\begin{itemize}
+\item ``A heuristic but helpful interpretation of the stochastic differential equation (of continuous time stochastic process $X_{t}$) is that in a small time interval of length $\delta$ the stochastic process $X_{t}$ changes its value by an amount that is normally distributed (for example) with expectation $\mu(X_{t},t)\delta$ and variance $\sigma(X_{t}, t)^{2}\delta$ and is independent of the past behavior of the process.''
+\end{itemize}
+Stochastic Calculus \citep{Mao2007}
+\begin{itemize}
+\item Integral of random process is another random process. Random process not integrable in traditional sense, so stochastic calculus created, by Ito, Ito Calculus. Use Brownian motion as some sort of reference point.
+$$ Y_{t} = \int_{0}^{t} H_{s} dX_{s} $$
+Integrand and integrator are stochastic processes.
+\end{itemize}
+
+\section*{March 27, 2017}
+
+\subsection*{Lecture Slides - GMRF, Dependent Spatial Data}
+\citep{Lindstrom2011}
+\begin{itemize}
+\item Define problem, explain difficulty, define GMRF, {\bf sparse} precision matrix $Q^{-1}$, Markov property, Precision matrix construction hard
+\item  Matern family:
+ $$r(\pmb{u}) = \frac{\sigma^{2}}{2^{\nu - 1}\Gamma(\nu)}(\kappa||\pmb{u}||)^{\nu}K_{\nu}(\kappa||\pmb{u}||)$$
+\item Random fields with Matern covariance are solutions to:
+$$ (\kappa^{2} - \Delta)^{\alpha/2}x(\pmb{s}) = \mathcal{W}(\pmb{s})\text{, } $$
+      \begin{itemize}
+      \item $\alpha = \nu + d/2$
+      \item $\Delta$ is Laplacian: $ \Delta = \sum_{i} \frac{\partial^{2}}{\partial x_{i}^{2}} $
+      \end{itemize}
+\item Construct GMRF from SPDE
+      \begin{itemize}
+      \item Construct the solution as a finite basis expansion
+      $$ x(\pmb{s}) = \sum_{k} \psi_{k}(\pmb{s})x_{k}$$ 
+      with a suitable distribution for the weights $\{x_{k}\}$.
+      \item Sotchastic weak solution given by weights $\{x_{k}\}$ such that the joint distribution fulfills
+      $$ \sum_{i} \left< \psi_{j}, (\kappa^{2} - \Delta)^{\alpha/2} \psi_{i} x_{i} \right> \overset{D}{=} \langle \psi_{j}, \mathcal{W} \rangle \text{  } \forall \pmb{j}$$
+      \end{itemize}
+\end{itemize}
+
+\subsection*{Lecture Slides - GMRFs}
+\citep{Lindstrom2014}
+\begin{itemize}
+\item
+\end{itemize}
+
+\subsection*{Lecture Slides - Latent Gaussian Processes and SPDEs}
+\citep{Lindstrom2016}
+\begin{itemize}
+\item
+\end{itemize}
+  
 \subsection*{As of Now}
 \begin{itemize}
-\item Apply to box store jobs
-\item Finally sort of caught up with writing. Now what? Start/continue filling in gaps? Or focus on INLA?
-\item MOOCs - C++, Machine Learning, Python, GitHub
-\item INLA and R-INLA 
-\item Lay ``not until summer/fall'' groundwork?
+\item INLA, SPDE, R-INLA
+\item Jobs
+  \begin{itemize}
+  \item Post docs
+  \item Talk to Alix, Charlotte
+  \item Jaime, MIT/Cambridge John
+  \item Apply to junior quant/tech positions
+  \end{itemize}
+\item Writing
+\item Python (Code Academy), Github, Machine Learning (Dummies), C++ (Dummies)
+\item
+\item Reschedule defense. Replace Lisa?
+\item At least 2 weeks before your final oral examination: \\
+(1) Use online form to schedule your final oral examination, \\ 
+(2) Distribute a defendable copy of your thesis to your comittee, \\
+(3) Bring in or email pre-text pages of your thesis to the Graduate School and \\ 
+(4) submit a diploma application ({\bf EXCEPT for SPRING Term} completion, when
+you {\bf must submit by FIRST week} of Spring Term).
 \item 
 \item Scoring rules - model evaluation/comparison (two papers)
 \item Spatial design analysis - knot selection (two papers)
 \item Convergence diagnostics (CODA package, Finley paper)
+\item Simulate, or real data?
 \end{itemize}
 
 % \bibliographystyle{plainnat}
