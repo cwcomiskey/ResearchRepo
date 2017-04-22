@@ -2,7 +2,7 @@
 
 shinyUI(fluidPage(
   
-  # titlePanel("Dynamic Heat Map Confidence Intervals"),
+  titlePanel("Dynamic Heat Map Confidence Intervals"),
   
   # title = "Dynamic Heat Map Confidence Intervals",
  

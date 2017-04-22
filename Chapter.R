@@ -6,10 +6,48 @@ library("dplyr")
 library("reshape2")
 library("gridExtra")
 
+# Empirical Mothership plot ==============================
+
+hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
+
+
+coordsR <- with(hitter, cbind.data.frame(px, pz))
+hitgridR <- with(hitter, as.image(hit, coordsR, nx = 20, ny = 20)) 
+ABC.R <- with(hitgridR, 
+              cbind(expand.grid(x, y), as.vector(z)))
+names(ABC.R) <- c("Horizontal", "Vertical", "Hitting")
+
 kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95), 
                     y = c(1.6, 3.5, 3.5, 1.6, 1.6))
 
-hitter <- read.csv("~/Desktop/Research/Data/hitter.csv")
+ggplot(ABC.R, aes(Horizontal, Vertical, fill = Hitting)) + 
+  geom_tile() + 
+  xlim(-1.5, 1.5) + ylim(1, 4) + 
+  scale_fill_distiller(palette = "Spectral", trans="reverse", 
+                       limits = c(0, 0.18), 
+                       guide = guide_legend(title = expression(hat(p)))) + 
+  geom_path(aes(x, y, fill=NULL), data = kZone, 
+            lwd = 1.5, col = "blue", linetype = 2) + 
+  coord_equal() + ggtitle("P(Hit|Swing)") +
+  xlab("Feet from \n Middle of Home Plate") +
+  ylab("Feet Off Ground") +
+  theme(legend.key.size = unit(2, "cm"), 
+        legend.text = element_text(size = 30),
+        legend.title = element_text(size = 40),
+        legend.title.align = 0.25,
+        axis.title.x = element_text(size=28),
+        axis.title.y = element_text(size=28),
+        title = element_text(size = 28),
+        axis.text = element_text(size = 28))
+
+# ggsave("Mothership.pdf", height = 8.5, width = 8.5) # righties empirical
+
+# Var-res plots ===============
+
+kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95), 
+                    y = c(1.6, 3.5, 3.5, 1.6, 1.6))
+
+hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
 
 cutoff <- 200
 
@@ -30,7 +68,7 @@ G1 <- ggplot(ABCE, aes(px, pz, fill = Hitting)) +
     width = max.x - min.x, height = max.y - min.y)) + 
   coord_equal() +
   scale_fill_distiller(palette = "Spectral", trans="reverse") + 
-  geom_text(aes(fill = Hitting, label = Count), size = 3.5)
+  geom_text(aes(label = Count), size = 3.5) # ****
 
 # ggsave("Chapter1x1.pdf", height = 8.5, width = 8.5)
 
@@ -454,6 +492,8 @@ max(hitzone$p)
 kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95), 
                     y = c(1.6, 3.5, 3.5, 1.6, 1.6))
 
+sum(as.numeric(is.na(hitzone$p)))
+
 ggplot(aes(px, pz, fill = p), data = hitzone) + 
   geom_tile() + geom_path(aes(x, y, fill=NULL), 
                           data = kZone, lwd = 1.5, 
@@ -461,22 +501,20 @@ ggplot(aes(px, pz, fill = p), data = hitzone) +
   coord_equal() + xlim(-1.5, 1.5) + ylim(1, 4) +
   scale_fill_distiller(palette = "Spectral", 
                        limits = c(0.0, .170), trans="reverse",
-                       guide = guide_legend(title = expression(hat(p))))
-
-sum(as.numeric(is.na(hitzone$p)))
+                       guide = guide_legend(title = expression(hat(p)))) +
 
 # Plot layers ====== #
-#   ggtitle("Polar Covariate GLM \n Success Probability") +
-#   xlab("Feet from \n Middle of Home Plate") +
-#   ylab("Feet Off Ground") +
-#   theme(legend.key.size = unit(2, "cm"), 
-#         legend.text = element_text(size = 30),
-#         legend.title = element_text(size = 40),
-#         legend.title.align = 0.25,
-#         axis.title.x = element_text(size=28),
-#         axis.title.y = element_text(size=28),
-#         title = element_text(size = 28),
-#         axis.text = element_text(size = 28)) 
+  ggtitle("Polar Covariate GLM \n Success Probability") +
+  xlab("Feet from \n Middle of Home Plate") +
+  ylab("Feet Off Ground") +
+  theme(legend.key.size = unit(2, "cm"),
+        legend.text = element_text(size = 30),
+        legend.title = element_text(size = 40),
+        legend.title.align = 0.25,
+        axis.title.x = element_text(size=28),
+        axis.title.y = element_text(size=28),
+        title = element_text(size = 28),
+        axis.text = element_text(size = 28))
 
 # ggsave("Peralta_polar.pdf", height = 8.5, width = 8.5, path = "/Users/ABC/Desktop/Research/Images")
 
