@@ -287,7 +287,7 @@ Hierarchical Modeling and Analysis for Spatial Data \citep{Banerjee2014}
 
 \subsubsection{``Big N Problem''}
 
-\subsection{Numerical Optimization of Hamiltonian Monte Carlo in Stan} % =================
+\subsection{Numerical Optimization; Hamiltonian Monte Carlo in Stan} % =================
 
 \subsubsection{Hamiltonian Dynamics and MCMC} % =================
 
@@ -412,7 +412,7 @@ $$ r \propto \frac{f(\pmb{Y}|\pmb{\theta}_{i})f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}
 
 \end{itemize}
 
-\subsection{Predictive Process Models} % =========
+\subsection{Dimension Reduction; Predictive Process Models} % =========
 
 Predictive process models (PPMs) provide a method for attempting to circumvent the ``big N problem'' in the case of Bayesian hierarchical models with latent Gaussian random effects. Numerous methods exist, for example \citep{Cressie2008}, (CITE OTHERS), but predictive process models provide a competitive modeling approach with computational advantages for hierarchical models with a Gaussian random field (GRF) at the second level of specification \citep{Banerjee2008}. Latent GRFs prove challenging because they are only implicitly observed, through a binomial response in our case. This means the GRF parameters (hyperparameters) and their prior distributions comprise the third level of the hierarchical model. Gaussian PPMs achieve dimension reduction by projecting the original process onto a lower dimensioned subspace, at a set of locations called knots \citep{Banerjee2008}. 
 
@@ -451,12 +451,8 @@ To reiterate, $m \times 1$ vector $\pmb{c}(\pmb{s};\pmb{\theta}) = \left[C(\pmb{
 
 \subsubsection{Improved Predictive Process Models}
 
-\subsubsection{Predictive Process Models in spBayes}
 
-
-
-
-\subsection{Stochastic Partial Differential Equations and Integrated Nested Laplace Approximations} % =================
+\subsection{Approximation; SPDE and INLA} % =================
 Integrated Nested Laplace Approximation (INLA), a mathematically intensive and computationally geared approximation technique, works well for Bayesian hierarchical models with latent Gaussian {\bf markov} random fields (GMRFs) \citep{Rue2007}. A GMRF, by virtue of its sparse precision matrix, enables INLA's orders of magnitude faster approximation method. However, to use INLA for continuous domain spatial models with latent Gaussian random fields (GRFs), one must represent the GRF as a GMRF; and stochastic calculus provides a link. A particular stochastic partial derivative of a Matern GRF equals a Gaussian random field white noise process. This identity provides a platform on which to approximate a Matern GRF with a GMRF, in the form of a piecewise linear basis representation. The discrete representation consists of deterministic basis functions, defined by a triangulation of the domain, and GMRF weights. The basis representation has a sparse precision matrix, and thus qualifies for the INLA approximation and its computational advantages. Scientists use this GRF to GMRF translation process---projecting the SPDE onto the basis representation---known as Finite Element Method, extensively in other fields. 
 \subsubsection{Gaussian Markov Random Fields}
 
@@ -532,12 +528,12 @@ Note again:
 
 The basic approach to estimating $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ is ``matching the mode and curvature at the mode'' of estimator $\tilde{p}(\pmb{x}|\pmb{\theta}, \pmb{y})$ to that of $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ \citep{Rue2005}. As mentioned, INLA requires Gaussian priors for all paramters except covariance hyperparameters; but, INLA also requires conditional independence, whereby $p(\pmb{y}|\pmb{x}, \pmb{\theta}) = \prod_{i} p(\pmb{y}_{i}|\pmb{x}_{i},\pmb{\theta})$. Our analysis satisfies this necessity, and therefore $$p(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp}\left(-\frac{1}{2}\pmb{x}^{T}\pmb{Q x} + \sum_{i} \text{log }p(y_{i}|x_{i}) \right).$$ The Gaussian approximation takes the following form,
 $$p_{G}(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp} \left( -\frac{1}{2}(\pmb{x-\mu})^{T} (\pmb{Q} + \text{diag}(\pmb{c}) ) (\pmb{x - \mu}) \right),$$
-where $\pmb{c}$ and $\pmb{\mu}$ depend on a second order Taylor expansion of $\sum_{i} \text{log }p(y_{i}|x_{i})$, about the mode $x_{0}(\pmb{\theta}) = \text{argmax}_{x}p(\pmb{x}|\pmb{y},\pmb{\theta})$ \citep{Rue2007}. A numerical optimzation algorithm caluculates $x_{0}(\pmb{\theta})$, and various methods exist for determining the form of $\pmb{c}$ and $\pmb{\mu}$ \citep{Rue2009}. For example, one formulation gives the following mean and variance for the Gaussian approximation \citep{Lindstrom2014},
+where $\pmb{c}$ and $\pmb{\mu}$ depend on a second order Taylor expansion of $f(\pmb{x}) = \sum_{i} \text{log }p(y_{i}|x_{i})$, about some $\pmb{x}_{0}$ \citep{Rue2007}, \citep{Lindstrom2014}. Various methods exist for determining the form of $\pmb{c}$ and $\pmb{\mu}$ \citep{Rue2009}. For example, for latent random field $\pmb{x} \sim \text{N}(\pmb{\mu}, \pmb{Q}^{-1})$, \cite{Lindstrom2014} gives the following mean and variance for the Gaussian approximation, :
             \begin{align}
-           \text{E}_{\pmb{x}_{0}}(\pmb{x}|\pmb{y,\theta}) & \approx \big( \pmb{Q} - \text{diag}(f''(\pmb{x}_{0})) \big)^{-1} \big( \pmb{Q}\pmb{x}_{0} + f'(\pmb{x}_{0}) - f''(\pmb{x}_{0}) \pmb{x}_{0} \big),  \\
-           \text{V}_{\pmb{x}_{0}}(\pmb{x}|\pmb{y,\theta}) & \approx \big( \pmb{Q} - \text{diag}(f''(\pmb{x}_{0})) \big)^{-1}, 
+           \text{E}_{\pmb{x}_{0}}(\pmb{x}|\pmb{y,\theta}) & \approx \big( \pmb{Q} - \text{diag}(f''(\pmb{x}_{0})) \big)^{-1} \big( \pmb{Q}\pmb{x}_{0} + f'(\pmb{x}_{0}) - f''(\pmb{x}_{0}) \pmb{x}_{0} \big)  \\
+           \text{V}_{\pmb{x}_{0}}(\pmb{x}|\pmb{y,\theta}) & \approx \big( \pmb{Q} - \text{diag}(f''(\pmb{x}_{0})) \big)^{-1}
             \end{align}
-for latent random field  $\pmb{x} \sim \text{N}(\pmb{\mu}, \pmb{Q}^{-1})$. Step 2 uses this Gaussian approximation, $p_{G}(\pmb{x}|\pmb{\theta},\pmb{y})$.
+Step 2 uses this Gaussian approximation, $p_{G}(\pmb{x}|\pmb{\theta},\pmb{y})$.
 
 \subsubsection*{Step 2, Laplace Approximation}  % ====== ======
 
@@ -553,16 +549,16 @@ p(\theta|\pmb{y}) & \propto p(\pmb{y}|\pmb{\theta})p(\pmb{\theta}) \\
 & \propto \frac{p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta})}{p(\pmb{x} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta})
 \end{align}
 
-For a given $\pmb{\theta}$, let $\pmb{x}_{0}(\pmb{\theta}) = \text{argmax}_{x}p(\pmb{x}|\pmb{y},\pmb{\theta})$. Then,
+For a given $\pmb{\theta}$, let $\pmb{x}_{0} = \text{argmax}_{x}p(\pmb{x}|\pmb{y},\pmb{\theta})$. Then,
 $$ p(\pmb{\theta}|\pmb{y}) \approx \tilde{p}(\pmb{\theta}|\pmb{y}) \propto  \frac{p(\pmb{y} | \pmb{x}_{0}, \pmb{\theta}) p(\pmb{x}_{0} | \pmb{\theta})}{p_{G}(\pmb{x}_{0} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta}),$$
-where the Taylor expansion in $p_{G}(\pmb{x}_{0} | \pmb{y}, \pmb{\theta})$ is centered about $\pmb{x}_{0}$. This approximation matches \cite{Tierney1986} Laplace approximation. Numerical optimization gives the posterior mode, $\hat{\pmb{\theta}}_{\text{ML}} \approx \text{argmax}_{\theta} \tilde{p}(\pmb{\theta}|\pmb{y})$, an approximate maximum likelihood estimate. 
+where the Taylor approximation of $f(\pmb{x}) = \sum_{i} \text{log }p(y_{i}|x_{i})$, in $p_{G}(\pmb{x} | \pmb{y}, \pmb{\theta})$, expands about $\pmb{x}_{0}$. This approximation matches \cite{Tierney1986} Laplace approximation.  Then, we have approximate maximum likelihood estimate $\hat{\pmb{\theta}}_{\text{ML}} \approx \text{argmax}_{\theta} \tilde{p}(\pmb{\theta}|\pmb{y})$, a
 
 \subsubsection*{Step 3, Numerical Integration} % === === === === ===
 Numerical Integration over $\pmb{\theta}$, or elements of $\pmb{\theta}$, gives $p(x_{i}|\pmb{y})$ and $p(\theta_{i}|\pmb{y})$.
-        $$ p(x_{j} | \pmb{y}) \approx \int \tilde{p}(x_{j}|\pmb{\theta, y})\tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta} $$
+        $$ p(x_{j} | \pmb{y}) \approx \int p_{\text{G}}(x_{j}|\pmb{\theta, y})\tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta} $$
         $$ p(\theta_{k} | \pmb{y}) \approx \int \tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta}_{-k} $$
 
-In summary, from a continuous domain the SPDE-INLA approxmation produces, with improved speed, posterior estimates for $p(\pmb{\theta}|\pmb{y})$, $p(\theta_{i}|\pmb{y})$, and $p(x_{i}|\pmb{y})$. The R package \verb|INLA| implements this procedure, with flexible SPDE specifications for domain triangulation.
+In summary, from a continuous domain the SPDE-INLA approxmation produces provide, with improved speed, posterior estimates for $p(\pmb{\theta}|\pmb{y})$, $p(\theta_{i}|\pmb{y})$, and $p(x_{i}|\pmb{y})$. The R package \verb|INLA| implements this procedure, with flexible SPDE specifications for domain triangulation.
 
 \subsubsection{Bayesian Inference in R-INLA}
 
