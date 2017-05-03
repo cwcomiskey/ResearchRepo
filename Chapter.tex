@@ -1,6 +1,6 @@
 \documentclass{article}
 
-\title{Take Me Out to (Analyze) the Ballgame}
+\title{Take Me Out to (Analyze) the Ballgame \\ Visualization and Analysis Techniques for Big Spatial Data}
 \author{Chris Comiskey}
 \date{\today}
 
@@ -39,23 +39,76 @@
 \tableofcontents
 
 
-\section{Introduction}
+\section{Introduction} % ================================================
+
+\subsection{``Get a Good Ball to Hit''}
+In 1971 left-handed hitter Ted Williams published what many baseball players consider a bible of their craft,``The Science of Hitting'' \citep{Williams1971}. In it Williams credits another baseball legend, Rogers Hornsby, as giving him the best piece of advice he ever received: ``Get a good ball to hit.''
+        \begin{figure}[H]
+      	\centering
+      	\includegraphics[scale=.29]{Images/Williams.jpg} 
+      	\includegraphics[scale=0.55]{Images/SZ.jpg}
+      	\caption{Ted Williams conceptualized of the strike zone as divided into locations for pitches on which he would have specific probabilities of getting a hit. In this iconic image he labeled the baseballs with his own estimated batting average on pitches in that location \citep{Williams1971}.}
+      	\end{figure} 
+Horsby meant that location makes some pitches easier to hit than others, and  Williams's famous strike zone image, shown in Figure 1, visualizes this advice\footnote{For background information on the rules and workings of the game of baseball, please see Appendix A, or \citep{Wiki}}. Until 2008, data did not exist to explore, visualize, and model William's location-based conceptualization of the stike zone. However, in 2008 MLB collaborated with Sportsvision, to implement a new technology called PITCHf/x\textsuperscript{\textregistered}, and began collecting the necessary data.
+
+
+\subsection{The Data} % ============================================
+Sportvision, Inc., a company based in Chicago, provides the technology to collect PITCHf/x\textsuperscript{\textregistered} data. In 2007 and 2008 Sportvision installed two high speed stereoscopic cameras in every MLB\textsuperscript{\textregistered} stadium. These cameras take 20 images of each pitch in flight and determine its 3-D path \citep{Fast2010}. Sportsvision licenses the collected PITCHf/x\textsuperscript{\textregistered} data to Major League Baseball Advanced Media (MLBAM\textsuperscript{\textregistered}) \citep{Baumer2010}. MLBAM\textsuperscript{\textregistered} provides the PITCHf/x\textsuperscript{\textregistered} data to the public in XML format as part of  their  `Gameday' data, at their website \citep{Sievert2014}. A homepage exists for every game, with links organizing data into XML tables such as game, inning, at bat, pitch, team, player, umpire, etc. \citep{Sievert2014}. The at bat table, for example, contains 15 variables for 1,711,211 at bats. The format and size (on the order of gigabytes) of the data makes a manual download impractical. Instead, XML downloading scripts are advised to create a database \citep{Adler2006}. We used the MySQL database management system  to manipulate and store 13 PITCHf/x\textsuperscript{\textregistered} tables \citep{Tahaghoghi2006}. Data of this size requires finessing R's ``memory management'' \citep{Wickham2014}. This is because R is an ``{\it in-memory} application,'' which means a computer's limited RAM hosts the R environment data \citep{Smith2013}. To avoid overwhelming R's working memory limitations, we applied the Split-Apply-Combine strategy to tables inside the MySQL database before importing data frames to R \citep{Wickham2011}.
+
+We collected the variables relevant for this research predominantly from the `at bat' and `pitches' tables. These variables, with a short description, are the following \citep{Fast2007}.
+  \begin{itemize}
+  \item \verb|px| - location of the pitch on the horizontal axis when it passes through the strike zone (or the extended plane). \verb|px| is recorded in feet from the middle of home plate, from the catcher/umpire point of view.
+  \item \verb|pz| - location of the pitch on the vertical axis when it passes through the strike zone plane, measured in feet above the ground. A negative value implies the ball bounced before reaching home plate
+  \item \verb|des| - a short description of the outcome of the pitch, i.e. swing and miss, ground ball for out, ground ball for hit, etc.  
+  \item \verb|id| - a unique id for a pitch within a game
+  \item \verb|ab_id| - a unique id for each at bat  
+  \item \verb|pitch_id| - a unique identification number for each pitch
+  \item \verb|pitch_type| - a classification of the type of pitch, out of 18 possible types. For example, four seam fastball, two seam fastball, curveball, knuckle ball, etc.
+  \item \verb|stand| - handedness of the batter; right or left.
+  \item \verb|batter| - a unique ID for each hitter
+  \end{itemize}
+
+% The variable \verb|des|, short for `description,' describes pitch outcomes. In this study, we use swing outcomes described in \verb|des| to define a Bernoulli random variable $S$ (Section 3.1) that equals one for a hit, and equals zero for {\it any} swing that does not result in a hit. This modifies the current standard, where analyses include only swings that end at bats \citep{Cross2015}, \citep{Baumer2010}, \citep{Fast2011}. We submit that {\it every} swing represents a trial, and failure to get a hit should be evaluated separately from the count in the at bat at the time of the trial.
+
+\subsection{Practical Significance of Data Analysis in Baseball}
+
+Major League Baseball (MLB\textsuperscript{\textregistered}) teams exploy approximately 156 quantitative analysts, at a total cost of approximately \$15 million annually \citep{Lindbergh2016}. Teams strive to gain marginal competitive advantages, so novel modeling and analysis of strike zone data will generate substantial interest. For example, results indicate hitters have higher success probabilities in the lower 1/3 of the strike zone than in the top 1/3, but this contradicts conventional wisdom advising pitchers to ``keep the ball down'' \citep{Stallings2003}. An interpretable model that explains why this is bad advice may change minds. As a second example, if these interpretations are in biomechanical language, biomechanists may analyze the relationships between body types and spatial success probabilities. This could in turn help MLB\textsuperscript{\textregistered} team scouting departments more accurately preduct hitting success for amateur players, a notorously difficult but lucrative challenge. For a final example, some MLB\textsuperscript{\textregistered} players, such as Joey Votto, have a keen interest in using the most sophisticated analytics available to understand the keys to their success and failure\citep{Daugherty2015}. This research would fit that criteria for Votto.
+
+With regard to media usage possibilities, heat maps are frequently included in television broadcasts of MLB\textsuperscript{\textregistered} games \citep{Cross2015}. ESPN\textsuperscript{\textregistered} and MLB\textsuperscript{\textregistered} recently agreed to an eight year, \$5.6 billion contract \citep{Newman2012}; cutting-edge, more informative heat maps would improve the quality of game broadcasts.
+
+As the dollar amounts indicate, it is not for a lack of motivation that the research questions posed here remain open. Rather, the solutions require an array of statistical and computational competencies. In addition, the data are quite new, and relatively inaccessible without data management and programming skills.
+
+% The methods we will use for addressing these questions will include and integrate generalized linear models \citep{Myers2012}, spatial statistics \citep{Oliver2005}, and Bayesian hierarchical models \citep{Gelman2014}. We will employ these methodologies using the statistical software R \citep{R2015}, the Bayesian statistical software and programming language Stan \citep{Gelman2015}, the R to Stan interface RStan \citep{RSTAN}, advanced data visualization tools in ggplot2 \citep{Wickham2009}, baseball specific programming techniques \citep{Marchi2013}, and the open-source Relational Database Management System (RDMS) MySQL \citep{Tahaghoghi2006} for storing and managing a 1.82 GB (to date) PITCHf/x\textsuperscript{\textregistered} database.
+
+\subsection{Research Roadmap}
+
+% Using PITCHf/x\textsuperscript{\textregistered} data, amateur statisticians have conducted exploratory data analysis of the spatial, hitter success, strike zone data. However, there have been virtually no publicly available\footnote{Presumably proprietary approaches by MLB\textsuperscript{\textregistered} teams exist.} professional or academic attempts to model and understand the spatial process with advanced statistical techniques. 
+
+Chapter 2 uses strike zone data to explore the problem of resolution selection for empirical heat maps with varying spatial data density. We provide a new option for addressing this problem, which we call varying-resolution heat maps. Two parts comprise Chapter 3. In the first part we create a generalized linear model for spatial hitter success probabilities, using biomechanical covariates manufactured from a switch to the polar coordinate system and a strategically translated origin. In the second part we confront the question of how to improve the current approach to presenting heat map confidence intervals. We provide, we believe, a better option with an interactive Shiny application \citep{Shiny}. In Chapter 3 we add a spatial random effect to the Chapter 2 model, and deal with the computational consequences; we define the ``Big N'' problem, and explore three approaches to fitting a ``Big N'' spatial generalized linear mixed model. 
+
+
+
+
+\section{Variable-Resoluation Heat Maps} % ==================== 
+
 Graphical displays are an irreplaceable tool for the statistician, and the statistical community. They allow us to quickly communicate information about a data set to another statistician, or, perhaps even more importantly, to non-statisticians. As technology generates more data the importance of this area of statistics expands, statistical analysis becomes more widespread, and our graphic-making abilities improve. The R data visualization package \verb|ggplot2| highlights (i) the importance of graphical diplays, because it is among the most downloaded R packages; and (ii) the need for innovation in this area, because its popularity explosion signals it met a need.
 
 In this chapter we focus on one type of graphical display, the heat map. We show the way it fails to adequately communicate spatial data dispersion and distribution attributes, and we innovate a solution. This innovation improves our ability to communicate spatial data density and dispersion attributes to the viewer using a heat map.
 
-\section{Variable-Resoluation Heat Maps} % ==================== 
+\subsection{Conventional Heat Maps; Baseball Data} % ====================
 
+Baseball is a series of contests between the hitter and the pitcher, comprised of pitches the hitter can swing at. In a statistical sense, we consider every swing a trial. This differs from other studies that use only swings that end at bats \citep{Cross2015}, \citep{Baumer2010}, \citep{Fast2011}. These studies omit swinging strikes that do not end at bats, and foul balls, from analysis. This drastically reduces sample sizes. In this work every swing is a trial, with some probability of success. We define success as swings where \verb|des| equals \verb|in play, no out|, and failure as swings where \verb|des| equals \verb|Foul|, \verb|Foul (Runner Going)|, \verb|Foul Tip|, \verb|In play out(s)|, \verb|Swinging Strike|, or \verb|Swinging Strike (Blocked)|.
 
-\subsection{Conventional Heat Maps} % ==================== 
-
-We start with a baseball heat map example, as baseball data motivates this research. Consider the empirical heat map in Figure 1, of the two dimensioned vertical face of the strike zone, where grid box colors represent empirical batting averages at pitch locations. In Figure 1 we show PITCHf/x\textsuperscript{\textregistered} data on 1,932 right-handed hitters, taking 1,582,581 swings between 2008 and 2015.  Let $b = 1, \dots, 627$ index grid boxes. Let $i = 1, \dots, 1,582,581$ index swings, and define $n_{b} = \displaystyle\sum_{i} \text{I}_{\{i \in b \}}$ as the total number of swings in box $b$.
+Empirical baseball heat maps cover the two dimensioned vertical face of the strike zone with a grid, containing success probabilities in each grid box.  In Figure 1 we show PITCHf/x\textsuperscript{\textregistered} data on 1,932 right-handed hitters, taking 1,582,581 swings between 2008 and 2015.  Let $b = 1, \dots, 627$ index grid boxes. Let $i = 1, \dots, 1,582,581$ index swings, and define $n_{b} = \displaystyle\sum_{i} \text{I}_{\{i \in b \}}$ as the total number of swings in box $b$.
 Define a Bernoulli random variable, $S_{i}$, that equals one for swing success and zero for swing failure, and let $\hat{p}_{b} = \frac{1}{n_{b}} \displaystyle\sum_{i} S_{i} \cdot \text{I}_{\{i \in b \}}$ be the empirical box $b$ success probability. Figure 1 displays the resulting empirical heat map for 1,932 right-handed hitters, taking 1,582,581 swings between 2008 and 2015. The heat map graphic maps the empirical success probability, $\hat{p}_{b}$, of hitters swinging at pitches that passed through the space represented by that grid box, to a color on a spectrum.
   \begin{figure}[H]
 	\centering
 	\includegraphics[scale=.3]{Images/Mothership.pdf} 
   \caption{The gridded hitting zone with 3/4 inch by 3/4 inch boxes, from the catcher's point of view. The color of the box represents the empirical batting average ($\hat{p}_{b}$) for right handed hitters, swinging at pitches in that location. Calculations based on 1,932 right handed hitters, swinging at 1,582,581 pitches between 2008 and 2015. The dashed line marks the boundaries of the called strike zone for a 6'2'' hitter.}
 	\end{figure} 
+		
+	
+	
 \noindent While not sophisticated statistically, the graphic efficiently conveys empirical spatial success probabilities; it maps the statistic $\hat{p}_{b}$ to a color on a spectrum. Though it can easily go unnoticed, a heat map's creater {\it chooses} the grid box size that, hopefully, best communicates the data's information content; here, average spatial hitting ability estimates. The data's varying spatial density through the strike zone is not part of the communicated information, no matter the grid box size selected. This missing information is important, because in general more data means better estimates, and the viewer gets no such indication in Figure 1. Traditional heat maps do not communicate this information. We propose an innovation that addresses this shortcoming. To illustrate, consider a heat map for an individual hitter.
 
 The heat map above divided the strike zone into relatively small boxes, because the data supported it. By ``supported it'' we mean the small, spatially specific boxes retain a sample size large enough to keep the variance of $\hat{p}_{b}$ acceptably \footnote{Defining ``acceptable'' variance ranges and thresholds will depend on context and analysis objectives. For example, a pitching coach may be satisfied with estimates accurate 95\% of the time to within 20 batting average points. This margin of error, 0.02, requires a sample size of 32 when $p_{b} = 0.09$. Note that the variance depends on the mean for a Bernoulli random variable.} This is important because individual hitter datasets vary dramatically in size, with swing totals ranging from a single swing to over 10,000 swings. Similar to bin width selection for a histogram, the choice of heat map resolution can dramatically affect how the data is represented, and the usefulness of the parameter estimates of interest. The resolution decision depends on the size and nature of the data set in question, and its spatial dispersion through the domain. To explore this decision in detail we look at batter 425509, a veteran player named Jhonny Peralta, whose data set contains 9,177 swings.
@@ -645,6 +698,17 @@ p(\mathbf{Z};s_{0}) = \mu(s_{0}) + \mathbf{ \vec{\sigma}'\Sigma^{-1}(Z(s) - \mu(
 
 \item {\bf Best} predictor under squared error loss {\it if } $\mathbf{Z(s)}$ is GRF .
 \end{enumerate}
+
+\section{Baseball Background} % =========================
+Fundamentally, baseball is a series of contests between pitcher and hitter. During each contest, called an ``at bat,'' the pitcher throws a ball over home plate to his catcher, and the hitter chooses to swing or not swing at the ball. Each at bat has at least one pitch, and on average between three and four pitches. In this study we only consider pitches at which the hitter swings. When the hitter swings, he either succeeds or fails. If he succeeds, the at bat is over. If he fails he may or may not get another attempt, depending on the game state and the type of failure. 
+        \begin{figure}[H]
+      	\centering		
+      	\includegraphics[scale=.3]{Images/strikezone.png} 
+      	\includegraphics[scale=.3]{Images/HvPTree.pdf} 
+      	\caption{The image on the left shows the strike zone, from Major League Baseball's rule book. The right-hand image shows an event tree for the hitter vs. pitcher contest in baseball. This paper focuses on the highlighted region. The hitter chooses to swing or not swing at each pitch. If he chooses to swing then, for our purposes, a Bernoulli trial occurs.}
+      	\end{figure} 
+We will call the general airspace over home plate where the hitter swings at the ball the hitting zone. Therefore, the hitting zone includes, but is not limited to, the strike zone. For our purposes, the ``strike zone'' is a plane parallel to, and the width of, home plate. It extends from the hitter's knee caps to the midpoint between his belt and shoulders, as shown in Figure 3. The hitter faces a penalty of sorts if he does not swing at a pitch that passes through the strike zone. An umpire judges whether the pitch passed through the ``strike zone.'' 
+
 
 \bibliography{Baseball}
 
