@@ -33,6 +33,13 @@
 \usepackage{setspace}
 \doublespacing
 
+% TESTING =====
+\usepackage[T1]{fontenc}
+\usepackage[font=small,labelfont=bf,tableposition=top]{caption}
+\DeclareCaptionLabelFormat{andtable}{#1~#2  \&  \tablename~\thetable}
+% TESTING =====
+
+
 \begin{document}
 \maketitle{}
 
@@ -72,7 +79,7 @@ We collected the variables relevant for this research predominantly from the `at
 
 \subsection{Practical Significance of Data Analysis in Baseball}
 
-Major League Baseball (MLB\textsuperscript{\textregistered}) teams exploy approximately 156 quantitative analysts, at a total cost of approximately \$15 million annually \citep{Lindbergh2016}. Teams strive to gain marginal competitive advantages, so novel modeling and analysis of strike zone data will generate substantial interest. For example, results indicate hitters have higher success probabilities in the lower 1/3 of the strike zone than in the top 1/3, but this contradicts conventional wisdom advising pitchers to ``keep the ball down'' \citep{Stallings2003}. An interpretable model that explains why this is bad advice may change minds. As a second example, if these interpretations are in biomechanical language, biomechanists may analyze the relationships between body types and spatial success probabilities. This could in turn help MLB\textsuperscript{\textregistered} team scouting departments more accurately preduct hitting success for amateur players, a notorously difficult but lucrative challenge. For a final example, some MLB\textsuperscript{\textregistered} players, such as Joey Votto, have a keen interest in using the most sophisticated analytics available to understand the keys to their success and failure\citep{Daugherty2015}. This research would fit that criteria for Votto.
+Major League Baseball (MLB\textsuperscript{\textregistered}) teams exploy approximately 156 quantitative analysts, at a total cost of approximately \$15 million annually \citep{Lindbergh2016}. Teams strive to gain marginal competitive advantages, so novel modeling and analysis of strike zone data could generate substantial interest. For example, results indicate hitters have higher success probabilities in the lower 1/3 of the strike zone than in the top 1/3, but this contradicts conventional wisdom advising pitchers to ``keep the ball down'' \citep{Stallings2003}. An interpretable model that explains why this is bad advice may change minds. As a second example, if these interpretations are in biomechanical language, biomechanists may analyze the relationships between body types and spatial success probabilities. This could in turn help MLB\textsuperscript{\textregistered} team scouting departments more accurately preduct hitting success for amateur players, a notorously difficult but lucrative challenge. For a final example, some MLB\textsuperscript{\textregistered} players, such as Joey Votto, have a keen interest in using the most sophisticated analytics available to understand the keys to their success and failure\citep{Daugherty2015}. This research would fit that criteria for Votto.
 
 With regard to media usage possibilities, heat maps are frequently included in television broadcasts of MLB\textsuperscript{\textregistered} games \citep{Cross2015}. ESPN\textsuperscript{\textregistered} and MLB\textsuperscript{\textregistered} recently agreed to an eight year, \$5.6 billion contract \citep{Newman2012}; cutting-edge, more informative heat maps would improve the quality of game broadcasts.
 
@@ -95,7 +102,7 @@ Graphical displays are an irreplaceable tool for the statistician, and the stati
 
 In this chapter we focus on one type of graphical display, the heat map. We show the way it fails to adequately communicate spatial data dispersion and distribution attributes, and we innovate a solution. This innovation improves our ability to communicate spatial data density and dispersion attributes to the viewer using a heat map.
 
-\subsection{Conventional Heat Maps; Baseball Data} % ====================
+\subsection{Conventional Heat Maps, Baseball Data} % ====================
 
 Baseball is a series of contests between the hitter and the pitcher, comprised of pitches the hitter can swing at. In a statistical sense, we consider every swing a trial. This differs from other studies that use only swings that end at bats \citep{Cross2015}, \citep{Baumer2010}, \citep{Fast2011}. These studies omit swinging strikes that do not end at bats, and foul balls, from analysis. This drastically reduces sample sizes. In this work every swing is a trial, with some probability of success. We define success as swings where \verb|des| equals \verb|in play, no out|, and failure as swings where \verb|des| equals \verb|Foul|, \verb|Foul (Runner Going)|, \verb|Foul Tip|, \verb|In play out(s)|, \verb|Swinging Strike|, or \verb|Swinging Strike (Blocked)|.
 
@@ -106,16 +113,14 @@ Define a Bernoulli random variable, $S_{i}$, that equals one for swing success a
 	\includegraphics[scale=.3]{Images/Mothership.pdf} 
   \caption{The gridded hitting zone with 3/4 inch by 3/4 inch boxes, from the catcher's point of view. The color of the box represents the empirical batting average ($\hat{p}_{b}$) for right handed hitters, swinging at pitches in that location. Calculations based on 1,932 right handed hitters, swinging at 1,582,581 pitches between 2008 and 2015. The dashed line marks the boundaries of the called strike zone for a 6'2'' hitter.}
 	\end{figure} 
-		
-	
 	
 \noindent While not sophisticated statistically, the graphic efficiently conveys empirical spatial success probabilities; it maps the statistic $\hat{p}_{b}$ to a color on a spectrum. Though it can easily go unnoticed, a heat map's creater {\it chooses} the grid box size that, hopefully, best communicates the data's information content; here, average spatial hitting ability estimates. The data's varying spatial density through the strike zone is not part of the communicated information, no matter the grid box size selected. This missing information is important, because in general more data means better estimates, and the viewer gets no such indication in Figure 1. Traditional heat maps do not communicate this information. We propose an innovation that addresses this shortcoming. To illustrate, consider a heat map for an individual hitter.
 
-The heat map above divided the strike zone into relatively small boxes, because the data supported it. By ``supported it'' we mean the small, spatially specific boxes retain a sample size large enough to keep the variance of $\hat{p}_{b}$ acceptably \footnote{Defining ``acceptable'' variance ranges and thresholds will depend on context and analysis objectives. For example, a pitching coach may be satisfied with estimates accurate 95\% of the time to within 20 batting average points. This margin of error, 0.02, requires a sample size of 32 when $p_{b} = 0.09$. Note that the variance depends on the mean for a Bernoulli random variable.} This is important because individual hitter datasets vary dramatically in size, with swing totals ranging from a single swing to over 10,000 swings. Similar to bin width selection for a histogram, the choice of heat map resolution can dramatically affect how the data is represented, and the usefulness of the parameter estimates of interest. The resolution decision depends on the size and nature of the data set in question, and its spatial dispersion through the domain. To explore this decision in detail we look at batter 425509, a veteran player named Jhonny Peralta, whose data set contains 9,177 swings.
+The heat map above divided the strike zone into relatively small boxes, because the data supported it. By ``supported it'' we mean the small, spatially specific boxes retain a sample size large enough to keep the variance of $\hat{p}_{b}$ acceptably \footnote{Defining ``acceptable'' variance ranges and thresholds will depend on context and analysis objectives. For example, a pitching coach may be satisfied with estimates accurate 95\% of the time to within 20 batting average points. This margin of error, 0.02, requires a sample size of 32 when $p_{b} = 0.09$. Note that the variance depends on the mean for a Bernoulli random variable.} This is important because individual hitter datasets vary dramatically in size, with swing totals ranging from a single swing to over 10,000 swings. Similar to bin width selection for a histogram, the choice of heat map resolution can dramatically affect how the data is represented, and the usefulness of the parameter estimates of interest. The resolution decision depends on the size and nature of the data set in question, and its spatial dispersion through the domain. To explore this decision in detail, we look at a heatmap for one batter.
 
-\subsection{Empirical Heat Maps and Resolution Selection} % ==============
+\subsection{Resolution Selection} % ====== ======== ====== =======
 
-The heat map in Figure 2 divides the central region of the strike zone into 16 equally sized boxes. Each box maps $\hat{p}_{b}$ to a color, and the box sample size, $n_{b}$, is printed on the box center. For convenient referencing in this chapter, we adopt the convention of numbering boxes with a horizontal component (left to right) and a vertical component (bottom to top [ {\bf Alix: ``WHY?''}]). For example, we call the top-left box (1,4), and the bottom-right box (4,1). 
+Batter 425509, a veteran player named Jhonny Peralta, took 9,177 swings in this dataset. Peralta's swing data yields the heat map in Figure 2, which divides the central region of the strike zone into 16 equally sized boxes. Each box maps $\hat{p}_{b}$ to a color, and the box sample size, $n_{b}$, is printed on the box center. For convenient referencing in this chapter, we adopt the convention of numbering boxes with a horizontal component (left to right) and a vertical component (bottom to top [ {\bf Alix: ``WHY?''}]). For example, we call the top-left box (1,4), and the bottom-right box (4,1). 
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.35]{Images/Chapter4x4.pdf} 
@@ -204,10 +209,9 @@ For this reason the bottom left heat maps in Figures 7 and 8, shown in Figure 9,
 \section{Shiny Heat Map Confidence Intervals}
 
 % =========================
-\subsection{Generalized Linear Models for Hitter Success Probabilities} 
+\subsection{Generalized Linear Model for Hitter Success Probabilities} 
 
-Our goal is to create a statistical model for the heat map of success probabilities. Nonparametric methods, while straightforward, sacrifice interpretability; while they achieve a modeled heat map, there may not be interpretable components of the model. Nonparametric models cannot relate spatially varying hitter success probabilities to hitter attributes. We propose a parametric approach using biomechanically interpretable covariates. Existing research analyzes the biomechanics of the baseball swing \citep{Welch1995}, but no research integrates those results with spatial swing outcomes in a statistical model.
-
+As one of our research goal, we aim to create a statistical model for the heat map of success probabilities. Nonparametric methods, while straightforward, sacrifice interpretability; they achieve a modeled heat map, but without contextually interpretable components. Nonparametric models cannot relate spatially varying hitter success probabilities to hitter attributes. We propose a parametric approach using biomechanically interpretable covariates. Existing research analyzes the biomechanics of the baseball swing \citep{Welch1995}, but no research integrates those results with spatial swing outcomes in a statistical model.
 
 Let success indicator variable, $Y_{ijklm}$, be a Bernoulli random variable with spatially varying mean \citep{Ross2002}. Subscript $i = 1, \dots, n_{jklm}$ indexes hitter $j$'s swings in at bat $k$ against pitcher $l$ in year $m$. Subscript $k = 1, \dots, n_{jlm}$ indexes hitter $j$'s at bats against pitcher $l$ in year $m$. Subscript $l = 1, \dots, n_{jm}$ indexes pitchers hitter $j$ faced, where $n_{jm}$ is the total number of pitchers hitter $j$ faced; and $m = 2007, \dots, 2016$ indexes year. Let $\pmb{s}_{ijkl} = (px_{ikl}, pz_{ijkl})\in \pmb{D} \subseteq \pmb{R}^{2}$ be the horizontal and vertical locations, respectively, of pitch $ijkl$ as it passes through the two dimensioned vertical face of the hitting zone. The origin, $\pmb{s}_{\cdot} = (0,0)$, is the midpoint of the front edge of home plate, at ground level. From the pitcher's point of view, pitches to the left (right) of the center of home plate correspond to negative (positive) values of $px_{\cdot}$. Pitches that bounce before reaching home plate correspond to negative values of $pz_{\cdot}$.  
 
@@ -248,12 +252,13 @@ Note that given a hitter $j$, and pitch location $\pmb{s}_{ij}$, the elements of
 
 We choose Johnny Peralta from Chapter 1 to illustrate, and let $j = P$ for convenience. We fit model (2) using Peralta's $n_{P} = 9177$ observed swings, find maximum likelihood estimates of $\pmb{\beta}_{P}$ using an iteratively reweighted least squares algorithm \citep{Myers2012}. 
 
-(IT WOULD BE NICE: EMPIRICAL, ESTIMATES, FITTTED HEAT MAP) \\
-% \centering
-\begin{tabular}{ l | c | c | c | r }
-
+  \begin{figure}[!ht]
+    \centering
+    \includegraphics[scale=.2]{Images/Peralta_polar.pdf}
+    \qquad
+\begin{tabular}[b]{ l | c | c | c | r }
     \hline
-    Covariate         & Parameter   & MLE   & SE     &      p    \\ \hline \hline
+    Covariate         & $\beta_{i}$ & MLE   & SE     &      p \\ \hline \hline
     N/A               & $\beta_{0}$ & -4.08 & 0.70 & $ <0.001$ \\ \hline
     r                 & $\beta_{1}$ &  1.19 & 0.51 & $  0.018$ \\ \hline
     $\theta$          & $\beta_{2}$ & -1.93 & 1.90 & $  0.311$ \\ \hline
@@ -261,16 +266,15 @@ We choose Johnny Peralta from Chapter 1 to illustrate, and let $j = P$ for conve
     $r^{2}$           & $\beta_{4}$ & -0.32 & 0.09 & $ <0.001$ \\ \hline
     $\theta^{2}$      & $\beta_{5}$ & -3.92 & 1.10 & $ <0.001$ \\ \hline
     $r^{2}*\theta^{2}$& $\beta_{6}$ & -0.46 & 0.21 & $  0.025$ \\ \hline
-    \hline  
+    \hline
+\end{tabular}
+    \captionlistentry[table]{A table beside a figure}
+    \captionsetup{labelformat=andtable}
+    \caption{A table beside a figure}
+  \end{figure}
 
-  \end{tabular}
 
-  \begin{figure}[H]
-  % \centering
-	\includegraphics[scale=.3]{Images/Peralta_polar.pdf} 
-  \caption{}
-  
-	\end{figure} 
+
 
 \subsection{Hosmer-Lemeshow Goodness of Fit Test} % ================
 
