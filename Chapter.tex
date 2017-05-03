@@ -510,30 +510,13 @@ With this representation achieved, via the SPDE link, we move on to the approxim
 
 \subsubsection{Integrated Nested Laplace Approximations (INLA)}
 
-INLA proceeds through a carefully constructed and calibrated series of calculations and approximations, to acheive estimates of key quantites. In this section, we define $\pmb{x}(\pmb{s}) = (\pmb{\beta},\pmb{w}(\pmb{s}))$, where $\pmb{\beta}$ has a Normal prior distributiona as required by INLA methods. The key quantites, then, include the maginal posterior distributions for latent field parameters, $p(x_{i}|\pmb{y})$; and covariance hyperparameter posterior $p(\theta|\pmb{y})$. This means we never obtain posteriors $p(\pmb{x}|\pmb{y})$ and $p(\pmb{x},\pmb{\theta}|\pmb{y})$. As a basic INLA roadmap, this section includes calculating:
-\begin{enumerate}
-\item $p(\pmb{y}|\pmb{x},\pmb{\theta})$, directly.
-\item $\tilde{p}(\pmb{x}|\pmb{\theta}, \pmb{y})$, as a Gaussian approximation of $p(\pmb{x}|\pmb{\theta}, \pmb{y})$.
-\item $\pmb{x}_{0} = \text{argmax}_{x}\tilde{p}(\pmb{x}|\pmb{y},\pmb{\theta}_{0})$, or the posterior mode of $\tilde{p}(\pmb{x}|\pmb{y},\pmb{\theta})$ for a given $\pmb{\theta} = \pmb{\theta}_{0}$.
-\item $\tilde{p}(\pmb{\theta}|\pmb{y})$, using a basic probability identity, Gaussian approximation $\tilde{p}(\pmb{x}|\pmb{\theta}, \pmb{y})$, evaluated at posterior mode $\pmb{x}_{0}$.
-\item $p(x_{i}|\pmb{y})$, by way of numerical integration of $\tilde{p}(x_{i}|\pmb{\theta}, \pmb{y}) \tilde{p}(\pmb{\theta} |\pmb{y})$ over all $\pmb{\theta}$.
-\end{enumerate}
-Note again:
-\begin{itemize}
-\item $p(\pmb{x}|\pmb{y})$ --- not estimated
-\item $p(\pmb{x}, \pmb{\theta}| \pmb{y})$ --- not estimated
-\end{itemize}
+INLA proceeds through a carefully constructed and calibrated series of calculations and approximations, to acheive estimates of key quantites. These quantites include the maginal posterior distributions for latent field parameters, $p(x_{i}|\pmb{y})$; and covariance hyperparameter posterior $p(\theta|\pmb{y})$. This means we never obtain posteriors $p(\pmb{x}|\pmb{y})$ and $p(\pmb{x},\pmb{\theta}|\pmb{y})$. 
 
 \subsubsection*{Step 1, Gaussian Approximation} % ======= ======
 
-The basic approach to estimating $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ is ``matching the mode and curvature at the mode'' of estimator $\tilde{p}(\pmb{x}|\pmb{\theta}, \pmb{y})$ to that of $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ \citep{Rue2005}. As mentioned, INLA requires Gaussian priors for all paramters except covariance hyperparameters; but, INLA also requires conditional independence, whereby $p(\pmb{y}|\pmb{x}, \pmb{\theta}) = \prod_{i} p(\pmb{y}_{i}|\pmb{x}_{i},\pmb{\theta})$. Our analysis satisfies this necessity, and therefore $$p(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp}\left(-\frac{1}{2}\pmb{x}^{T}\pmb{Q x} + \sum_{i} \text{log }p(y_{i}|x_{i}) \right).$$ The Gaussian approximation takes the following form,
+The basic approach to estimating $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ is ``matching the mode and curvature at the mode'' of estimator $p_{G}(\pmb{x}|\pmb{\theta}, \pmb{y})$ to that of $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ \citep{Rue2005}. As mentioned, INLA requires Gaussian priors for all paramters except covariance hyperparameters; but, INLA also requires conditional independence, whereby $p(\pmb{y}|\pmb{x}, \pmb{\theta}) = \prod_{i} p(y_{i}|\pmb{x}_{i},\pmb{\theta})$. Our analysis satisfies this necessity, and therefore $$p(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp}\left(-\frac{1}{2}\pmb{x}^{T}\pmb{Q x} + \sum_{i} \text{log }p(y_{i}|\pmb{x}_{i},\pmb{\theta}) \right).$$ The Gaussian approximation takes the form
 $$p_{G}(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp} \left( -\frac{1}{2}(\pmb{x-\mu})^{T} (\pmb{Q} + \text{diag}(\pmb{c}) ) (\pmb{x - \mu}) \right),$$
-where $\pmb{c}$ and $\pmb{\mu}$ depend on a second order Taylor expansion of $f(\pmb{x}) = \sum_{i} \text{log }p(y_{i}|x_{i})$, about some $\pmb{x}_{0}$ \citep{Rue2007}, \citep{Lindstrom2014}. Various methods exist for determining the form of $\pmb{c}$ and $\pmb{\mu}$ \citep{Rue2009}. For example, for latent random field $\pmb{x} \sim \text{N}(\pmb{\mu}, \pmb{Q}^{-1})$, \cite{Lindstrom2014} gives the following mean and variance for the Gaussian approximation, :
-            \begin{align}
-           \text{E}_{\pmb{x}_{0}}(\pmb{x}|\pmb{y,\theta}) & \approx \big( \pmb{Q} - \text{diag}(f''(\pmb{x}_{0})) \big)^{-1} \big( \pmb{Q}\pmb{x}_{0} + f'(\pmb{x}_{0}) - f''(\pmb{x}_{0}) \pmb{x}_{0} \big)  \\
-           \text{V}_{\pmb{x}_{0}}(\pmb{x}|\pmb{y,\theta}) & \approx \big( \pmb{Q} - \text{diag}(f''(\pmb{x}_{0})) \big)^{-1}
-            \end{align}
-Step 2 uses this Gaussian approximation, $p_{G}(\pmb{x}|\pmb{\theta},\pmb{y})$.
+where vectors $\pmb{c}$ and $\pmb{\mu}$ depend on second order Taylor expansions of $f(\pmb{x}) = \sum_{i} \text{log }p(y_{i}|\pmb{x}_{i},\pmb{\theta})$ about the mode \citep{Lindstrom2014}. A Newton-Raphson algorithm iteratively computes the mode and precision matrix until convergence \citep{Rue2009}. Step 2 uses this Gaussian approximation, $p_{G}(\pmb{x}|\pmb{\theta},\pmb{y})$.
 
 \subsubsection*{Step 2, Laplace Approximation}  % ====== ======
 
@@ -551,14 +534,14 @@ p(\theta|\pmb{y}) & \propto p(\pmb{y}|\pmb{\theta})p(\pmb{\theta}) \\
 
 For a given $\pmb{\theta}$, let $\pmb{x}_{0} = \text{argmax}_{x}p(\pmb{x}|\pmb{y},\pmb{\theta})$. Then,
 $$ p(\pmb{\theta}|\pmb{y}) \approx \tilde{p}(\pmb{\theta}|\pmb{y}) \propto  \frac{p(\pmb{y} | \pmb{x}_{0}, \pmb{\theta}) p(\pmb{x}_{0} | \pmb{\theta})}{p_{G}(\pmb{x}_{0} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta}),$$
-where the Taylor approximation of $f(\pmb{x}) = \sum_{i} \text{log }p(y_{i}|x_{i})$, in $p_{G}(\pmb{x} | \pmb{y}, \pmb{\theta})$, expands about $\pmb{x}_{0}$. This approximation matches \cite{Tierney1986} Laplace approximation.  Then, we have approximate maximum likelihood estimate $\hat{\pmb{\theta}}_{\text{ML}} \approx \text{argmax}_{\theta} \tilde{p}(\pmb{\theta}|\pmb{y})$, a
+where the Taylor approximation of $f(\pmb{x}) = \sum_{i} \text{log }p(y_{i}|x_{i})$, in $p_{G}(\pmb{x} | \pmb{y}, \pmb{\theta})$, expands about $\pmb{x}_{0}$. This approximation matches \cite{Tierney1986} Laplace approximation.  Then, we have approximate maximum likelihood estimate $\hat{\pmb{\theta}}_{\text{ML}} \approx \text{argmax}_{\theta} \tilde{p}(\pmb{\theta}|\pmb{y})$.
 
 \subsubsection*{Step 3, Numerical Integration} % === === === === ===
 Numerical Integration over $\pmb{\theta}$, or elements of $\pmb{\theta}$, gives $p(x_{i}|\pmb{y})$ and $p(\theta_{i}|\pmb{y})$.
         $$ p(x_{j} | \pmb{y}) \approx \int p_{\text{G}}(x_{j}|\pmb{\theta, y})\tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta} $$
         $$ p(\theta_{k} | \pmb{y}) \approx \int \tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta}_{-k} $$
 
-In summary, from a continuous domain the SPDE-INLA approxmation produces provide, with improved speed, posterior estimates for $p(\pmb{\theta}|\pmb{y})$, $p(\theta_{i}|\pmb{y})$, and $p(x_{i}|\pmb{y})$. The R package \verb|INLA| implements this procedure, with flexible SPDE specifications for domain triangulation.
+In summary, from a continuous domain the SPDE-INLA approxmation procedure provides, with improved speed, posterior estimates for $p(\pmb{\theta}|\pmb{y})$, $p(\theta_{i}|\pmb{y})$, and $p(x_{i}|\pmb{y})$. The R package \verb|INLA| implements this procedure, with flexible SPDE specifications for domain triangulation.
 
 \subsubsection{Bayesian Inference in R-INLA}
 
