@@ -1,0 +1,773 @@
+\documentclass{article}
+
+\title{Baseball Research Log}
+\author{Chris Comiskey}
+\date{Spring 2017}
+
+\usepackage{natbib}
+\bibliographystyle{unsrtnat}
+
+\usepackage{fullpage}
+\usepackage{ulem}
+
+\usepackage{amsmath, amsthm, amssymb, amsfonts}
+\usepackage{mathtools}
+\usepackage{float}
+\usepackage{bbm}
+\usepackage{mathrsfs}
+
+\usepackage{listings}
+
+
+\begin{document}
+
+\maketitle{}
+
+\section*{20 February 2017}
+
+\section*{****************** Begin INLA-SPDE-RINLA ***************}
+
+\subsection*{Debashis meeting}
+\begin{itemize}
+\item INLA is oversold; Does Matern $\nu = 1, 2, 3$ only (no exponential, $\nu = 1/2$)
+\item Matern $\nu = 1$ is reasonable-ish.
+\item Could add structure to cov. matrix, make it sparse, make cov = 0 for $d > d_{0}$
+\item SPDE is oversell too.
+\item INLA is basically Taylor series
+\item Will be bias in estimates, for binary data in particular.
+\item MCMC might work better with sparse cov matrix, R has a package for sparse matrices; does Stan use sparse matrices?
+\end{itemize}
+
+\section*{February 27, 2017}
+
+\subsubsection*{Matern Covariance (1)}
+$$ C_{\nu}(d) = \sigma^{2} \frac{2^{1 - \nu}}{\Gamma(\nu)} \left( \sqrt{2 \nu} \frac{d}{\rho} \right)^{\nu} K_{\nu} \left( \sqrt{2\nu}\frac{d}{\rho} \right) $$
+Where $\Gamma$ is the gamma function, and $K_{\nu}$ is the modified Bessel function, $\rho$ and $\nu$ are non-negative covariance parameters
+\begin{itemize}
+\item Recall, $\Gamma(n) = (n-1)!$
+\item $\nu = 1/2$ gives exponential covariance 
+$$C_{1/2}(d) = \sigma^{2} exp(-d/\rho)$$
+\item Stationary and isotropic if Euclidean distance
+\end{itemize}
+
+
+\subsection*{Miscellaneous}
+\begin{itemize}
+\item Covariance tapering? $d < d_{0} \rightarrow d = 0$, then what?
+\item {\bf range parameter: the Euclidean distance where $x(s_{0})$ and $x(s_{1})$ are almost independent.} \citep{Lindgren2011}
+\end{itemize}
+
+\section*{Meeting}
+\begin{itemize}
+\item I {\bf CAN} make {\bf half} of my talk ``Lessons Learned''!!
+\item ``Lessons Learned'' 
+  \begin{itemize}
+  \item Zero-th problem (Journal club)
+  \item JSM talk, already published -- do a lit review!
+  \item Write and show
+  \item ``Secrets of Research Success'' -Hugh Kearns
+  \item Imposter syndrome
+  \item Compare yourself to others $\rightarrow$ ruin!
+  \item Koutsoyiannis
+  \item Richard Feynman
+  \item ``Thinking, Fast and Slow''
+  \item ``Set a pace you can keep.''
+  \end{itemize}
+\item INLA
+\item ``You're ready to be done.'' -Alix, as in ``You have gained the research skills you need to go out there and be successful.''
+\item ``This is great! You're coming in here telling {\bf  me} what your dissertation is!''
+\item My plan for chapters is legit.
+\item Talked about family, job search, research, seminar talk, Chris Wolf.
+\end{itemize}
+
+\section*{March 6, 2017}
+
+\subsection*{An explicit link between Gaussian fields and Gaussian Markov random fields: the stochastic partial differential equation approach \citep{Lindgren2011}}
+\begin{itemize}
+\item ``A GMRF is a discretely indexed Gaussian field x, where the full conditionals'' depend only on a small set of symmetric neighbor relationships, which yields sparse matrices that lend themselves to approximations---INLA
+\item The GMRF ``computational gain comes from the fact that the zero pattern of the precision matrix Q (the inverse covariance matrix) relates directly to the notion of neighbours...''
+\item Matrix {\bf Q: the inverse covariance matrix}
+\item ``The result is a basis function representation with piecewise linear basis functions, and Gaussian weights with Markov dependencies determined by a general triangulation of the domain.'' 
+  \begin{itemize}
+  \item Recall ``basis'' from linear algebra, where a set of linearly independent vectors span a space
+  \item function space - space of {\it functions}
+  \item basis functions - a set of functions from which can build any function in the function space
+  \end{itemize}
+
+\item Matern (2):
+$$r(\pmb{u}, \pmb{v}) = \frac{\sigma^{2}}{2^{\nu - 1}\Gamma(\nu)}(\kappa||\pmb{u} - \pmb{v}||)^{\nu}K_{\nu}(\kappa||\pmb{u} - \pmb{v}||)$$
+      \begin{itemize}
+      \item scaling parameter $\kappa \approx 1/\rho$ = 1/range parameter
+      \item Empirically derived: $\rho \equiv \sqrt{8\nu}/\kappa$
+      \end{itemize}
+\item (identity) Linear fractional SPDE:
+$$ (\kappa^{2} - \Delta)^{\alpha/2} x(\pmb{u}) = \mathcal{W}(\pmb{u}) $$
+      \begin{itemize}
+      \item $\alpha = \nu + d/2$ 
+      \item Note: d=2 for $\mathbb{R}^{2}$
+      \end{itemize}
+\item $\Delta$ is Laplacian:
+$$ \Delta = \sum_{i=1}^{d} \frac{\partial^{2}}{\partial x_{i}^{2}} $$
+\item Marginal Variance:
+$$\sigma^{2} = \frac{\Gamma(\nu)}{\Gamma(\nu + d/2)(4\pi)^{d/2}\kappa^{2\nu}}$$
+\end{itemize}
+
+\subsection*{Bayesian Spatial Modelling with R-INLA \citep{Lindgren2015}}
+\begin{itemize}
+\item ``...as discussed in Lindgren et al. (2011), one can express a large class of random field models as solutions to continuous domain stochastic partial differential equations (SPDEs), and write down explicit links between the parameters of each SPDE and the elements of precision matrices for weights in a discrete basis function representation.''
+\item ``{\bf An alternative to traditional covariance based modelling is to use SPDEs, but carry out the practical computations using Gaussian Markov random field (GMRF) representations. This is done by approximating the full set of spatial random functions with weighted sums of simple basis functions, which allows us to hold on to the continuous interpretation of space, while the computational algorithms only see discrete structures with Markov properties.} Beyond the main paper Lindgren et al. (2011), this is further discussed by Simpson, Lindgren, and Rue (2012a,b).'' \citep{Simpson2012}, \citep{Simpson2012b}
+\item \cite{Simpson2012} give a {\bf fantastic picture} for conveying the action of SPDE method
+\item ``The simplest model for (spatial field) $x(\pmb{s})$ currently implemented in R-INLA is the SPDE/GMRF version of the stationary Matern family, obtained as the stationary solutions to
+$$ (\kappa^{2} - \Delta)^{\alpha/2}(\tau x(\pmb{s})) = \mathcal{W}(\pmb{s})\text{, } \pmb{s} \in \Omega $$ where
+    \begin{itemize}
+    \item $\Delta$ is the Laplacian
+    \item $\kappa$ is the spatial scale parameter
+    \item $\alpha$ controls the smoothness of the realisations
+    \item $\tau$ controls the variance
+    \item $\Omega$ is the spatial domain
+    \item $\mathcal{W}(\pmb{s})$ is a Gaussian spatial white noise process
+    \end{itemize}
+Whittle (1954, 1963) shows stationary solutions on $\mathbb{R}^{d}$ have Matern covariances,
+$$\text{COV}(x(\pmb{0}), x(\pmb{s})) = \frac{\sigma^{2}}{2^{\nu - 1}\Gamma(\nu)}(\kappa||s||)^{\nu}K_{\nu}(\kappa||s||)$$
+The parameters in the two formulations are coupled so that the Matern smoothness is $\nu = \alpha - d/2$ and marginal variance is
+$$\sigma^{2} = \frac{\Gamma(\nu)}{\Gamma(\alpha)(4\pi)^{d/2}\kappa^{2\nu}\tau^{2}}$$
+Exponential covariance: $\nu = 1/2$; (i) for $d = 1 \rightarrow  \alpha = 1$, (ii) for $d = 2 \rightarrow \alpha = 3/2$''
+\item ``The models discussed in \cite{Lindgren2011} and implemented in R-INLA are built on a basis representation
+$$ x(\pmb{s}) = \sum_{k=1}^{n} \psi_{k}(\pmb{s})x_{k}$$
+where
+      \begin{itemize}
+      \item $\psi_{k}(\cdot)$ are deterministic basis functions, and
+      \item the joint distribution of the weight vector $\pmb{x} = \{x_{1},\dots,x_{n}\}$ is chosen so that the distribution of the functions $x(\pmb{s})$ approximates the distribution of solutions to the SPDE on the domain.''
+      \item piecewise polynomial basis functions
+      \item use {\bf Finite Element Method - project the SPDE onto the basis representation} ...which is GMRF. \citep{Simpson2012}
+      \end{itemize}
+\item Bayesian Inference (REALLY FREAKIN' GOOD SUMMARY)
+        \begin{enumerate}
+        \item $\tilde{p}(\pmb{x}|\pmb{\theta, y})$ by Gaussian approximation
+        \item Posterior mode: $\pmb{x}^{*}(\pmb{\theta}) = \text{argmax}_{x}p(\pmb{x}|\pmb{\theta, y})$
+        \item Laplace approximation
+        $$ p(\pmb{\theta} | \pmb{y}) \propto \frac{p(\pmb{\theta, y, x})}{p(\pmb{x}|\pmb{\theta, y})} \Big|_{\pmb{x} = \pmb{x}^{*}(\pmb{\theta})} \approx \frac{p(\pmb{\theta, y, x})}{\tilde{p}(\pmb{x}|\pmb{\theta, y})} \Big|_{\pmb{x} = \pmb{x}^{*}(\pmb{\theta})}$$
+        Approximate (unnormalized) posterior density for $\pmb{\theta}$ at any point, and numerical optimization to find mode of posterior.
+        \item Numerical integration:
+        $$ p(\theta_{k} | \pmb{y}) \approx \int \tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta}_{-k} $$
+        \item Numerical integration:
+        $$ p(x_{j} | \pmb{y}) \approx \int \tilde{p}(x_{j}|\pmb{\theta, y})\tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta} $$
+        \end{enumerate}
+\end{itemize}
+
+\subsection*{Miscellaneous}
+I got \verb|inla(...)| to run!!
+\begin{itemize}
+\item \verb|geoR| package
+\item I am trying to generate Matern data with \verb|grf(...)|, then estimate parameters with \verb|inla(...)|. However, basic input to \verb|inla(...)| implies INLA, without SPDE connection, and thus data on a grid. This means using my actual pitch locations from \verb|hitter| will not work. \\
+\item Try to generate data on a grid, use \verb|inla(...)| to estimate parameters
+\item inverse Precision matrix equals covariance matrix: $Q^{-1} = \Sigma$
+\item Precision matrix Q equals inverse covariance matrix: $Q = \Sigma^{-1}$
+\end{itemize}
+
+\subsection*{Simulate Matern data}
+\verb|geoR| package, \verb|grf(...)| function
+\subsection*{Matern (3)}
+$$ \rho(u; \phi, \kappa) = \{2^{\kappa-1}\Gamma(\kappa)\}^{-1}(u/\phi)^{\kappa}K_{\kappa}(u/\phi)$$
+  \begin{itemize}
+  \item $u$ - vector/matrix/array with distances between pairs of data locations
+  \item $\phi$ - range parameter, $>0$
+  \item $\kappa$ - smoothness parameter, $>0$
+  \item $K_{\kappa}(\cdot)$ - modified Bessel function of third kind of order $\kappa$
+  \end{itemize}
+  
+\subsection*{Matern (4)}
+\citep{Schabenberger2004}
+$$ C(h) = \sigma^{2}\frac{1}{\Gamma(\nu)}\left(\frac{\theta h}{2}\right)^{\nu}2K_{\nu}(\theta h) \text{,   } \nu >0, \theta > 0 $$
+\begin{itemize}
+\item $\theta$ governs range of spatial dependence
+\item $\nu$: smoothness increases with $\nu$
+\item Page 143: The Matern Class of Covariance Functions
+\item Page 199: ${\bf THREE}$ Matern parameterizations
+\item Page 210: Bessel Functions
+\item Whittle Model, $\nu = 1$ (INLA/SPDE world, I think)
+$$ C(h) = \sigma^{2}\theta h K_{1}(\theta h) $$
+Whittle considered this the ``elementary model'' in $\mathbb{R}^{2}$
+\end{itemize}
+
+\subsection*{Stochastic Calculus}
+
+Stochastic Differential Equation (wikipedia)
+\begin{itemize}
+\item ``A heuristic but helpful interpretation of the stochastic differential equation (of continuous time stochastic process $X_{t}$) is that in a small time interval of length $\delta$ the stochastic process $X_{t}$ changes its value by an amount that is normally distributed (for example) with expectation $\mu(X_{t},t)\delta$ and variance $\sigma(X_{t}, t)^{2}\delta$ and is independent of the past behavior of the process.''
+\end{itemize}
+Stochastic Calculus \citep{Mao2007}
+\begin{itemize}
+\item Integral of random process is another random process. Random process not integrable in traditional sense, so stochastic calculus created, by Ito, Ito Calculus. Use Brownian motion as some sort of reference point.
+$$ Y_{t} = \int_{0}^{t} H_{s} dX_{s} $$
+Integrand and integrator are stochastic processes.
+\end{itemize}
+
+\section*{March 16, 2017}
+\begin{itemize}
+\item Smoothness = differentiability, number of continuous derivatives (Wikipedia) 
+\item Stochastic calculus = ``branch of mathematics that operates on stochastic processes. It allows a consistent theory of integration to be defined for integrals of stochastic processes with respect to stochastic processes. It is used to model systems that behave randomly.
+
+The best-known stochastic process to which stochastic calculus is applied is the Wiener process (named in honor of Norbert Wiener), which is used for modeling Brownian motion as described by Louis Bachelier in 1900 and by Albert Einstein in 1905 and other physical diffusion processes in space of particles subject to random forces. Since the 1970s, the Wiener process has been widely applied in financial mathematics and economics to model the evolution in time of stock prices and bond interest rates.
+The main flavours of stochastic calculus are the Ito calculus and its variational relative the Malliavin calculus.'' (Wikipedia) 
+
+\item Finite element method - ``a numerical method for solving problems of engineering and mathematical physics... The finite element method formulation of the problem results in a system of algebraic equations. The {\bf method yields approximate values of the unknowns at discrete number of points over the domain. To solve the problem, it subdivides a large problem into smaller, simpler parts that are called finite elements.} The simple equations that model these finite elements are then assembled into a larger system of equations that models the entire problem. FEM then uses variational methods from the calculus of variations to approximate a solution by minimizing an associated error function.'' (Wikipedia) 
+\end{itemize}
+
+\subsection*{MEETING}
+\begin{itemize}
+\item Graduate this summer. Pay for three credits out of pocket. 
+\item Need to email committee, see when members are available. 
+\item Need to investigate the term options, see which term I will enroll for. 
+\item Need to procure insurance for the summer. \\
+     - Need to talk to insurance office about this 
+\item April 24 Seminar: Alix is reneging on "Lessons Learned" portion \\
+     - Jeffrey really impressed her with his talk, and thus Lan impressed her.  \\
+     - ...so she wants to show me off, in a sense. \\
+     - I gotta keep doing what I did to get to the majors. \\ 
+     - ...Don't do anything different. Stick with your approach. \\
+\item Alix really thinks ``so much of life is just showing up.'' 
+\item Fall GTA is off the table. 
+\item Alix wants me to come up with a timeline of when I will give she and Charlotte my Chapter 1, Chapter 2, Chapter 3 drafts; I agreed to middle of Spring term to provide this timeline. (deadline for the timeline) 
+\end{itemize}
+
+\section*{March 27, 2017}
+
+\subsection*{Lecture Slides - GMRF, Dependent Spatial Data}
+\citep{Lindstrom2011}
+\begin{itemize}
+\item Define problem, explain difficulty, define GMRF, {\bf sparse} precision matrix $Q^{-1}$, Markov property, Precision matrix construction hard
+\item  Matern family:
+ $$r(\pmb{u}) = \frac{\sigma^{2}}{2^{\nu - 1}\Gamma(\nu)}(\kappa||\pmb{u}||)^{\nu}K_{\nu}(\kappa||\pmb{u}||)$$
+\item Random fields with Matern covariance are solutions to:
+$$ (\kappa^{2} - \Delta)^{\alpha/2}x(\pmb{s}) = \mathcal{W}(\pmb{s})\text{, } $$
+      \begin{itemize}
+      \item $\alpha = \nu + d/2$
+      \item $\Delta$ is Laplacian: $ \Delta = \sum_{i} \frac{\partial^{2}}{\partial x_{i}^{2}} $
+      \end{itemize}
+\end{itemize}
+\subsubsection*{Construct GMRF from SPDE}
+(by representing Matern field as a basis function (which is GMRF), using the SPDE identity, in what amounts to finite element method (FEM))
+      \begin{itemize}
+      \item Construct the solution as a finite basis expansion:
+      $$ x(\pmb{s}) = \sum_{k} \psi_{k}(\pmb{s})x_{k},$$ 
+      with a suitable distribution for the weights $\{x_{k}\}$.
+      \item Sotchastic weak solution given by weights $\{x_{k}\}$ such that the joint distribution fulfills
+      $$ \sum_{i} \left< \psi_{j}, (\kappa^{2} - \Delta)^{\alpha/2} \psi_{i} x_{i} \right> \overset{D}{=} \langle \psi_{j}, \mathcal{W} \rangle \text{  } \forall \pmb{j}$$
+      \item SOLUTION. \\The distribution of the weights:
+      \begin{align}
+      & \pmb{x} \sim N(0, \pmb{Q}^{-1}) \\
+      & \alpha = 1: \pmb{Q}_{1,\kappa} = \pmb{K} \\
+      & \alpha = 2: \pmb{Q}_{2,\kappa} = \pmb{K} \pmb{C}^{-1} \pmb{K}  \\
+      & \alpha = 3, 4, \hdots : \pmb{Q}_{\alpha,\kappa} = \pmb{K} \pmb{C}^{-1} \pmb{Q}_{\alpha - 2,\kappa} \pmb{C}^{-1} \pmb{K},  
+      \end{align}
+      where
+      \begin{align}
+      \pmb{C}_{i,j} & = \langle \psi_{i}, \psi_{j} \rangle \\
+      \pmb{K}_{i,j} & = \langle \psi_{i}, (\kappa^{2} - \Delta)\psi_{j} \rangle \\
+      & = \kappa^{2} \langle \psi_{i}, \psi_{j} \rangle - \langle \psi_{i}, \Delta \psi_{j} \rangle \\
+      & = \kappa^{2} \pmb{C}_{i,j} + \pmb{G}_{i,j}
+      \end{align}
+      \item $\pmb{C}^{-1}$ dense, so replace $\pmb{C}$ with diagonal matrix $\widetilde{\pmb{C}}_{i,i} = \langle \psi_{i}, \pmb{1} \rangle$
+      \end{itemize}
+\subsubsection*{Example: Lattice on $\mathbb{R}^{2}$, step size h, regular triangulation}
+
+\begin{itemize}
+\item $\pmb{Q}_{2, \kappa} = \kappa^{4} h^{2} + 2 \kappa^{2}(-\Delta) + \frac{1}{h^{2}} \Delta^{2}$
+\item $\pmb{Q}_{2, \kappa} \approx \kappa^{4} h^{2} M_{0} + 2 \kappa^{2} M_{1} + \frac{1}{h^{2}} M_{2}$
+
+\item $M_{0} = 
+        \begin{bmatrix}
+        &    &   &    &     \\ 
+        &   &  &   &     \\ 
+        &  & 1 &  &    \\ 
+        &   &  &   &     \\ 
+        &   &   &    & 
+        \end{bmatrix}
+     $
+\item     $-\Delta \approx M_{1} = 
+        \begin{bmatrix}
+        &    &  &    &     \\ 
+        &   & -1 &   &     \\ 
+       & -1 & 4 & -1 &    \\ 
+        &   & -1 &   &     \\ 
+        &    &   &    & 
+     \end{bmatrix} $
+      
+     
+\item $ \Delta^{2} \approx M_{2} = 
+        \begin{bmatrix}
+        &    & 1  &    &     \\ 
+        & 2  & -8 & 2  &     \\ 
+      1 & -8 & 20 & -8 & 1   \\ 
+        & 2  & -8 & 2  &     \\ 
+        &    & 1  &    & 
+     \end{bmatrix} $
+
+\item Matrix form, matrix $\pmb{A}$:
+  \begin{itemize}
+  \item $ A_{i \cdot} = \big[ \psi_{1} (\pmb{u}_{i}), \dots, \psi_{N}(\pmb{u}_{i}) \big] $
+  \item $x \in N(\mu, \pmb{Q}^{-1})$
+  \item $\pmb{y} = \pmb{Ax} + \pmb{\epsilon}$
+  \end{itemize}
+
+\end{itemize}  
+
+\subsection*{Stat Methods for Spatial Data Analysis} 
+Matern, Whittle, Stochastic Laplace \citep{Schabenberger2004}
+\begin{itemize}
+\item Matern ($\theta$ range, smoothness $\nu$)
+$$ C(h) = \sigma^{2}\frac{1}{\Gamma(\nu)}\left(\frac{\theta h}{2}\right)^{\nu}2K_{\nu}(\theta h) \text{,   } \nu >0, \theta > 0 $$
+\item Whittle Model ($\nu = 1$) (Whittle: ``elementary model'' in $\mathbb{R}^{2}$) \\
+Covariance, Correlation:
+$$ C(h) = \sigma^{2}\theta h K_{1}(\theta h) $$
+$$ R(h) = \theta h K_{1}(\theta h) $$
+\item Stochastic Laplace equation (Z: Matern, $\epsilon$: white noise):
+$$ \left( \frac{\partial^{2}}{\partial x^{2}} + \frac{\partial^{2}}{\partial y^{2}} - \theta^{2} \right) Z(x,y) = \epsilon(x,y) $$
+\end{itemize}
+
+
+
+\subsection*{Lecture Slides - GMRFs}
+\citep{Lindstrom2014}
+
+\begin{itemize}
+\item Kriging
+  \begin{enumerate}
+  \item Observations $Y(\pmb{s}_{i}), i = 1, \hdots, n$, and unobserved locations $X(\pmb{s})$. 
+  \item Simplest case, Gaussian
+  $$\begin{bmatrix}
+        \pmb{Y}   \\
+        \pmb{X}
+        \end{bmatrix}
+      \sim
+     N \left(
+        \begin{bmatrix}
+        \mu_{x}   \\
+        \mu_{y}
+        \end{bmatrix}
+        ,
+        \begin{bmatrix}
+        \Sigma_{yy}     & \Sigma_{yx} \\
+        \Sigma_{yx}^{T} & \Sigma_{xx}
+        \end{bmatrix}
+        \right) $$
+  \item Parametric form
+  $$ \pmb{Y} \sim N(\pmb{\mu(\theta)}, \Sigma(\pmb{\theta})) $$
+  \item Log-likelihood
+  $$ L(\pmb{\theta}|\pmb{Y}) = -\frac{1}{2}log|\Sigma(\pmb{\theta})| - \frac{1}{2}\Big( \pmb{Y} - \pmb{\mu}(\pmb{\theta})\Big)^{T} \Sigma(\pmb{\theta})^{-1} \Big( \pmb{Y} - \pmb{\mu}(\pmb{\theta})\Big) $$
+  \item Krig
+  $$ E \Big(\pmb{X}|\pmb{Y}, \hat{\theta} \Big) = \pmb{\mu}_{x} + \Sigma_{xy} \Sigma_{yy}^{-1} (\pmb{Y} - \pmb{\mu}_{y} \Big)$$
+  \end{enumerate}
+  
+\item ``Big N'' problem
+\item Getting aroung ``Big N''; lots of references
+\item Gaussian Markov Random Field (GMRF) - AR1 is simplest example
+\item Precision matrix $Q = \Sigma^{-1}$
+\item GMRF: neighbour structure $\rightarrow$ sparse precision matrix $\rightarrow$ simplified conditional expectation
+\item Brief computational details - sparse $\pmb{Q} \rightarrow$ sparse $\pmb{R}$ (Cholesky: $\pmb{R}^{T}\pmb{R} = \pmb{Q}$)
+\item $\pmb{Q}$ not trivial to construct; create $\pmb{Q}$ from Matern as solution to SPDE 
+\item Matern produces  Markov field for $\nu \in \mathbb{Z}$ for $\mathbb{R}^{2}$ (...via non-trivial process projection of Matern, with SPDE, onto basis representation)
+\item Construct a discrete approximation of the continuous field using basis functions, $\{\psi_{k} \}$, and weights $\{ w_{k} \}$, 
+$$ x(\pmb{s}) = \sum_{k} \psi_{k}(\pmb{s}) w_{k} $$
+\item Find distribution of $w_{k}$ by solving 
+$$ (\kappa^{2} - \Delta)^{\alpha/2}x(\pmb{s}) = \mathcal{W}(\pmb{s})$$
+\item {\bf Stochastic weak solution} to the SPDE:
+      $$ \left[ \left< \phi_{k}, (\kappa^{2} - \Delta)^{\alpha/2} \pmb{x} \right> \right]_{k = 1, \hdots, n} \overset{D}{=} \Big[ \langle \phi_{k}, \mathcal{W} \rangle \Big]_{k = 1, \hdots, n} $$
+      ...for each set of test functions $\{\phi_{k}\}$.
+\item Definition \citep{Lindgren2011}:
+$$ \langle f, g \rangle = \int f(\pmb{u}) g(\pmb{u}) d\pmb{u} $$ 
+\item Replace $\pmb{x}$ with basis function representation $\Sigma_{k}\psi_{k}w_{k}$
+$$ \left[ \left< \phi_{i}, (\kappa^{2} - \Delta)^{\alpha/2} \psi_{j} \right> \right]_{i,j}\pmb{w} \overset{D}{=} \Big[ \langle \phi_{k}, \mathcal{W} \rangle \Big]_{k} $$
+\item Galerkin solution: $\alpha = 2, \phi_{i} = \psi_{i}$
+$$ \Big(
+\kappa^{2} [ \langle \psi_{i}, \psi_{j} \rangle ] + [ \langle \psi_{i}, -\Delta \psi_{j} \rangle ]
+\Big) \pmb{w} \overset{D}{=} \Big[ \langle \psi_{k}, \mathcal{W} \rangle \Big] $$
+$$ \left(
+\kappa^{2} \pmb{C} + \pmb{G} \right) \pmb{w} \overset{D}{=} N(0,\pmb{C}) $$
+$$ \left(
+\kappa^{2} \pmb{C} + \pmb{G} \right) \pmb{w} \sim N(0,\pmb{C}) $$
+
+Variance(w)
+\begin{align}
+Var \big[ \left(\kappa^{2} \pmb{C} + \pmb{G} \right) \pmb{w} \big] & = \pmb{C} \\
+\left( \kappa^{2} \pmb{C} + \pmb{G} \right) Var(\pmb{w}) \left( \kappa^{2} \pmb{C} + \pmb{G} \right)^{T} & = \pmb{C} \\
+Var(\pmb{w}) & = \left( \kappa^{2} \pmb{C} + \pmb{G} \right)^{-1} \pmb{C} \left( \left( \kappa^{2} \pmb{C} + \pmb{G} \right)^{T} \right)^{-1} \\
+\pmb{Q}^{-1} & = \left( \kappa^{2} \pmb{C} + \pmb{G} \right)^{-1} \pmb{C} \left( \left( \kappa^{2} \pmb{C} + \pmb{G} \right)^{T} \right)^{-1} \\
+\pmb{Q} & = \left( \kappa^{2} \pmb{C} + \pmb{G} \right)^{T} \pmb{C}^{-1} \left( \kappa^{2} \pmb{C} + \pmb{G} \right)  
+\end{align}
+\item {\bf Piecewise linear basis function gives (almost) GMRF} \citep{Lindgren2011}. $\pmb{G}_{ij}$ and $\pmb{C}_{ij}$ sparse, but $\pmb{C}_{ij}^{-1}$ not. Replace $\pmb{C}$ with diagonal matrix $\widetilde{\pmb{C}}$
+$$ \widetilde{\pmb{C}}_{i,i} = \int \psi_{i}(\pmb{s}) d\pmb{s} $$
+\item Regular lattice in $\mathbb{R}^{2}$, order $\alpha = 2 (\nu = 1)$, same $M_{0}, M_{1}, M_{2}$ as above.
+\item $\pmb{A}$ matrix, with rows $\pmb{A}_{i\cdot} = [\psi_{1}(\pmb{s}_{i}), \dots, \psi_{N}(\pmb{s}_{i}) ] \rightarrow \pmb{x}(\pmb{s}) = \pmb{A}(\pmb{s})\pmb{w}$ where $\pmb{w} \sim N(\mu, \pmb{Q}^{-1})$
+\item Observations, kriging $E(w|y)$ (I have a logistic link between y and w, so kriging estimates not available)
+\item For me: $\pmb{\eta} = \pmb{X\beta} + \pmb{Aw}$ (X = covariates, random effect Z = Aw)
+\end{itemize}
+
+\subsubsection*{Bayesian Hierarchical Model using GMRF}
+\begin{itemize}
+\item (1) $p(y|\eta, \theta)$, (2) $p(\eta|\theta)$, (3) $p(\theta)$ (they use X for ``latent field,'', whereas I have $\eta$ and $Z$)
+\item For INLA require: $p(\pmb{y}|\pmb{x}, \pmb{\theta}) = \prod_{i} p(y_{i}|x_{i},\theta) $ 
+\item Interested in:
+  \begin{enumerate}
+  \item Posterior for parameters: $p(\theta|\pmb{y}) \propto p(\pmb{y}|\pmb{\theta})p(\pmb{\theta})$
+  \item Posterior for latent field $p(\pmb{x} | \pmb{y}, \pmb{\theta}) = \int p(\pmb{x} | \pmb{y}) p(\pmb{\theta}|\pmb{y}) d\theta$
+  \end{enumerate}
+\item Stats 101: $p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta}) =
+p(\pmb{y} , \pmb{x} | \pmb{\theta}) = p(\pmb{x} | \pmb{y}, \pmb{\theta}) p(\pmb{y} | \pmb{\theta})$
+$$\rightarrow p(\pmb{y} | \pmb{\theta}) = \frac{p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta})}{p(\pmb{x} | \pmb{y}, \pmb{\theta})}$$
+
+\item (from (1) above) $$p(\theta|\pmb{y}) \propto p(\pmb{y}|\pmb{\theta})p(\pmb{\theta}) = \frac{p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta})}{p(\pmb{x} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta})$$ Denominator is challenge
+
+\item Stats 101: $p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta}) =
+p(\pmb{y} , \pmb{x} | \pmb{\theta}) = p(\pmb{x} | \pmb{y}, \pmb{\theta}) p(\pmb{y} | \pmb{\theta})$ 
+
+Cut out middle man:
+$$p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta}) = p(\pmb{x} | \pmb{y}, \pmb{\theta}) p(\pmb{y} | \pmb{\theta})$$
+Divide both sides:
+$$p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta})/ p(\pmb{y} | \pmb{\theta})=  p(\pmb{x} | \pmb{y}, \pmb{\theta})$$
+y and $\theta$ constants so proportionality:
+$$p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta}) \propto  p(\pmb{x} | \pmb{y}, \pmb{\theta})$$
+Log of both sides:
+$$\text{log } p(\pmb{x} | \pmb{y}, \pmb{\theta}) = \text{log } p(\pmb{y} | \pmb{x}, \pmb{\theta}) + \text{log } p(\pmb{x} | \pmb{\theta}) + \text{constant}$$
+\item Second order Taylor approximation of $f(x) = \text{log } p(\pmb{y} | \pmb{x}, \pmb{\theta})$ about $x_{0}$
+\item Obtain Gaussian approximation $p_{G}(\pmb{x} | \pmb{y}, \pmb{\theta})$:
+$$ E_{x_{0}}(\pmb{x|y,\theta}) \approx \dots $$
+$$  V_{x_{0}}(\pmb{x|y,\theta}) \approx \dots $$
+\end{itemize}
+\subsubsection*{Integrated Nested (Taylor) Laplace Approxmiation}
+Evaluate $p(\theta|\pmb{y})$:
+\begin{enumerate}
+\item For given $\theta$ find mode: $x_{0} = \text{argmax}_{x}p(\pmb{x} | \pmb{y}, \pmb{\theta})$ using $p(\pmb{x} | \pmb{y}, \pmb{\theta})$ derived from Stats 101.
+\item Compute Taylor expansion of $f(x) = \text{log } p(\pmb{y} | \pmb{x}, \pmb{\theta})$ about $x_{0}$
+\item Approximation:
+$$ p(\theta|\pmb{y}) \approx \tilde{p}(\theta|\pmb{y}) \propto  \frac{p(\pmb{y} | \pmb{x}_{0}, \pmb{\theta}) p(\pmb{x}_{0} | \pmb{\theta})}{p_{G}(\pmb{x}_{0} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta})$$
+\item (Approximate) MLE is: $\hat{\theta}_{\text{ML}} \approx \text{argmax}_{\theta} \tilde{p}(\theta|\pmb{y})$
+\end{enumerate}
+Posteriors for $[x | y]$, use numerical integration over $\theta$:
+$$ p(x_{i}|\pmb{y}) = \int p(x_{i}|\theta, \pmb{y})p(\theta|\pmb{y})d\theta \approx \sum_{k} p_{G}(\pmb{x}_{0} | \theta_{k}, \pmb{y}) \tilde{p}(\theta_{k}|\pmb{y})$$
+
+
+
+\subsection*{Lecture Slides - Latent Gaussian Processes and SPDEs}
+\citep{Lindstrom2016}
+\begin{itemize}
+\item More of the same. Thank god.
+\end{itemize}
+
+\subsection*{Approximate Bayesian Inference for Hierarchical Gaussian Markov Random Field Models \citep{Rue2007}}
+\begin{itemize}
+\item $\mathcal{O}$ definition, Wikipedia
+$$f(x) = \mathcal{O}(g(x)) \text{ as } x \rightarrow \inf \text{ iff } \exists M, x_{0} \text{ such that } |f(x)| \leq M|g(x)| \text{ for all } x \geq x_{0}$$
+\item Gaussian Markov Random Field 
+  \begin{itemize}
+  \item $\pmb{x} = \{ x_{i}:i \in \mathscr{V} \}$
+  \item ``$\pmb{x}$ is a $n = |\mathscr{V}|$-dimensional Gaussian random vector with additional conditional independence/Markov properties'' 
+  \item $\mathscr{V} = \{1,\dots,n\}$
+  \item Graph $\mathscr{G} = \{ \mathscr{V}, \mathscr{E} \}$, with vertices, edges.
+  \item ``Two nodes, $x_{i}$ and $x_{j}$ are conditionally independent given the remaining elements of $\pmb{x}$, if and only if $\{i, j\} \notin \mathscr{E}$.
+  \item ``Then $\pmb{x}$ is a GMRF with respect to $\mathscr{G}$.''
+  \item ``The edges in $\mathscr{E}$ are in one-to-one correspondence with the non-zero elements of the precision matrix of $\pmb{x}$, $\pmb{Q}$, in the sense that $\{ i, j \} \in \mathscr{E}$ if and only if $Q_{ij} \neq 0 \text{ for } i \neq j$.''
+  \item ``When $\{i,j\} \in \mathscr{E}$ we say that $i$ and $j$ are neighbours, which we denote $i \sim j$.''
+  \end{itemize}
+  
+\item ``A hierarchical model:
+  \begin{itemize}
+  \item {\bf First stage}: distributional assumptions for observables conditional on latent parameters. Given observational model parameters, often assume observations conditionally independent. 
+  \item {\bf Second stage}: prior model for latent parameters, or (link) function of them. At this stage {\bf GMRFs provide a flexible tool to model the dependence} between the latent parameters and thus, implicitly, the dependence between the observed data. 
+  \item {\bf Third stage}: prior distributions for unknown hyperparameters (precision parameters in the GMRF).''
+  \end{itemize}
+\item ``We propose a deterministic alternative to MCMC based inference... computed almost instant[ly]... proves to be quite accurate.''
+\end{itemize}
+
+\subsection*{INLA} % *********************************************
+\begin{enumerate}
+\item $p(y|x,\theta)$ --- Easy.
+\item $p(x|\theta, y)$ --- Gaussian approximation.
+\item $p(\theta|y)$ --- Identity, Gaussian approximation, evaluate at $x_{0}$
+\item $p(x_{i}|y)$ --- Numerical integration of $p(x_{i}|\theta, y)p(\theta |y)$ over all $\theta$
+\item $p(x|y)$ --- Never.
+\item $p(x,\theta | y)$ --- Never.
+\end{enumerate}
+
+\subsection*{INLA}
+\begin{enumerate}
+
+\item $p(y|x,\theta)$ --- Easy.
+
+\item $p(x|\theta, y)$ --- Gaussian approximation. \\
+
+\citep{Rue2005}
+      \begin{itemize}
+      \item  (Chapter 4) - ``$\pi(x|\theta,y)$ can often be well approximated with a Gaussian distribution, by matching the mode and curvature at the mode.''
+      \end{itemize}
+      
+\citep{Rue2007}
+      \begin{itemize}
+      \item $p(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp}\left(-\frac{1}{2}\pmb{x}^{T}\pmb{Qx} + \sum_{i} \text{log}p(y_{i}|x_{i}) \right)$ 
+      \item $p_{G}(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp} \left( -\frac{1}{2}(\pmb{x-\mu})^{T} (\pmb{Q} + \text{diag}(\pmb{c}) ) (\pmb{x - \mu}) \right)$
+                \begin{itemize}
+                \item $\mu$ = mode of $p(\pmb{x}|\pmb{\theta, y})$ for each $\theta$ \citep{Rue2007}
+                \item Terms of $\pmb{c}$ due to 2nd order Taylor expansion at $\mu = x_{0} =$ mode of $\sum_{i} \text{log }p(y_{i}|x_{i}) = \text{log }f(y|x)$
+                \end{itemize}
+      \end{itemize}
+      
+\citep{Lindstrom2014}
+      \begin{itemize}
+      \item For a given $\theta = \theta_{0}$ find the mode: $x_{0} = \text{argmax}_{x}p(\pmb{x}|\pmb{y},\pmb{\theta}_{0})$
+                \begin{itemize}
+                \item Can find from unnormalized $p(\pmb{x} | \pmb{y}, \pmb{\theta})$, which we have up to a proportionality constant (good enough for mode)
+                \item $p_{G}(\cdot)$ is valid pdf
+                \end{itemize}
+      \item $\text{log } p(\pmb{x} | \pmb{y}, \pmb{\theta}) = \text{log } p(\pmb{y} | \pmb{x}, \pmb{\theta}) + \text{log } p(\pmb{x} | \pmb{\theta}) + \text{constant}$
+      \item Second order Taylor approximation of $f(x) = \text{log } p(\pmb{y} | \pmb{x}, \pmb{\theta})$ about $x_{0}$
+      \item Obtain Gaussian approximation $p_{G}(\pmb{x} | \pmb{y}, \pmb{\theta})$:
+            \begin{align}
+            E_{x_{0}}(\pmb{x|y,\theta}) & \approx \big( \pmb{Q} - \text{diag}(f''(x_{0})) \big)^{-1} \big( \pmb{Q\mu} + f'(x_{0}) - f''(x_{0})x_{0} \big)  \\
+            V_{x_{0}}(\pmb{x|y,\theta}) & \approx \big( \pmb{Q} - \text{diag}(f''(x_{0})) \big)^{-1} 
+            \end{align}
+      \end{itemize}
+  
+\item $p(\theta|y)$ --- Summary of steps: \\ 
+
+(i) identity \\ 
+(ii) mode of $p(\pmb{x}|\pmb{y},\pmb{\theta}_{0})$ for $\theta_{0}$ \\
+(iii) Gaussian approximation $p_{G}(\pmb{x} | \pmb{y}, \pmb{\theta})$, \\ 
+(iv) $\theta_{ML} = \text{argmax}_{\theta} p(\theta|y)$
+
+      \begin{itemize}
+      \item (Ends up being same as \cite{Tierney1986} Laplace Approximation)
+      \item Stats 101 Identity: $p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta}) =
+p(\pmb{y} , \pmb{x} | \pmb{\theta}) = p(\pmb{x} | \pmb{y}, \pmb{\theta}) p(\pmb{y} | \pmb{\theta})$
+
+      \item Bayesian 101, and identity: $$p(\pmb{\theta}|\pmb{y}) \propto p(\pmb{y}|\pmb{\theta})p(\pmb{\theta}) = \frac{p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta})}{p(\pmb{x} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta})$$
+      \item {\bf Mode} as above: For a given $\theta = \theta_{0}$ find the mode: $x_{0} = \text{argmax}_{x}p(\pmb{x}|\pmb{y},\pmb{\theta}_{0})$ 
+      \item Gaussian approximation $p_{G}(\pmb{x} | \pmb{y}, \pmb{\theta})$ from above.
+      \item Approximation of $p(\theta|\pmb{y})$:
+      $$\tilde{p}(\theta|\pmb{y}) \propto  \frac{p(\pmb{y} | \pmb{x}_{0}, \pmb{\theta}) p(\pmb{x}_{0} | \pmb{\theta})p(\pmb{\theta})}{p_{G}(\pmb{x}_{0} | \pmb{y}, \pmb{\theta})}$$
+      \item $\theta_{ML} = \text{argmax}_{\theta} \tilde{p}(\theta|y)$
+      \end{itemize}
+\item $p(x_{i}|y)$ --- Numerical integration of $p(x_{i}|\theta, y)p(\theta |y)$ over all $\theta$
+      \begin{itemize}
+      \item Posteriors for $[x | y]$, use numerical integration over $\theta$:
+$$ p(x_{i}|\pmb{y}) = \int p(x_{i}|\theta, \pmb{y})p(\theta|\pmb{y})d\theta \approx \sum_{k} p_{G}(\pmb{x}_{i} | \theta_{k}, \pmb{y}) \tilde{p}(\theta_{k}|\pmb{y})$$
+      \end{itemize}
+\item $p(x|y)$ --- Never.
+\item $p(x,\theta | y)$ --- Never.
+
+\end{enumerate}
+
+\subsection*{Think continuous: Markovian Gaussian models in spatial statistics }
+\citep{Simpson2012}
+\begin{itemize}
+\item {\bf 3.4. Approximating Gaussian random fields: the finite element method)}
+\item
+\end{itemize}
+
+\section*{April 3, 2017}
+SPDE-INLA summary: A fancy approximation technique called INLA works well for Bayesian hierarchical models with latent Gaussian markov random fields, which are discrete, and have a sparse precision matrix---which is essential. To make this technique work for continuous domain spatial data and continuous spatial latent gaussian random fields, a fancy identity comprised of a linear fractional stochastic partial differential equation helpfully relates a (continuous) Matern random field to Gaussian random field white noise process. This identity undergirds approximating the Matern with a piecewise linear basis representation, with deterministic basis functions and GMRF weights. The method covers the domain with a triangular mesh to define the piecewise linear basis function representation. This process, used extensively in other fields, is known as the Finite Element Method. The basis representation has a sparse precision matrix, and enables INLA approximation techniques that offer so many computational advantages. 
+
+\subsection*{Work}
+\begin{itemize}
+\item Points are too fucking close together. Unnecessarily close together. I can barely generate Matern data (n = 3000) with \verb|grf(...)| because the matrix operations crash.
+\item Solution: use Var-res grid structure to discretize to binomial, then INLA procedure.
+\item If I generate Binomial(10,000, p) at all locations, where $(\sigma_{0}, \rho_{0}) = (\sigma, \rho)$, so $(\theta_{1}, \theta_{2}) = (0,0)$, it closes in on:
+\begin{verbatim}
+Model hyperparameters:
+                 mean     sd 0.025quant 0.5quant 0.975quant  mode
+Theta1 for obs 0.1270 0.0331     0.0625   0.1268     0.1925 0.126
+Theta2 for obs 0.0466 0.0783    -0.1087   0.0471     0.1997 0.049
+\end{verbatim}
+...which I'm betting is the bias Debashis was talking about. This is {\bf drastically, WAAAAAAAY} closer to zero that it was with Bernoulli at each location, but it won't seem to get any closer. 
+\item In(LA) s(PDE)ummary, it is FAST but weak. Like Billy Hamilton. Maybe INLA alone, with Var-res HM box centers/binomial data would be better.
+\end{itemize}
+
+\subsection*{Meeting}
+\begin{itemize}
+\item Graduate Committee
+  \begin{enumerate}
+  \item Email Lisa about replacing her
+  \item Email Sarah about availability, interest, time
+  \item Find out graduate school procedure for replacing committee member
+  \item Line up members availability, get okay, schedule with Grad school
+  \end{enumerate}
+\item Seminar - April 24
+  \begin{itemize}
+  \item Use 8 year-old Royals Chris picture to break the ice, put everyone at ease, convey lifelong passion. Then HOF pic at end?
+  \item ESPN clip is a go!
+  \item Meet with Alix the week before to go over the slides, no later than Wednesday (April 19th)
+  \item The story
+    \begin{enumerate}
+    \item Part of zeroth problem: fast enough for TV.
+    \item Variable-resolution empirical heat hap, dynamic heat map CIs
+    \item HMC in Stan... too big.
+    \item PPMs in \verb|spBayes|... victory!
+    \item Next steps... INLA
+    \item Next steps... scoring rule evaluations
+    \end{enumerate}
+  \item Tread carefully with Q \& A type stuff. Alix typically finds it patrionizing. However, (her idea) I could set the stage by describing why opinions matter, and/or call on my {\it peers} to give opinions (rather than question open to all) --- "So Joe, what do you think..." Then Alix said ``I shouldn't have said anything... I don't want to squelch your style.''
+  \item Charlotte said to check out ``Exponent'' consulting
+  \item Alix said to check out "Verry Consulting,'' run by her graduate school buddies from CM.
+  \end{itemize}
+\item Post-docs
+  \begin{itemize}
+  \item Without publications, I'm fucked.
+  \item Run it by them before I take the time to apply.
+  \end{itemize}
+\end{itemize}
+
+\section*{April 12, 2017}
+\begin{itemize}
+\item Remove \verb|fill = Hitting| from this line:
+\begin{verbatim}
+ggplot(...) +
+geom_text(aes(fill = Hitting, label = Count), size = 3.5)
+\end{verbatim}
+to eliminate warning message.
+\end{itemize}
+
+\subsection*{April 13, 2017 --- Meeting (All seminar prep)}
+\begin{itemize}
+\item Presentation looks great! 
+\item Some changes to make...
+\item Sample size and resolution go hand and hand; explain. The reason we stop dividing the 22 box is because that is a small sample size.
+\item Need a sequi from HM talk to ``Let's Model''. Motivate it with ``We think this is a smooth surface...''
+\item For my thesis, need to fix strike zone box, so that more rectangular
+\item Define i = ?, j = ?, on the "Let's Model" slide
+\item Add a bit about all the things we leave out on the ``Let's Model'' slide, and why; pitcher, weather, park, umpire, count, etc.
+\item Go ahead and show off Fleisig (ASMI), Dowling (Motus)
+\item Use static Shiny App to give the current ``state of the art'', with three boxes
+\item Explain at the beginning why $\hat{p}$ so low; Success vs. BA etc, when I show the first heat map
+\item When Bayes Hier. Model --- should we emphasize challenge? Latent, unobserved, correlation...
+\item Segui, segui, segui; need to know what is on the next slide (bullet point, or sentence)
+\item Peralta the whole way through
+\item add $p_{s}$ for location
+\item Hold back Big O$(n^{3})$ until second big N slide
+\item Give reference on first PPM slide (and Stan, for that matter)
+\item PPM - more discussion. Give a picture of 3000 pitch guy (if that is what I can do), tie it in to Stan's n = 300, t = 6 hours specs... ``We still need to do better, need estimate for n = 9000 $\rightarrow$ INLA...''
+\item Need to meet earlier than normal next week, to go over slides and have time to make changes
+\item Explain (1,3) works because we know, but (red, blue) doesn't because...
+\item Explain why empirical to model is necessary
+\end{itemize}
+
+\section*{April 20, 2017 - Meeting}
+\begin{itemize}
+\item Showed A \& C my slides. ``This is fantastic.'' -Alix
+\item Some small-ish changes.
+\item Sarah loved my Shiny app.
+\item ``This is great Chris, and it was totally your idea. You should be really proud of this'' -Alix, on Shiny and Var-res
+\item Regarding SPDE-INLA stuff on last slide of presentation: ``I'm so proud of you Chris!'' -Alix
+\item Now the team is thinking---maybe Ch. 3 is an R package or two, instead of simulation/validation study.
+\item Lots of talk about this, and the validity (or not) of it as a thesis component/chapter.
+\item Jobs. Plan B -- work from Corvallis.
+\item Maybe I should email Stuart, see if working remote from Corvallis is viable.
+\item Website, labs (``You did {\bf such} a good job on those!'' -Alix), a page or two on each consulting project, baseball plots/heat maps, link to my two packages (theoretically), my publication (!)
+\item Charlotte said many things I have done are not that different from the things on the ``Simply'' girl's website, I just need to think of and package it differently.
+\item She's right.
+\item Everyone thinks I should publish my var-res and Shiny stuff. And/or make a package. 
+\item Then put it on my website!
+\item Joe got a Gore offer, and an interview at UW.
+\item I should put a local Monster resume up.
+\item I should make a US resume
+\item Ch 3 = Package does a lot more for job opportunities than a simulation study!
+\end{itemize}
+
+\subsection*{April 25, 2017}
+\begin{itemize}
+\item \verb|inla(...)| is coming up with same coefficient estimates as \verb|glm(...)|!!! It actually works!!
+\item Don't forget:
+  \begin{itemize}
+  \item Scoring rules - model evaluation/comparison (two papers)
+  \item Spatial design analysis - knot selection (two papers)
+  \item Convergence diagnostics (CODA package, Finley paper)
+  \end{itemize}
+\end{itemize}
+
+\subsection*{Meeting - April 27, 2017}
+\begin{itemize}
+\item Write, write, write. As of now, make writing my top priority.
+\item ``While listening to your seminar, I thought to myself `Dude's done a lot of stuff!' So, way to go, well done.'' -Alix
+\item Alix {\bf really} wants a Shiny CI for PPM fit.
+\item Packages are a go! 
+\item ``Oh I got over it.'' -Alix, regarding her previous reservations about package building for a dissertation, when I asked about them.
+\item Make my personal webpage on Github. It looks better to have a slightly less impressive page, but for them to know I wrote some code in making it.
+\item Pay for EARL conference? Forget it.
+\item Seminar feedback
+  \begin{itemize}
+  \item Guy asked a question about the ``box'', and I interpreted it as a strike zone question, A \& C interpreted it as a grid box (stats!) question. 
+  \item A recurring theme was: My baseball passion occasionally occludes my statistics training. i.e. answer to ``box'' question, answer to Joe's question
+  \item Comparing the effect of resolution on heat maps to the effect of bin width on histograms is a very useful comparison; would have helped my presentation.
+  \item The var-res heat maps innovation was not clearly distinct, did not clearly stand apart---as it should. Define/present the heat map resolution selection {\bf problem}; then provide {\bf solution}. This will make it more clear, distinct. In my presentation it was sort of woven in. Make it clear it was a separate innovation. (I had already thought most of this bullet!)
+  \item Spell check! Alix said she noticed multiple typos.
+  \item Slide 46; subscript issue
+  \item Subscript use confusing. The pitch, box, location distinctions are lost/buried in the notation. Comes out confusing, unclear.
+  \item Think about Joe's streakiness question. Have a couple of references in my back pocket with regard to streakiness, and have a statistician's answer; not a baseball fan's answer (as I did in seminar). When they asked me in the meeting, I gave them my actual answer, which is quite sophisiticated and well thought out; that is the appropriate level of statistical professionalism. (non-stationary p!)
+  \item They liked that people were asking questions!
+  \item Outline slide (that I removed) would have helped. Neither of them {\it generally} like outline slides, but both thought it would have helped, even if I had presented the four points verbally and referred back to them.
+  \item I may give this as a job talk, so think about other areas where this research extends, particularly within the realm of the particular job I may be applying to.
+  \item Again--professional statistician, not baseball player. Try to somehow get to the point where that is my default take on questions (such as `box' question).
+  \end{itemize}
+\end{itemize}
+
+\subsection*{Dissertation Chapters Outline}
+{\bf Priority 1: write!!}
+\begin{enumerate}
+\item Introduction
+\item Variable Resoluation Heat Maps
+  \begin{itemize}
+  \item Chapter Appendix: R package info (Priority 3-A)
+  \end{itemize}
+\item Shiny
+  \begin{itemize}
+  \item Details of GLM, with biomechanics and Shiny demo
+  \item Chapter Appendix: R package info (Priority 3-B)
+  \end{itemize}
+\item Stan, PPM, INLA
+  \begin{itemize}
+  \item Shiny CI results comparison: GLM vs. PPM ({\bf Priority 2}; Alix hyped up about this one)
+  \item Performace of GLM, PPM, INLA (scoring rules) (if time allows... but it better, if at all possible)
+  \end{itemize}
+\item Conclusion (could be 5 pages)
+\end{enumerate}
+
+\subsection*{Miscellaneous}
+\begin{itemize}
+\item Spending way too much time trying to understand how, in the Gaussian approximation first step of INLA, we calculate a Taylor series expanded about $x_{0}$ to build $p_{G}$, then in the next step evaluate $p_{G}$ at $x_{0}$!! ...but not the Taylor series itself, which is not subsumed in $p_{G}$. I guess.
+\end{itemize}
+
+\subsection*{Meeting, 4 May 2017}
+\begin{itemize}
+\item Alix thinks I should write Nate Silver (who now works at ESPN, b/c they bought 538.com), introduce myself and my work a bit (further gussie up my website first), ask what work he could recommend.
+\item In the introduction of thesis there should be a lit {\it overview}, describing how the approaches to ``Big N'' came from other fields, these were the major players and their articles (Gelman, Finley, Rue and Lindgren). Also, \verb|ggplot2| and Shiny inspired and opened new doors... Hadley Wickham shout out.
+  \begin{itemize}
+  \item RStan manual, Gelman book (and vignette); Finley papers, \verb|spBayes| manual; SPDE papers, INLA papers, Lindstrom slides, \verb|INLA| how-to paper; Hadley's blogs, tutorials, package vignettes (ggplot2, dplyr); MySQL book; ``Baseball Data with R'' book, Cross-Sylvan;
+  \end{itemize}
+Mention the ridiculous scarcity of literature on baseball analysis with this rich new source of data.
+
+Call the subsection ``Research and Literature Overview''
+\item Okay to leave out labels/clutter on ``choose your own resolution'' portion.
+\item Alix doesn't want to get to a point where I am waiting on them to read my document.
+\item Alix {\bf DOES want a passive voice sweep} before she reads it again.
+\item Former OSU student Louis Scott, who gave a talk to the math department a few weeks ago, started a website and is making boatloads of money.
+\item Alix has an idea for a new online/techy business, she's keeping it super secret (she told us, after making us swear to secrecy), and she hopes it's going to make her rich!
+\item Should probably find another example data set (ecology? Ethnicities? Crime dot maps?) for the Var-res HM chapter (and eventual package).
+\item If the plots are not in tip-top shape, then they won't look at plots when they read document.
+\item Got Lan's ``Thesis Format'' .tex docs, will slowly integrate them.
+\end{itemize}
+
+\subsection*{As of Now}
+\begin{itemize}
+\item Write, write, write
+\item Make US resume
+\item Git, webpage
+\item Write Ch 3, SPINLA theory
+\item Graduation and commencement: \\
+(1) http://gradschool.oregonstate.edu/progress/commencement \\ 
+(2) http://gradschool.oregonstate.edu/progress/deadlines \\
+\item 
+\end{itemize}
+
+% \bibliographystyle{plainnat}
+\bibliography{Baseball}
+
+\end{document}
