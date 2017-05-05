@@ -732,14 +732,15 @@ to eliminate warning message.
 
 \subsection*{Miscellaneous}
 \begin{itemize}
-\item Spending way too much time trying to understand how, in the Gaussian approximation first step of INLA, we calculate a Taylor series expanded about $x_{0}$ to build $p_{G}$, then in the next step evaluate $p_{G}$ at $x_{0}$!! ...but not the Taylor series itself, which is not subsumed in $p_{G}$. I guess.
+\item In the Gaussian approximation first step of INLA, we calculate a Taylor series expanded about $x_{0}$ of/for $\sum_{i} \text{log }p(y_{i}|\pmb{x}_{i},\pmb{\theta})$, to build $p_{G}$. It is an exceedingly non-trivial, iterative computational algorithm (estimating $x_{0}$, and estimating $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ with $p_{G}$. In the next step we evaluate $p_{G}$ at $x_{0}$; but we don't evaluate the Taylor series itself, which is now deeply subsumed in $p_{G}$. 
+\item 
 \end{itemize}
 
 \subsection*{Meeting, 4 May 2017}
 \begin{itemize}
 \item A \& C think it would be fine to ``publish'' on Hardball Times, and would not preclude publishing for real, but are leary of putting my stuff out there before I write my package, and thus claim--and time stamp--my ideas as {\bf my ideas.}
 \item Alix thinks I should write Nate Silver (who now works at ESPN, b/c they bought 538.com), introduce myself and my work a bit (further gussie up my website first), ask what work he could recommend.
-\item In the introduction of thesis there should be a lit {\it overview}, describing how the approaches to ``Big N'' came from other fields, these were the major players and their articles (Gelman, Finley, Rue and Lindgren). Also, \verb|ggplot2| and Shiny inspired and opened new doors... Hadley Wickham shout out.
+\item In the introduction of thesis there should be a lit {\it overview}, describing how the approaches to ``Big N'' came from other fields---because there was ZERO on this application, these were the major players and their articles (Gelman, Finley, Rue and Lindgren). Also, \verb|ggplot2| and Shiny inspired and opened new doors... Hadley Wickham shout out.
   \begin{itemize}
   \item RStan manual, Gelman book (and vignette); 
   \item Finley papers, \verb|spBayes| manual; 
@@ -748,9 +749,9 @@ to eliminate warning message.
   \item MySQL book; 
   \item ``Baseball Data with R'' book, Cross-Sylvan;
   \end{itemize}
-Mention the ridiculous scarcity of literature on baseball analysis with this rich new source of data.
+* Mention the ridiculous scarcity of literature on baseball analysis with this rich new source of data.
 
-Call the subsection ``Research and Literature Overview''
+* Call the subsection ``Research and Literature Overview''
 \item Okay to leave out labels/clutter on ``choose your own resolution'' portion.
 \item Alix doesn't want to get to a point where I am waiting on them to read my document.
 \item Alix {\bf DOES want a passive voice sweep} before she reads it again.
@@ -759,6 +760,7 @@ Call the subsection ``Research and Literature Overview''
 \item Should probably find another example data set (ecology? Ethnicities? Crime dot maps?) for the Var-res HM chapter (and eventual package).
 \item If the plots are not in tip-top shape, then they won't look at plots when they read document.
 \item Got Lan's ``Thesis Format'' .tex docs, will slowly integrate them.
+\item Good idea to look at old dissertations in stats library, get a sense of things, how the introduction should look, for example.
 \end{itemize}
 
 \subsection*{As of Now}
