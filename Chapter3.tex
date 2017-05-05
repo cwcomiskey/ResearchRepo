@@ -90,7 +90,7 @@ We choose Johnny Peralta from Chapter 1 to illustrate, and let $j = P$ for conve
 
   \begin{figure}[!ht]
     \centering
-    \includegraphics[scale=.2]{Images/Peralta_polar.pdf}
+    \includegraphics[scale=.25]{Images/Perralta_fit.pdf}
     \qquad
 \begin{tabular}[b]{ l | c | c | c | r }
     \hline
@@ -155,9 +155,27 @@ A point estimate of 2 and CI of (0,4) translates intuitively after so many years
 	\caption{This representation of a confidence interval on the color spectrum demonstrates the interpretive challenge. What stream of colors exist between each bound and the point estimate?}
 	\end{figure}
 	
-However, 
+However, the task becomes easier with the segments of the spectrum {\it between} the bounds and point estimate visible, as in Figure XX.
+  \begin{figure}[H]
+  \centering
+	\includegraphics[scale=.65]{Images/SpectrumCI.jpg} 
+	\caption{This representation of a confidence interval on the color spectrum hints at the interpretive solution. Interpretation simplifies with the portions of the color spectrum between each bound and the point estimate visible. The question then---how do we achieve this for a heat map {\it surface}?}
+	\end{figure}
+This simplifies interpretation immensely. However, the problem remains; how do we acheive this for a heat map surface? A modelled continuous surface essentially maps a limitless number of point estimates to a color, making a visible color spectrum confidence interval for each point estimate infeasible. Nonetheless, we propose a dynamic solution using Shiny, by RStudio \citep{Shiny}, \citep{RStudio}.
 
 \subsubsection{Shiny Innovation}
+
+The inimitable RStudio created the Shiny framework to facilitate interactive web application development. Deployed directly out of the RStudio integrated development environment (IDE) \citep{IDE}, Shiny applications provide statisticians, all scientists in fact, with a powerful new tool for presenting analytical results. We harness a sliver of Shiny's capability to provide a solution to the the heat map CI problem articulated in the previous section.
+
+Recall the GLM fit heat map for Jhony Peralta. Figure 7 shows the lower and upper 95\% pointwise CI heat maps.
+
+  \begin{figure}[H]
+	\centering
+	\includegraphics[scale=.25]{Images/Lower.pdf}
+	\includegraphics[scale=.25]{Images/Perralta_fit.pdf}
+	\includegraphics[scale=.25]{Images/Upper.pdf}
+	\caption{Current best practices for a heat map confidence interval (CI). The generalized linear model fit for Jhony Peralta in the center, the pointwise CI lower bound on the left, and the pointwise CI upper bound on the right. Our interactive, dynamic heat map CIs will make improve interpretability.} 
+	\end{figure}
   
 \subsection{Appendix: ShinyHMCI, An R Package}
 
