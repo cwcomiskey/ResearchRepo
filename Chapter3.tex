@@ -176,7 +176,7 @@ Recall the GLM fit heat map for Jhony Peralta. Figure 7 shows the lower and uppe
 	\end{figure}
 The heat map on the left gives the lower bound of the 95\% CI, the heat map in the middle gives the model fit point estimates, and the heat map on the right gives the upper bound of the 95\% CI. The labels are removed from the left and right heat maps for simplicity. The challenge lies in somehow filling in the space between the bounds and point estimate.
 
-The static image of the interactive Shiny app in Figure 8 includes a slider in the lower left. The user adjusts the slider, a type of ``widget'' in Shiny, to move through the CI. As the user narrows the CI slider setting, the lower bound on the left and the upper bound on the right will look more and more similar to the point estimate heat map in the middle.
+The static image of the interactive Shiny app in Figure 8 includes a slider in the lower left. The user adjusts the slider, a type of ``widget'' in Shiny, to move through the CI. 
 
   \begin{figure}[H]
 	\centering
@@ -184,8 +184,9 @@ The static image of the interactive Shiny app in Figure 8 includes a slider in t
 	\caption{We created interactive confidence intervals (CIs) with Shiny. The slider in the lower left allows the user to move {\it through} the CI. As the user adjusts the slider, the heat maps bounds adjust.} 
 	\end{figure}
 
+As the user narrows the CI slider setting, the lower bound on the left and the upper bound on the right will look more and more similar to the point estimate heat map in the middle.
 
-
+Figure 9 shows a sequence of static images in which the slider progressively narrows the CI.
   \begin{figure}[H]
 	\centering
 	\includegraphics[scale=.25]{Images/95.png}
@@ -195,6 +196,8 @@ The static image of the interactive Shiny app in Figure 8 includes a slider in t
 	\includegraphics[scale=.25]{Images/0.png}
 	\caption{A dynamic, Shiny, interactive heat map confidence interval. As the user adjusts the Shiny widget slider, the heat maps bounds adjust. This interactive app lets you move {\bf through} a heat map confidence interval.} 
 	\end{figure}
+	
+The slider for a row of three heat maps sits below that row. Moving from the top row to the bottom row, notice how the left and right-hand images increasingly resemble the middle image, until they all three match. While the paper version resembles that from \cite{Cross2015}, this interactive CI figuratively jumps off the page and comes to life as an interactive web application, and shines.
 
   
 \subsection{Appendix: ShinyHMCI, An R Package}
