@@ -1,49 +1,47 @@
-\documentclass{article}
-
-\title{Take Me Out to (Analyze) the Ballgame \\ Visualization and Analysis Techniques for Big Spatial Data}
-\author{Chris Comiskey}
-\date{\today}
-
-\usepackage{natbib}
-\bibliographystyle{unsrtnat}
-
-\usepackage{fullpage}
-\usepackage{ulem}
-\usepackage{amsmath, amsthm, amssymb, amsfonts}
-\usepackage{mathtools}
-\usepackage{float}
-\usepackage{bbm}
-\usepackage{wrapfig}
-\usepackage{listings}
-\usepackage[utf8]{inputenc}
-\usepackage[english]{babel}
-\usepackage[export]{adjustbox}
-
-\makeatletter
-\def\verbatim@font{\linespread{1}\normalfont\ttfamily}
-\makeatother
-
-\usepackage[toc,page]{appendix}
-
-
-% \setlength{\parindent}{4em}
-% \setlength{\parskip}{1em}
-% \renewcommand{\baselinestretch}{1.3}
-
-\usepackage{setspace}
-\doublespacing
-
-% TESTING =====
-\usepackage[T1]{fontenc}
-\usepackage[font=small,labelfont=bf,tableposition=top]{caption}
-\DeclareCaptionLabelFormat{andtable}{#1~#2  \&  \tablename~\thetable}
-% TESTING =====
-
-
-\begin{document}
-\maketitle{}
-
-\tableofcontents
+% \documentclass{article}
+% 
+% \title{Take Me Out to (Analyze) the Ballgame \\ Visualization and Analysis Techniques for Big Spatial Data}
+% \author{Chris Comiskey}
+% \date{\today}
+% 
+% \usepackage{natbib}
+% \bibliographystyle{unsrtnat}
+% 
+% \usepackage{fullpage}
+% \usepackage{ulem}
+% \usepackage{amsmath, amsthm, amssymb, amsfonts}
+% \usepackage{mathtools}
+% \usepackage{float}
+% \usepackage{bbm}
+% \usepackage{wrapfig}
+% \usepackage{listings}
+% \usepackage[utf8]{inputenc}
+% \usepackage[english]{babel}
+% \usepackage[export]{adjustbox}
+% 
+% \makeatletter
+% \def\verbatim@font{\linespread{1}\normalfont\ttfamily}
+% \makeatother
+% 
+% \usepackage[toc,page]{appendix}
+% 
+% 
+% % \setlength{\parindent}{4em}
+% % \setlength{\parskip}{1em}
+% % \renewcommand{\baselinestretch}{1.3}
+% 
+% \usepackage{setspace}
+% \doublespacing
+% 
+% \usepackage[T1]{fontenc}
+% \usepackage[font=small,labelfont=bf,tableposition=top]{caption}
+% \DeclareCaptionLabelFormat{andtable}{#1~#2  \&  \tablename~\thetable}
+% 
+% 
+% \begin{document}
+% \maketitle{}
+% 
+% \tableofcontents
 
 
 
@@ -294,7 +292,8 @@ A triangulation of the domain defines the deterministic component, $\psi_{k}(\pm
   \begin{figure}[H]
 	\centering 
 	\includegraphics[scale=.4]{Images/PLBF.jpg}
-	\caption{A Gaussian Markov random field, defined as the piecewise linear basis function $ x(\pmb{s}) = \sum_{k=1}^{n} \psi_{k}(\pmb{s})x_{k}$, approximates a Matern GRF. This image illustrates how a triangular mesh over the domain determines basis functions $\psi_{k}(\pmb{s})$ \citep{Simpson2012}.}
+	\caption{A Gaussian Markov random field, defined as the piecewise linear basis function $  x(\pmb{s}) = \sum_{k=1}^{n} \protect\psi_{k}(\pmb{s})x_{k}$, approximates a Matern GRF. This image illustrates how a triangular mesh over the domain determines basis functions $\protect\psi_{k}(\pmb{s})$ 
+	\citep{Simpson2012}.}
 	\end{figure}
 	
 Keep in mind that a realization of a GRF is essentially a function, and Figure 12 shows how a discrete piecewise linear basis function can approximate a continuous function \citep{Simpson2012}. We have $\psi_{k}(\pmb{s}) = 1$ at the $k\text{th}$ vertex, $0$ at all other vertices, and surface function values for triangle interior points are linear combinations of the three home triangle vertices.
@@ -357,6 +356,6 @@ In summary, from a continuous domain the SPDE-INLA approxmation procedure provid
 
 \subsubsection{Bayesian Inference in R-INLA}
 
-\bibliography{Baseball}
-
-\end{document}
+% \bibliography{Baseball}
+% 
+% \end{document}

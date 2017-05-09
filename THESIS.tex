@@ -1,0 +1,122 @@
+\documentclass[double,12pt]{beavtex}
+\input{preamble.tex}
+
+\usepackage{graphicx}
+\usepackage{mathptmx}  
+\usepackage{amsmath, amsthm, amssymb, amsfonts}
+\usepackage{mathtools}
+
+% \usepackage{fullpage}
+% \usepackage{ulem}
+% \usepackage{float}
+% \usepackage{bbm}
+% \usepackage{wrapfig}
+% \usepackage{listings}
+% \usepackage[utf8]{inputenc}
+% \usepackage[english]{babel}
+% \usepackage[export]{adjustbox}
+
+\usepackage{natbib}
+
+\usepackage[T1]{fontenc}
+\usepackage[font=small,labelfont=bf,tableposition=top]{caption}
+\DeclareCaptionLabelFormat{andtable}{#1~#2  \&  \tablename~\thetable}
+
+
+\usepackage{float}
+\usepackage{indentfirst}
+\renewcommand{\chaptername}{}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3} 
+\input tcilatex.tex
+
+\title{Nonparametric Estimation of Additive Models with Shape Constraints}
+\author{Lu Wang}
+\degree{Doctor of Philosophy}
+\doctype{Dissertation}
+\department{Statistics}
+\depttype{Department}
+\depthead{Chair}
+\major{Statistics}
+\advisor{Lan Xue}
+\submitdate{May 24, 2016}
+\commencementyear{2016}
+\abstract{\input{abstract.tex}}
+\acknowledgements{\input{acknowledgements.tex}}
+
+\begin{document}
+\maketitle
+\mainmatter
+\begingroup
+\let\clearpage\relax
+\begin{center}
+\large
+Nonparametric Estimation of Additive Models with Shape Constraints
+\normalsize
+\end{center}
+
+\chapter{Introduction}
+\input{Chapter1.tex}
+\pagebreak
+
+\chapter{Constrained Polynomial Spline Estimation of Monotone Additive Models}
+\input{Chapter2.tex}
+\pagebreak
+
+\chapter{Estimation of Additive Frontier Functions with Shape Constraints}
+\input{Chapter3.tex}
+\pagebreak
+
+\chapter{Estimation of Additive Frontier Functions with Shape Constraints}
+\input{Chapter4.tex}
+\pagebreak
+
+% \chapter{Discussion}
+% \input{Discussion.tex}
+% \pagebreak
+
+
+% \bibliographystyle{apalike}
+% %\bibliography{bibthesis}
+
+% \newpage
+
+% %\singlespacing
+% \onehalfspacing
+
+% \input{Bibliography.tex}
+
+% \doublespacing
+
+\bibliographystyle{unsrtnat} % I ADDED***
+
+\bibliography{Baseball}
+\input{THESIS.bbl}
+
+\pagebreak
+
+\appendixpage
+\appendix
+
+\pagebreak
+
+%\chapter{Lemmas and Proofs}
+%\input{MonoAddModelsLemma.tex}
+
+%\chapter{Proofs of Theorems}
+%\input{MonoAddModelsThmProofs.tex}
+
+%\chapter{Tables and Figures}
+%\input{MonoAddModelsTabFig.tex}
+
+%\chapter{R code}
+%\input{OtherRcode}
+
+\pagebreak
+\input{preamble.tex}
+
+% \bibliographystyle{unsrtnat} % I ADDED***
+% \bibliography{Baseball}
+% \input{THESIS.bbl}
+
+\end{document}
