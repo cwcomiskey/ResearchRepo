@@ -30,17 +30,17 @@
 \setcounter{tocdepth}{3} 
 \input tcilatex.tex
 
-\title{Nonparametric Estimation of Additive Models with Shape Constraints}
-\author{Lu Wang}
+\title{Take Me Out to (Analyze) the Ballgame; Visualization and Analysis Techniques for Big Spatial Data}
+\author{Chris Comiskey}
 \degree{Doctor of Philosophy}
 \doctype{Dissertation}
 \department{Statistics}
 \depttype{Department}
 \depthead{Chair}
 \major{Statistics}
-\advisor{Lan Xue}
-\submitdate{May 24, 2016}
-\commencementyear{2016}
+\advisor{Alix Gitelman \& Charlotte Wickham}
+\submitdate{August 15, 2017}
+\commencementyear{2017}
 \abstract{\input{abstract.tex}}
 \acknowledgements{\input{acknowledgements.tex}}
 
@@ -51,23 +51,23 @@
 \let\clearpage\relax
 \begin{center}
 \large
-Nonparametric Estimation of Additive Models with Shape Constraints
+Take Me Out to (Analyze) the Ballgame \\ Visualization and Analysis Techniques for Big Spatial Data
 \normalsize
 \end{center}
 
-\chapter{Introduction}
-\input{Chapter1.tex}
-\pagebreak
+% \chapter{Introduction}
+% \input{Chapter1.tex}
+% \pagebreak
 
-\chapter{Constrained Polynomial Spline Estimation of Monotone Additive Models}
-\input{Chapter2.tex}
-\pagebreak
+% \chapter{Variable-Resoluation Heat Maps}
+% \input{Chapter2.tex}
+% \pagebreak
 
-\chapter{Estimation of Additive Frontier Functions with Shape Constraints}
-\input{Chapter3.tex}
-\pagebreak
+% \chapter{Shiny Heat Map Confidence Intervals}
+% \input{Chapter3.tex}
+% \pagebreak
 
-\chapter{Estimation of Additive Frontier Functions with Shape Constraints}
+\chapter{Spatial Generalized Linear Mixed Models}
 \input{Chapter4.tex}
 \pagebreak
 
@@ -76,7 +76,7 @@ Nonparametric Estimation of Additive Models with Shape Constraints
 % \pagebreak
 
 
-% \bibliographystyle{apalike}
+\bibliographystyle{apalike}
 % %\bibliography{bibthesis}
 
 % \newpage
@@ -88,7 +88,9 @@ Nonparametric Estimation of Additive Models with Shape Constraints
 
 % \doublespacing
 
-\bibliographystyle{unsrtnat} % I ADDED***
+\onehalfspacing
+
+% \bibliographystyle{unsrtnat} % What I was using****
 
 \bibliography{Baseball}
 \input{THESIS.bbl}
@@ -111,6 +113,11 @@ Nonparametric Estimation of Additive Models with Shape Constraints
 
 %\chapter{R code}
 %\input{OtherRcode}
+
+\singlespacing
+
+\chapter{Stan Code}
+\input{StanCode.tex}
 
 \pagebreak
 \input{preamble.tex}

@@ -43,10 +43,7 @@
 % 
 % \tableofcontents
 
-\section{Shiny Heat Map Confidence Intervals}
-
-
-\subsection{Generalized Linear Model for Hitter Success Probabilities} % =========================
+\section{Generalized Linear Model for Hitter Success Probabilities} % =========================
 
 As one of our research goal, we aim to create a statistical model for the heat map of success probabilities. Nonparametric methods, while straightforward, sacrifice interpretability; they achieve a modeled heat map, but without contextually interpretable components. Nonparametric models cannot relate spatially varying hitter success probabilities to hitter attributes. We propose a parametric approach using biomechanically interpretable covariates. Existing research analyzes the biomechanics of the baseball swing \citep{Welch1995}, but no research integrates those results with spatial swing outcomes in a statistical model.
 
@@ -62,7 +59,7 @@ Accordingly, let $i = 1, \dots, n_{j}$ index hitter $j$'s swings, out of $n_{j}$
 
 where $\pmb{\beta}_{j}$ is the vector of covariate coefficient parameters specific to hitter $j$ \citep{Myers2012}. Next, we discuss and develop covariates.
 
-\subsubsection{Biomechanically Interpretable Covariates} % ==============
+\section{Biomechanically Interpretable Covariates} % ==============
 
 Why does Peralta, and why do hitters in general, hit pitches in some locations better than others? We submit biomechanics as potentially part of the answer. Biomechanics underpin why hitters prefer some pitch locations more than others. Given the choice, athletes select a specific place for the ball before swinging. Consider golf, a sport where the ball is stationary, and the acting athlete chooses where to stand in relation to the ball. In fact, golfers position themselves very precisely in relation to the ball to achieve impact at the optimal point in their swing \citep{Cochran2005}. If the impact point deviates from the ideal location, performance suffers. Consider tennis, a step closer to baseball, in that the ball approaches, but the player has time to position himself relative to the incoming ball. Once again, tennis players strive to hit the ball at a specific point in their forehand, a precise distance from the ground and from their body \citep{Elliott2006}. As with golf, if the point of impact deviates from this location, performance suffers. Note that in both sports the ideal player to ball positioning depends on, at the very least, anatomy, biomechanics, and equipment. We submit the same dynamics affect baseball hitting. However, in baseball the hitter cannot predtermine ball location, nor does he have time to reposition himself in response to the location and trajectory of the incoming pitch. For these reasons, meaningful measurements of hitter to ball distance and angle are reasonable covariates. Polar coordinate pitch locations would inherently provide this type of meaningful covariate for use and interpretation in our models.
 
@@ -77,7 +74,7 @@ To illustrate, in Figure 3 we shift the origin to a hitter's approximate center 
 	\end{figure}
 Referring to Figure 3, let $r$ measure the distance from the hitter's center of gravity to the ball at impact, and let $\theta$ be the angle below horizontal of the line segment connecting the center of gravity and the ball at impact. As in golf and tennis, ball location---too far/close to the hitter, or above/below the ideal point of impact--- affects hitting performance. Letting $\pmb{X}_{ij}(\pmb{s}_{ij})$ in (1) be comprised of $r_{ij}$ and $\theta_{ij}$ terms provides an exploratory starting point.
 
-\subsubsection{Generalized Linear Model with Biomechanically Interpretable Covariates} % =========================
+\section{Generalized Linear Model with Biomechanically Interpretable Covariates} % =========================
 
 Let covariate vector $\pmb{X}_{ij}(\pmb{s}_{ij})$ in (1) be defined as $\pmb{X}_{ij}(\pmb{s}_{ij}) = \{r_{ij}, \theta_{ij}, r_{ij}\theta_{ij}, r_{ij}^{2}, \theta_{ij}^{2}, r_{ij}^{2}\theta_{ij}^{2}\}$. Substituting into (1) yields:
 \begin{equation}
@@ -112,7 +109,7 @@ We choose Johnny Peralta from Chapter 1 to illustrate, and let $j = P$ for conve
 
 
 
-\subsubsection{Hosmer-Lemeshow Goodness of Fit Test} % ================
+\subsection{Hosmer-Lemeshow Goodness of Fit Test} % ================
 
 Generalized Linear Models \citep{Myers2012}
 
@@ -124,11 +121,11 @@ Generalized Linear Models \citep{Myers2012}
   \item p-value = 0.1513
   \end{itemize}
 
-\subsection{Heat Map Confidence Intervals}
+\section{Heat Map Confidence Intervals}
 
 A heat map presents, essentially, a two dimensional surface ``painted'' with point estimates. That is, each (x,y) point on the surface maps a point estimate of a parameter to a color. This effectively communicates the behavior of the parameter, or at least the point estimates, across the spatial domain. However, the usefulness of a point estimate depends on confidence interval accompaniment; and therein lies the challenge: how to present heat map confidence intervals (CIs)? This problem exists across disparate academic areas of research---any area where heat maps are used! ``...question asked in other areas.'' For example, Dr. Sarah Emerson reports that collaborative genomics research with Dr. Yanming Di lacked a satisfactory heat map confidence interval option \citep{Emerson}, (cite paper). Next we present the current heat map CI best practices, and examine why they can and should be improved.
 
-\subsubsection{Current Best Practices}
+\subsection{Current Best Practices}
 
 The currect heat map best practice simply presents the CI lower bound heat map and upper bound heat map, and sometimes maps for additional percentiles. For example, \cite{Cross2015} provides the following collection of heat maps to communicate prediction confidence.
 
@@ -161,7 +158,7 @@ However, comprehension comes more easily with the entire spectrum within the con
 	\end{figure}
 This simplifies interpretation immensely. However, the problem remains; how do we acheive this for a heat map surface? A continuous model maps a limitless number of point estimates to a color on a surface, making a visible color spectrum confidence interval for each point estimate infeasible. We propose a dynamic solution using RStudio's Shiny \citep{Shiny}, \citep{RStudio}.
 
-\subsubsection{Shiny Innovation}
+\subsection{Shiny Innovation}
 
 The inimitable RStudio created the Shiny framework to facilitate interactive web application development. Deployed directly out of the RStudio integrated development environment (IDE) \citep{IDE}, Shiny applications provide statisticians, all scientists in fact, with a powerful new tool for presenting analytical results. We take advantage of Shiny's capability to innovate a solution to the heat map CI problem articulated in the previous section.
 

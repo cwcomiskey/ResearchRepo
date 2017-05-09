@@ -43,15 +43,11 @@
 % 
 % \tableofcontents
 
-
-
-\section{Spatial Generalized Linear Mixed Models} % ================== 
-
-\subsection{Introduction} % ================== 
+\section{Introduction} % ================== 
 
 No matter the performace of the previously fit model, we expect there to be unexplained spatial variation in the mean. The covariates are limited in scope and depth, and Tobler's First Law of Geography tells us that things close together in space tend to behave more similarly than things further apart \citep{Tobler1970}. Accordingly, we enhance the model to capture the unexplained spatial variation in the mean, and compensate for unobserved covariates, by adding a spatially correlated random effect  \citep{Banerjee2008}. 
 
-\subsubsection{Gaussian Random Field} % ================== 
+\subsection{Gaussian Random Field} % ================== 
 
 A Gaussian random field is a popular and practical distribution for spatial random effects \citep{Gelfand2010}. Let random variable vector $\pmb{w}(\pmb{s})$, for vector of locations $\pmb{s} \in \pmb{D} \subseteq \pmb{R}^{2}$, be distributed multivariate Normal with mean $\pmb{0}$; with symmetric, positive definite covariance matrix $\Sigma(\pmb{\theta})$, and covariance parameter vector $\pmb{\theta}$ \citep{Haran2011}.
 \begin{equation}
@@ -60,14 +56,14 @@ A Gaussian random field is a popular and practical distribution for spatial rand
 
 Including a random effect defined in this way, with a valid covariance matrix, would retool (2) as a {\it spatial} generlatized linear {\it mixed} model (SGLMM). Next we define the covariance structure we use in this study.
 
-\subsubsection{Exponential Covariance}
+\subsection{Exponential Covariance}
 To add a spatial random effect, distributed as a Gaussian random field, to the linear predictor in (2), it remains to define a spatial correlation structure to $\pmb{w}$. Let $w_{ij}$ be defined as in {\bf 5.1}, with an exponential covariance structure. That is, the i,jth element of $\Sigma(\phi, \sigma^{2})$ is:
 \begin{equation}
 \Sigma(\phi, \sigma^{2})_{i,j} = \sigma^{2} exp(-||\pmb{s}_{i} - \pmb{s}_{j}||/\phi),
 \end{equation}
 where $||s_{i} - s_{j}||$ is the Euclidean distance between $\pmb{s}_{i}$ and $\pmb{s}_{j}$, $\sigma^{2}$ is the scale parameter, and $\phi$ is the range parameter.
 
-\subsubsection{Spatial Generalized Linear Mixed Model}
+\subsection{Spatial Generalized Linear Mixed Model}
 Inserting $\pmb{w}(\pmb{s})$ to the linear predictor in (1) gives the following spatial generalized linear mixed model (SGLMM):
 \begin{equation}
 \text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + w(\pmb{s}_{ij}).
@@ -84,7 +80,7 @@ To estimate model parameters for (4) we tried:
 
 Note that the ultimate goal of this research is practical, real-time applications for baseball fans, broadcasts, players, scouts, and teams. Therefore, model fitting speed matters on a finer time scale than academic research demands.  
 
-\subsubsection{Markov Chains}
+\subsection{Markov Chains}
 
 Hierarchical Modeling and Analysis for Spatial Data \citep{Banerjee2014}
         \begin{itemize} % ===============
@@ -95,11 +91,11 @@ Hierarchical Modeling and Analysis for Spatial Data \citep{Banerjee2014}
         \item Two most popular MCMC algorithms: (1) Gibbs sampler (2) Metropolis Hastings algorithm
         \end{itemize} % ===============
 
-\subsubsection{``Big N Problem''}
+\subsection{``Big N Problem''}
 
-\subsection{Numerical Optimization; Hamiltonian Monte Carlo in Stan} % =================
+\section{Optimization in Stan} % =================
 
-\subsubsection{Hamiltonian Dynamics and MCMC} % =================
+\subsection{Hamiltonian Monte Carlo} % =================
 
 \footnote{The history and physics presented in this section owe heavily to, and are primarily informed by, \citep{Neal2011}} Trying to understand molecular states, \cite{Metropolis1953} created MCMC for ``fast machines.'' Later, modeling molecular motion as a deterministic process, \cite{Alder1959} introduced {\it Hamiltonian dynamics} as an alternate representation of Newtonian mechanics. Almost 30 years later, \cite{Duane1987} combined the two to create ``hybrid Monte Carlo'' to simulate certain quantum mechanical processes. Over time, this named morphed into {\it Hamilton} Monte Carlo (HMC), as it is known today. Eventually, \cite{Neal1996} used HMC methods for explicitly statistical applications, studying neural networks.
 
@@ -130,7 +126,7 @@ Substituting in Hamilton's equation (5) and simplifying gives
 \end{align}
 The solutions to these two differential equations, that is $q(t)$ and p(t) such that (8) and (9) hold, give the instantaneous rate of change of position and momentum at time t. 
 
-subsubsection{MCMC Using Hamiltonian Dynamics \citep{Neal2011}} % =================
+\subsubsection{MCMC Using Hamiltonian Dynamics \citep{Neal2011}} % =================
 Steps.
 
 \begin{itemize}
@@ -148,14 +144,14 @@ Steps.
 \end{itemize}
 
 
-\subsubsection{Optimizing in Stan} % =================
+\subsection{Optimizing in Stan} % =================
 `Big n' computational burdens can also be mitigated somewhat, by certain program specific coding techniques. These techniques, as well as other techniques aimed to encourage model convergence, bolstered our modelling efforts. We highlight some such techniques for Stan here, and include the complete .stan script in Appendix A for reference. 
 
-\subsubsection*{Bayesian Motivated Techniques} % =================
+\subsubsection{Bayesian Techniques} % =================
 
 Stan allows a user to omit prior distributions for parameters, but interprets non-inclusion as a non-informative, uniform prior. However, \cite{Gelman}, the first Stan developer, pointed out in correspondence that the exponential covariance length-scale parameter, $\phi$ in equation (3), requires an informative prior for model identifiability (CITATION?). \cite{Trangucci} recommended, in particular, a sharp tailed prior distribution for the length-scale parameter, such as the normal or log-normal, to act as soft upper and lower bound constraints\footnote{``Without stronger priors on l, GP can act as a second constant term in your regression for large draws of length-scale and large draws of alpha.''}. Even further, for practical computing time and convergence considerations, \cite{Trangucci} said complex models such as spatial hierarchical models require proper priors for all $\beta$ coefficients. Using the intial GLM estimates to inform coefficient prior distributions had exactly the intended effects.
 
-\subsubsection*{Computational and Linear Algebra Motivated Techniques} % =================
+\subsubsection{Computational Techniques} % =================
 For speed and efficiency, the Stan Users Manual recommends pure matrix algebra and vectors, over `for loops' and scalars \cite{StantheMAN}. For example, 
 \begin{verbatim}
 hit ~ bernoulli_logit(X*beta + Z)
@@ -204,7 +200,7 @@ hit ~ bernoulli_logit(Q*theta + Z_mod);
 The first line performs a Cholesky decomposition on the covariance matrix \verb|Sigma|. A Cholesky decomposition factors symmetric matrix \verb|Sigma| such that $\Sigma = \text{\pmb{LL}}'$. The second, ``vectorized scalar'' line generates $n$ standard normal random variables, by reusing \verb|normal(0, 1)| for every element of \verb|Z|. These two lines remove the dependence of random vector \pmb{Z}, which must be generated, on unknown parameters to be estimated \cite{Trangucci2017}. The third line transforms \verb|Z| to have the desired distribution. Note that $\text{Var}(\text{\pmb{LZ}}) = \text{\pmb{L}} \text{I}_{n}\text{\pmb{L}}' = \Sigma$, so that $\pmb{LZ} \sim N(\pmb{0}, \Sigma)$ as desired.
 
 
-\subsubsection*{Evaluate Inverse you say?? Yes.}
+\subsection{Evaluate Inverse? Yes.}
 
 
 \begin{itemize}
@@ -222,11 +218,11 @@ $$ r \propto \frac{f(\pmb{Y}|\pmb{\theta}_{i})f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}
 
 \end{itemize}
 
-\subsection{Dimension Reduction; Predictive Process Models} % =========
+\section{Dimension Reduction; Predictive Process Models} % =========
 
 Predictive process models (PPMs) provide a method for attempting to circumvent the ``big N problem'' in the case of Bayesian hierarchical models with latent Gaussian random effects. Numerous methods exist, for example \citep{Cressie2008}, (CITE OTHERS), but predictive process models provide a competitive modeling approach with computational advantages for hierarchical models with a Gaussian random field (GRF) at the second level of specification \citep{Banerjee2008}. Latent GRFs prove challenging because they are only implicitly observed, through a binomial response in our case. This means the GRF parameters (hyperparameters) and their prior distributions comprise the third level of the hierarchical model. Gaussian PPMs achieve dimension reduction by projecting the original process onto a lower dimensioned subspace, at a set of locations called knots \citep{Banerjee2008}. 
 
-\subsubsection{PPM Procedure}
+\subsection{PPM Procedure}
 
 Consider again the SGLMM (5), and Gaussian random field $\pmb{w}(\pmb{s})$.
 \begin{align}
@@ -256,17 +252,14 @@ To reiterate, $m \times 1$ vector $\pmb{c}(\pmb{s};\pmb{\theta}) = \left[C(\pmb{
 \text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + \tilde{w}(\pmb{s})
 \end{equation}
 
+\subsection{Improved Predictive Process Models}
 
 
-
-\subsubsection{Improved Predictive Process Models}
-
-
-\subsection{Approximation; SPDE and INLA} % =================
+\section{Stochastic Partial Differential Equations and Integrated Nested Laplace Approximations} % =================
 Integrated Nested Laplace Approximation (INLA), a mathematically intensive and computationally geared approximation technique, works well for Bayesian hierarchical models with latent Gaussian {\bf markov} random fields (GMRFs) \citep{Rue2007}. A GMRF, by virtue of its sparse precision matrix, enables INLA's orders of magnitude faster approximation method. However, to use INLA for continuous domain spatial models with latent Gaussian random fields (GRFs), one must represent the GRF as a GMRF; and stochastic calculus provides a link. A particular stochastic partial derivative of a Matern GRF equals a Gaussian random field white noise process. This identity provides a platform on which to approximate a Matern GRF with a GMRF, in the form of a piecewise linear basis representation. The discrete representation consists of deterministic basis functions, defined by a triangulation of the domain, and GMRF weights. The basis representation has a sparse precision matrix, and thus qualifies for the INLA approximation and its computational advantages. Scientists use this GRF to GMRF translation process---projecting the SPDE onto the basis representation---known as Finite Element Method, extensively in other fields. 
-\subsubsection{Gaussian Markov Random Fields}
+\subsection{Gaussian Markov Random Fields}
 
-\subsubsection{Stochastic Partial Differential Equation (SPDE)} 
+\subsection{Stochastic Partial Differential Equation (SPDE)} 
 
 The exponential convariance function is a member of the larger Matern family, defined by the following covariance function.
 $$\text{C}(h) = \frac{\sigma^{2}}{2^{\nu - 1}\Gamma(\nu)}(\kappa h)^{\nu}K_{\nu}(\kappa h)$$
@@ -279,13 +272,13 @@ the Matern covariance to
 $$\text{C}(h) = \sigma^{2}(\kappa h)K_{1}(\kappa h);$$
 and the variance to $\sigma^{2} = \frac{1}{4 \pi \kappa}$.
 
-\subsubsection*{Piecewise Linear Basis Representation}
+\subsubsection{Piecewise Linear Basis Representation}
 
 The next step, known as the Finite Element Method, projects the SPDE onto a piecewise linear basis representation \citep{Simpson2012}. The basis represenation,
 $$ x(\pmb{s}) = \sum_{k=1}^{n} \psi_{k}(\pmb{s})x_{k},$$
 contains deterministic basis functions, $\psi_{k}(\cdot)$; and weights $\pmb{x} = \{x_{1},\dots,x_{n}\}$, which constitute a GMRF. The two combine so that the distribution of $x(\pmb{s})$ approximates the Matern GRF that solves the SPDE, but retains a sparse precision matrix and its accordant computational advantages.
 
-\subsubsection*{Deterministic Basis Function}
+\subsubsection{Deterministic Basis Function}
 
 A triangulation of the domain defines the deterministic component, $\psi_{k}(\pmb{s})$, of the basis representation. Figure 12 \citep{Simpson2012} illustrates how domain triangulation and determines a basis function.
 
@@ -298,7 +291,7 @@ A triangulation of the domain defines the deterministic component, $\psi_{k}(\pm
 	
 Keep in mind that a realization of a GRF is essentially a function, and Figure 12 shows how a discrete piecewise linear basis function can approximate a continuous function \citep{Simpson2012}. We have $\psi_{k}(\pmb{s}) = 1$ at the $k\text{th}$ vertex, $0$ at all other vertices, and surface function values for triangle interior points are linear combinations of the three home triangle vertices.
 
-\subsubsection*{GMRF Weights}
+\subsubsection{GMRF Weights}
 
 Stochastic calculus identities provide a way to calculate the weights in the basis representation. Define $\langle f, g \rangle = \int f(\pmb{u}) g(\pmb{u}) d\pmb{u}$, and find weights $\pmb{x}$ such that
 $$ \left[ \left< \phi_{k}, (\kappa^{2} - \Delta)^{\alpha/2} \pmb{x} \right> \right]_{k = 1, \hdots, n} \overset{D}{=} \Big[ \langle \phi_{k}, \mathcal{W} \rangle \Big]_{k = 1, \hdots, n},$$
@@ -319,17 +312,17 @@ Note that this solution provides the distribution of the weights $x_{k}$, not $x
 $$ x(\pmb{s}) = \sum_{k=1}^{n} \psi_{k}(\pmb{s})x_{k}.$$
 With this representation achieved, via the SPDE link, we move on to the approximation procedure that we aim for.
 
-\subsubsection{Integrated Nested Laplace Approximations (INLA)}
+\subsection{Integrated Nested Laplace Approximations (INLA)}
 
 INLA proceeds through a carefully constructed and calibrated series of calculations and approximations, to acheive estimates of key quantites. These quantites include the maginal posterior distributions for latent field parameters, $p(x_{i}|\pmb{y})$; and covariance hyperparameter posterior $p(\theta|\pmb{y})$. This means we never obtain posteriors $p(\pmb{x}|\pmb{y})$ and $p(\pmb{x},\pmb{\theta}|\pmb{y})$. 
 
-\subsubsection*{Step 1, Gaussian Approximation} % ======= ======
+\subsubsection{Step 1, Gaussian Approximation} % ======= ======
 
 The basic approach to estimating $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ is ``matching the mode and curvature at the mode'' of estimator $p_{G}(\pmb{x}|\pmb{\theta}, \pmb{y})$ to that of $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ \citep{Rue2005}. As mentioned, INLA requires Gaussian priors for all paramters except covariance hyperparameters; but, INLA also requires conditional independence, whereby $p(\pmb{y}|\pmb{x}, \pmb{\theta}) = \prod_{i} p(y_{i}|\pmb{x}_{i},\pmb{\theta})$. Our analysis satisfies this necessity, and therefore $$p(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp}\left(-\frac{1}{2}\pmb{x}^{T}\pmb{Q x} + \sum_{i} \text{log }p(y_{i}|\pmb{x}_{i},\pmb{\theta}) \right).$$ The Gaussian approximation takes the form
 $$p_{G}(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp} \left( -\frac{1}{2}(\pmb{x-\mu})^{T} (\pmb{Q} + \text{diag}(\pmb{c}) ) (\pmb{x - \mu}) \right),$$
 where vectors $\pmb{c}$ and $\pmb{\mu}$ depend on second order Taylor expansions of $f(\pmb{x}) = \sum_{i} \text{log }p(y_{i}|\pmb{x}_{i},\pmb{\theta})$ about the mode \citep{Lindstrom2014}. A Newton-Raphson algorithm iteratively computes the mode and precision matrix until convergence \citep{Rue2009}. Step 2 uses this Gaussian approximation, $p_{G}(\pmb{x}|\pmb{\theta},\pmb{y})$.
 
-\subsubsection*{Step 2, Laplace Approximation}  % ====== ======
+\subsubsection{Step 2, Laplace Approximation}  % ====== ======
 
 This step begins with two sides of a familiar identity, and its subsequent rearrangement.
 \begin{align}
@@ -347,14 +340,14 @@ For a given $\pmb{\theta}$, let $\pmb{x}_{0} = \text{argmax}_{x}p(\pmb{x}|\pmb{y
 $$ p(\pmb{\theta}|\pmb{y}) \approx \tilde{p}(\pmb{\theta}|\pmb{y}) \propto  \frac{p(\pmb{y} | \pmb{x}_{0}, \pmb{\theta}) p(\pmb{x}_{0} | \pmb{\theta})}{p_{G}(\pmb{x}_{0} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta}),$$
 where the Taylor approximation of $f(\pmb{x}) = \sum_{i} \text{log }p(y_{i}|x_{i})$, in $p_{G}(\pmb{x} | \pmb{y}, \pmb{\theta})$, expands about $\pmb{x}_{0}$. This approximation matches \cite{Tierney1986} Laplace approximation.  Then, we have approximate maximum likelihood estimate $\hat{\pmb{\theta}}_{\text{ML}} \approx \text{argmax}_{\theta} \tilde{p}(\pmb{\theta}|\pmb{y})$.
 
-\subsubsection*{Step 3, Numerical Integration} % === === === === ===
+\subsubsection{Step 3, Numerical Integration} % === === === === ===
 Numerical Integration over $\pmb{\theta}$, or elements of $\pmb{\theta}$, gives $p(x_{i}|\pmb{y})$ and $p(\theta_{i}|\pmb{y})$.
         $$ p(x_{j} | \pmb{y}) \approx \int p_{\text{G}}(x_{j}|\pmb{\theta, y})\tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta} $$
         $$ p(\theta_{k} | \pmb{y}) \approx \int \tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta}_{-k} $$
 
 In summary, from a continuous domain the SPDE-INLA approxmation procedure provides, with improved speed, posterior estimates for $p(\pmb{\theta}|\pmb{y})$, $p(\theta_{i}|\pmb{y})$, and $p(x_{i}|\pmb{y})$. The R package \verb|INLA| implements this procedure, with flexible SPDE specifications for domain triangulation.
 
-\subsubsection{Bayesian Inference in R-INLA}
+\subsection{Bayesian Inference in R-INLA}
 
 % \bibliography{Baseball}
 % 

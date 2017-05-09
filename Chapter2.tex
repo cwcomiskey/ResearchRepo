@@ -45,13 +45,11 @@
 % 
 % \tableofcontents
 
-\section{Variable-Resoluation Heat Maps} % ==================== 
-
 Graphical displays are an irreplaceable tool for the statistician, and the statistical community. They allow us to quickly communicate information about a data set to another statistician, or, perhaps even more importantly, to non-statisticians. As technology generates more data the importance of this area of statistics expands, statistical analysis becomes more widespread, and our graphic-making abilities improve. The R data visualization package \verb|ggplot2| highlights (i) the importance of graphical diplays, because it is among the most downloaded R packages; and (ii) the need for innovation in this area, because its popularity explosion signals it met a need.
 
 In this chapter we focus on one type of graphical display, the heat map. We show the way it fails to adequately communicate spatial data dispersion and distribution attributes, and we innovate a solution. This innovation improves our ability to communicate spatial data density and dispersion attributes to the viewer using a heat map.
 
-\subsection{Conventional Heat Maps, Baseball Data} % ====================
+\section{Conventional Heat Maps, Baseball Data} % ====================
 
 Baseball is a series of contests between the hitter and the pitcher, comprised of pitches the hitter can swing at. In a statistical sense, we consider every swing a trial. This differs from other studies that use only swings that end at bats \citep{Cross2015}, \citep{Baumer2010}, \citep{Fast2011}. These studies omit swinging strikes that do not end at bats, and foul balls, from analysis. This drastically reduces sample sizes. In this work every swing is a trial, with some probability of success. We define success as swings where \verb|des| equals \verb|in play, no out|, and failure as swings where \verb|des| equals \verb|Foul|, \verb|Foul (Runner Going)|, \verb|Foul Tip|, \verb|In play out(s)|, \verb|Swinging Strike|, or \verb|Swinging Strike (Blocked)|.
 
@@ -67,7 +65,7 @@ Define a Bernoulli random variable, $S_{i}$, that equals one for swing success a
 
 The heat map above divided the strike zone into relatively small boxes, because the data supported it. By ``supported it'' we mean the small, spatially specific boxes retain a sample size large enough to keep the variance of $\hat{p}_{b}$ acceptably \footnote{Defining ``acceptable'' variance ranges and thresholds will depend on context and analysis objectives. For example, a pitching coach may be satisfied with estimates accurate 95\% of the time to within 20 batting average points. This margin of error, 0.02, requires a sample size of 32 when $p_{b} = 0.09$. Note that the variance depends on the mean for a Bernoulli random variable.} This is important because individual hitter datasets vary dramatically in size, with swing totals ranging from a single swing to over 10,000 swings. Similar to bin width selection for a histogram, the choice of heat map resolution can dramatically affect how the data is represented, and the usefulness of the parameter estimates of interest. The resolution decision depends on the size and nature of the data set in question, and its spatial dispersion through the domain. To explore this decision in detail, we look at a heatmap for one batter.
 
-\subsection{Resolution Selection} % ====== ======== ====== =======
+\section{Resolution Selection} % ====== ======== ====== =======
 
 Batter 425509, a veteran player named Jhonny Peralta, took 9,177 swings in this dataset. Peralta's swing data yields the heat map in Figure 2, which divides the central region of the strike zone into 16 equally sized boxes. Each box maps $\hat{p}_{b}$ to a color, and the box sample size, $n_{b}$, is printed on the box center. For convenient referencing in this chapter, we adopt the convention of numbering boxes with a horizontal component (left to right) and a vertical component (bottom to top [ {\bf Alix: ``WHY?''}]). For example, we call the top-left box (1,4), and the bottom-right box (4,1). 
         \begin{figure}[H]
@@ -96,7 +94,7 @@ In this way, due to the particular dispersion of the data, a heat map at any res
 
 It is unclear which of these five resolutions best combines spatially precise estimates of $p$ where possible, and box sample sizes with $\text{Var}(\hat{p}_{b})$ in a desirable range. The viewer interested in the center of the strike zone should prefer the last ({\bf need labels} heat map, as the box sample sizes are sufficient to provide such spatially specific low variance estimates. The boxes closer to the edges of the strike zone contain higher variance, and thus less reliable estimates, due to prohibitively small sample sizes. We propose a new heat map approach that combines resolutions according to the data's varying spatial density.
 
-\subsection{Empirical Heat Maps and Spatially Varying Resolution} % ==========
+\section{Empirical Heat Maps and Spatially Varying Resolution} % ==========
 
 Consider again the heat map in Figure 2. Notice box (1,1) contains data on 22 swings, a sample size where subdividing would yield sample sizes uselessly small, and thus estimate variances prohibitively high. Box (2,3), in contrast, contains data on 1694 swings, which would support estimates that are more spatially accurate without $\text{Var}(\hat{p}_{b})$ increasing past acceptable levels. We propose defining a stopping rule and a subdividing method, and subdividing boxes further accordingly. For example, in Figure 4 we subdivide, into four equally sized boxes, all boxes where $n_{b} > 200$, . One iteration through all boxes at their current size, subdividing according to this rule, converts the heat map on the left to the heat map on the right.
         \begin{figure}[H]
