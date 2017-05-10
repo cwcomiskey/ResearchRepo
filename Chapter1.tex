@@ -43,26 +43,23 @@ As the dollar amounts indicate, it is not for a lack of motivation that the rese
 
 \section{Statistical Research Contributions and Context}
 
-{\bf ***This section needs to get written, and might as well include all the details, specifics, citations, literature overview. ***}
-
 This research includes novel applications of advanced, cutting edge statistical techniques. In addition, as of publication, only one article in a peer reviewed journal focuses on this area of application. This combination---novel application of existing techniques to an unstudied area---constitutes a significant statistical research contribution. 
 
 The area of application is, of course, baseball. More specifically, we analyze strike zone data. As of publication, \cite{Cross2015} constitutes the only baseball statistical analysis article in a peer reviewed journal. This is surprising, given the widespread enthusiam for baseball, until considering the obstacles. Perhaps most importantly, data collection began relatively recently, in 2008. Further, an individual must possess advanced statistical training, programming abilities, database management skills, and baseball interest. The intersection of these subsets of people proves quite small!  Together, these factors explain the paucity of research.
 
-Our efforts build on others' work, and in some cases stand on the shoulders of giants. Our inspiration to model strike zone success owes \cite{Williams1971} a debt, and \cite{Cross2015} provided a place in the literature to start. The initial heat map in \cite{Cross2015} intimated polar coordinates could be a key. Thinking of pitch locations, in polar coordinates, as biomechanical covariates was perhaps inspired by the works of, and conversations with, Glenn Fleisig at the American Sports Medical Institute \citep{Fleisig2002}, and Brittany Dowling of Motus \citep{Dowling2016}. \cite{Hosmer2013} provided such logistic regression models an early proof of concept. From there, two  paths emerged; (i) visualizing our data and analysis, and (ii) the "big N" problem.
+Our efforts build on others' work, and in some cases stand on the shoulders of giants. Our inspiration to model strike zone success owes \cite{Williams1971} a debt, and \cite{Cross2015} provided a place in the literature to start. However, we sought a paremetric parametric model, and logistic refression fit the bill \citep{Myers2012}. The initial heat map in \cite{Cross2015} intimated polar coordinates could be a key. Thinking of pitch locations, in polar coordinates, as biomechanical covariates was perhaps inspired by the works of, and conversations with, Glenn Fleisig at the American Sports Medical Institute \citep{Fleisig2002}, and Brittany Dowling of Motus \citep{Dowling2016}. \cite{Hosmer2013} provided such logistic regression models an early proof of concept. From there, two  paths emerged; (i) visualizing our data and analysis, and (ii) the "big N" problem.
 
-Our empirical heat maps provided the opportunity for innovation, and Hadley Wickham's \verb|ggplot2|, and its ``layered grammar of (\verb|ggplot2|) graphics,'' was our palette \citep{Wickham2009}, \citep{Wickham2010}. In addition, we saw the need for improved heat map CIs, and RStudio's Shiny, an ``interactive web application framework,'' offered the necessary tools \citep{Shiny}.
+Our empirical heat maps provided the opportunity for innovation, and Hadley Wickham's \verb|ggplot2|, and its ``layered grammar of (\verb|ggplot2|) graphics,'' was our palette \citep{Wickham2009}, \citep{Wickham2010}. Unseen but integral, the spatial data package \verb|fields|, created by a colleague Doug Nychka at NCAR, provided a kind of computational mortar in these efforts.  In addition, we saw the need for improved heat map CIs, and RStudio's Shiny, an ``interactive web application framework,'' offered the necessary tools \citep{Shiny}.
 
-The "big N" problem required numerous shoulder resources to stand on. The first shoulders were familiar; Hadley's \verb|dplyr| was indispensable \citep{Wickham2016}. The ``split-apply-combine strategy,'' in tandom with MySQL, proved critical for data wrangling \citep{Wickham2016}, \citep{Tahaghoghi2006}. This really only got us started though. Attempting to computationally and statistically deal with the ``big N'' problem involved three general approaches: (i) computational optimization, (ii) dimension reduction, and (iii) approximation.
+In the Bayesian paradigm it seemed relatively simple at first to add a spatial random effect to a generalized linear model, giving a bayesian hierarchical spatial model \citep{Gelman2014}, \citep{Banerjee2014}. However, the "big N" problem required numerous shoulder resources to stand on. The first shoulders were familiar; Hadley's \verb|dplyr| was indispensable \citep{Wickham2016}. The ``split-apply-combine strategy,'' in tandom with MySQL, proved critical for data wrangling \citep{Wickham2016}, \citep{Tahaghoghi2006}. This really only got us started though. Attempting to computationally and statistically deal with the ``big N'' problem involved three general approaches: (i) computational optimization, (ii) dimension reduction, and (iii) approximation.
 
-Our attempts at computational optimization occurred with Stan and the R interface rstan \citep{rstan}, \citep{STANtheMan}.
+Our attempts at computational optimization occurred with the Bayesian programming language Stan, and the R interface \verb|rstan| \citep{rstan}, \citep{Gelman2015}. Poring over the manual  helped \citep{STANtheMan}; and so did subset of Stan developers---including Andrew Gelman, Rob Trangucci, and Bob Carpenter.
 
+The second approach, dimension reduction, came from colleague Andrew Finley's work, in Michigan State's Department of Forrestry and Geography. He played a central role in creating predictive process models, and the implementation package \verb|spBayes| \citep{Banerjee2008}, \citep{Finley2012}, \citep{Finley2013}.
 
-\begin{itemize}
-\item New area of (``novel'') application for (of) ``Big N'' approaches
-\item New visualization tool (var-res) from awesome \verb|ggplot2|
-\item New visualization vehicle (Shiny) enabled new tool, for powerful, pervasive HMs missing critical CIs
-\end{itemize}
+Finally, we explored approximation techniques. The integrated nested laplace approximation (INLA), a mathematically and computationally complex procedures, gives speedy estimates for a certain class of models \citep{Rue2009}. However, modifying our setup to prepare for INLA required a stochastic partial differential equation \citep{Lindgren2011}, \citep{Lindstrom2016}. 
+
+As this overview demonstrates, this work builds on the contributions of numerous other scientists and statisticians. Next, we lay out how this dissertation proceeds.
 
 
 \section{Research and Literature Overview}
