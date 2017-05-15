@@ -1,75 +1,43 @@
-% \documentclass{article}
-% 
-% \title{Take Me Out to (Analyze) the Ballgame \\ Visualization and Analysis Techniques for Big Spatial Data}
-% \author{Chris Comiskey}
-% \date{\today}
-% 
-% \usepackage{natbib}
-% \bibliographystyle{unsrtnat}
-% 
-% \usepackage{fullpage}
-% \usepackage{ulem}
-% \usepackage{amsmath, amsthm, amssymb, amsfonts}
-% \usepackage{mathtools}
-% \usepackage{float}
-% \usepackage{bbm}
-% \usepackage{wrapfig}
-% \usepackage{listings}
-% \usepackage[utf8]{inputenc}
-% \usepackage[english]{babel}
-% \usepackage[export]{adjustbox}
-% 
-% \makeatletter
-% \def\verbatim@font{\linespread{1}\normalfont\ttfamily}
-% \makeatother
-% 
-% \usepackage[toc,page]{appendix}
-% 
-% 
-% % \setlength{\parindent}{4em}
-% % \setlength{\parskip}{1em}
-% % \renewcommand{\baselinestretch}{1.3}
-% 
-% \usepackage{setspace}
-% \doublespacing
-% 
-% \usepackage[T1]{fontenc}
-% \usepackage[font=small,labelfont=bf,tableposition=top]{caption}
-% \DeclareCaptionLabelFormat{andtable}{#1~#2  \&  \tablename~\thetable}
-% 
-% 
-% \begin{document}
-% \maketitle{}
-% 
-% \tableofcontents
 
 \section{Introduction} % ================== 
 
-No matter the performace of the previously fit model, we expect there to be unexplained spatial variation in the mean. The covariates are limited in scope and depth, and Tobler's First Law of Geography tells us that things close together in space tend to behave more similarly than things further apart \citep{Tobler1970}. Accordingly, we enhance the model to capture the unexplained spatial variation in the mean, and compensate for unobserved covariates, by adding a spatially correlated random effect  \citep{Banerjee2008}. 
+No matter the performace of the previously fit model, we expect there to be unexplained spatial variation in the mean. The covariates are limited in scope and depth, and Tobler's First Law of Geography tells us that things close together in space tend to behave more similarly than things further apart \citep{Tobler1970}. Accordingly, we enhance the model by adding a spatially correlated random effect, giving a Spatial Generalized Linear Mixed Model (SGLMM). The spatial random effect accounts for some of the unexplained spatial variation in the mean, and compensates to some extent for missing covariates \citep{Banerjee2008}. 
 
 \subsection{Gaussian Random Field} % ================== 
 
-A Gaussian random field is a popular and practical distribution for spatial random effects \citep{Gelfand2010}. Let random variable vector $\pmb{w}(\pmb{s})$, for vector of locations $\pmb{s} \in \pmb{D} \subseteq \pmb{R}^{2}$, be distributed multivariate Normal with mean $\pmb{0}$; with symmetric, positive definite covariance matrix $\Sigma(\pmb{\theta})$, and covariance parameter vector $\pmb{\theta}$ \citep{Haran2011}.
-\begin{equation}
-\pmb{w} | \pmb{\theta} \sim MVN(\pmb{0}, \Sigma(\pmb{\theta})) 
-\end{equation}
+A Gaussian random field (GRF) offers a tractable structure for spatial random effects in a linear model \citep{Gelfand2010}. To define a GRF, first define multivariate Normal random vector $\pmb{w}(\pmb{s})$, for vector of locations $\pmb{s} \in \pmb{D} \subseteq \pmb{R}^{2}$, with mean $\pmb{0}$, and symmetric, positive definite covariance matrix $\Sigma(\pmb{\theta})$, with covariance parameters $\pmb{\theta}$ \citep{Haran2011}. This gives:
+$$ \pmb{w}(\pmb{s}) | \pmb{\theta} \sim MVN(\pmb{0}, \Sigma(\pmb{\theta})) $$
 
-Including a random effect defined in this way, with a valid covariance matrix, would retool (2) as a {\it spatial} generlatized linear {\it mixed} model (SGLMM). Next we define the covariance structure we use in this study.
+Including a random effect defined in this way, with a valid covariance matrix, retools (2) as a {\it spatial} generlatized linear {\it mixed} model (SGLMM). Next we define the GRF covariance structure, $\Sigma(\pmb{\theta})$, that we use in this study.
 
 \subsection{Exponential Covariance}
-To add a spatial random effect, distributed as a Gaussian random field, to the linear predictor in (2), it remains to define a spatial correlation structure to $\pmb{w}$. Let $w_{ij}$ be defined as in {\bf 5.1}, with an exponential covariance structure. That is, the i,jth element of $\Sigma(\phi, \sigma^{2})$ is:
+The spatial random effect $\pmb{w}(\pmb{s})$, defined as a Gaussian random field, requires a spatial correlation structure to. Let $\pmb{w}(\pmb{s})$ be defined as in {\bf 5.1}, with an exponential covariance structure. That is, the i,jth element of $\Sigma(\phi, \sigma^{2})$ is:
 \begin{equation}
 \Sigma(\phi, \sigma^{2})_{i,j} = \sigma^{2} exp(-||\pmb{s}_{i} - \pmb{s}_{j}||/\phi),
 \end{equation}
-where $||s_{i} - s_{j}||$ is the Euclidean distance between $\pmb{s}_{i}$ and $\pmb{s}_{j}$, $\sigma^{2}$ is the scale parameter, and $\phi$ is the range parameter.
+with  Euclidean distance between $\pmb{s}_{i}$ and $\pmb{s}_{j}$, $||s_{i} - s_{j}||$; scale parameter, $\sigma^{2}$; and range parameter $\phi$.
 
 \subsection{Spatial Generalized Linear Mixed Model}
-Inserting $\pmb{w}(\pmb{s})$ to the linear predictor in (1) gives the following spatial generalized linear mixed model (SGLMM):
+Adding $\pmb{w}(\pmb{s})$ to the linear predictor in (1) gives the following spatial generalized linear mixed model (SGLMM):
 \begin{equation}
 \text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + w(\pmb{s}_{ij}).
 \end{equation}
 
-This spatial hierarchical model, with its latent Gaussian random field, gives $p_{ij}$ a complicated correlation structure. Bayesian statistical methodologies, primarily Markov chain Monte Carlo (MCMC) methods, are very popular for fitting spatial models of this kind \citep{Banerjee2014}. In fact, MCMC is one of the few practical approaches available to fit a `big n' model with complex spatial correlation. This is because of the `big n problem' \citep{Lindgren2011}. Namely, the computational costs for SGLMMs increase at a rate of $\mathcal{O}(n^{3})$ (REFERENCE). This rate of increase leads to prohibitively slow model fitting. To attempt to fit SGLMMs in practically useful time spans, we try: 
+This spatial hierarchical model, containing a latent Gaussian random field, gives $p_{ij}$ a complicated correlation structure. Bayesian statistical methodologies, primarily Markov chain Monte Carlo (MCMC) methods, can effectively fit spatial models of this kind \citep{Banerjee2014}. Relatively few viable approaches exist for fitting a high dimensional model with this type of complex spatial correlation. High dimensionality for this type of spatial model induces significant computational cost, referred to as the `Big N problem' \citep{Lindgren2011}.
+
+\subsection{The ``Big N'' Problem}
+
+To consider the SGLMM, recall the multivariate Normal probability distribution function, in this case for $\pmb{w}$.
+
+$$ f(\pmb{w}) = \frac{1}{(2\pi)^{n/2}|\Sigma|^{1/2}} \text{exp}\{ -\frac{1}{2}\pmb{w}'\Sigma^{-1}\pmb{w} \}$$
+
+Note that $|\Sigma|^{1/2}$ denotes the square root of  the determinant of the $n \times n$ covariance matrix, and $\Sigma^{-1}$ denotes its inverse. These two elements of the MVN distribution lead to a punishing computational cost. To define this cost, first define ``big oh'' notation. A sequence of two increasing functions $f(n)$ and $g(n)$, we say ``$f(n)$ is big `oh' $g(n)$ as n goes to infinity,'' or $f(n) = O(g(n))$ as $n \rightarrow \infty$, if and only if there exists some $n_{0}$ and a positive real number M such that
+  $$|f(n)| \leq M \cdot |g(n)| \text{ for all } n \geq n_0 $$
+In our situation, we know that the computational costs of fitting a SGLMM increase at a rate of $\mathcal{O}(n^{3})$ \citep{Finley2009}. Therefore, define t(n) as time required for SGLMM model fitting, and we have:
+$$t(n) \leq M \cdot n^{3} \text{ as } n \rightarrow \infty.$$
+In practical terms, the upper bound on the amount of time required for model fitting increases at the same rate as $n^{3}$. Referring back to the MVN pdf, notice the $n \times n$ covariance matrix inverse and determinant. These calculations, required in every iteration of an MCMC algorthm, account for the $\mathcal{O}(n^{3})$ rate of increase, and the ``Big N'' problem.
+
+In practical terms, this rate of increase translates to prohibitively slow model fitting. To attempt fitting SGLMMs in practically useful time spans, we try: 
 
 To estimate model parameters for (4) we tried:
 \begin{enumerate}
@@ -90,8 +58,6 @@ Hierarchical Modeling and Analysis for Spatial Data \citep{Banerjee2014}
         \item Two issues: MCMC algorithms produce {\it correlated} draws from poster (hence thinning, acf(), pacf(), and {\it convergence} diagnosis 
         \item Two most popular MCMC algorithms: (1) Gibbs sampler (2) Metropolis Hastings algorithm
         \end{itemize} % ===============
-
-\subsection{``Big N Problem''}
 
 \section{Optimization in Stan} % =================
 
@@ -126,9 +92,9 @@ Substituting in Hamilton's equation (5) and simplifying gives
 \end{align}
 The solutions to these two differential equations, that is $q(t)$ and p(t) such that (8) and (9) hold, give the instantaneous rate of change of position and momentum at time t. 
 
-\subsubsection{MCMC Using Hamiltonian Dynamics \citep{Neal2011}} % =================
+\subsubsection{MCMC Using Hamiltonian Dynamics } % =================
 Steps.
-
+\citep{Neal2011}
 \begin{itemize}
 
 \item {\bf Leapfrog method} = for calculating new position (q) and momentum (p) through tiny time steps
@@ -152,7 +118,7 @@ Steps.
 Stan allows a user to omit prior distributions for parameters, but interprets non-inclusion as a non-informative, uniform prior. However, \cite{Gelman}, the first Stan developer, pointed out in correspondence that the exponential covariance length-scale parameter, $\phi$ in equation (3), requires an informative prior for model identifiability (CITATION?). \cite{Trangucci} recommended, in particular, a sharp tailed prior distribution for the length-scale parameter, such as the normal or log-normal, to act as soft upper and lower bound constraints\footnote{``Without stronger priors on l, GP can act as a second constant term in your regression for large draws of length-scale and large draws of alpha.''}. Even further, for practical computing time and convergence considerations, \cite{Trangucci} said complex models such as spatial hierarchical models require proper priors for all $\beta$ coefficients. Using the intial GLM estimates to inform coefficient prior distributions had exactly the intended effects.
 
 \subsubsection{Computational Techniques} % =================
-For speed and efficiency, the Stan Users Manual recommends pure matrix algebra and vectors, over `for loops' and scalars \cite{StantheMAN}. For example, 
+For speed and efficiency, the Stan Users Manual recommends pure matrix algebra and vectors, over `for loops' and scalars \cite{STANtheMan}. For example, 
 \begin{verbatim}
 hit ~ bernoulli_logit(X*beta + Z)
 \end{verbatim}
@@ -218,7 +184,7 @@ $$ r \propto \frac{f(\pmb{Y}|\pmb{\theta}_{i})f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}
 
 \end{itemize}
 
-\section{Dimension Reduction; Predictive Process Models} % =========
+\section{Dimension Reduction with Predictive Process Models} % =========
 
 Predictive process models (PPMs) provide a method for attempting to circumvent the ``big N problem'' in the case of Bayesian hierarchical models with latent Gaussian random effects. Numerous methods exist, for example \citep{Cressie2008}, (CITE OTHERS), but predictive process models provide a competitive modeling approach with computational advantages for hierarchical models with a Gaussian random field (GRF) at the second level of specification \citep{Banerjee2008}. Latent GRFs prove challenging because they are only implicitly observed, through a binomial response in our case. This means the GRF parameters (hyperparameters) and their prior distributions comprise the third level of the hierarchical model. Gaussian PPMs achieve dimension reduction by projecting the original process onto a lower dimensioned subspace, at a set of locations called knots \citep{Banerjee2008}. 
 
@@ -255,7 +221,7 @@ To reiterate, $m \times 1$ vector $\pmb{c}(\pmb{s};\pmb{\theta}) = \left[C(\pmb{
 \subsection{Improved Predictive Process Models}
 
 
-\section{Stochastic Partial Differential Equations and Integrated Nested Laplace Approximations} % =================
+\section{Integrated Nested Laplace Approximations with Stochastic Partial Differential Equations} % =================
 Integrated Nested Laplace Approximation (INLA), a mathematically intensive and computationally geared approximation technique, works well for Bayesian hierarchical models with latent Gaussian {\bf markov} random fields (GMRFs) \citep{Rue2007}. A GMRF, by virtue of its sparse precision matrix, enables INLA's orders of magnitude faster approximation method. However, to use INLA for continuous domain spatial models with latent Gaussian random fields (GRFs), one must represent the GRF as a GMRF; and stochastic calculus provides a link. A particular stochastic partial derivative of a Matern GRF equals a Gaussian random field white noise process. This identity provides a platform on which to approximate a Matern GRF with a GMRF, in the form of a piecewise linear basis representation. The discrete representation consists of deterministic basis functions, defined by a triangulation of the domain, and GMRF weights. The basis representation has a sparse precision matrix, and thus qualifies for the INLA approximation and its computational advantages. Scientists use this GRF to GMRF translation process---projecting the SPDE onto the basis representation---known as Finite Element Method, extensively in other fields. 
 \subsection{Gaussian Markov Random Fields}
 
@@ -348,7 +314,3 @@ Numerical Integration over $\pmb{\theta}$, or elements of $\pmb{\theta}$, gives 
 In summary, from a continuous domain the SPDE-INLA approxmation procedure provides, with improved speed, posterior estimates for $p(\pmb{\theta}|\pmb{y})$, $p(\theta_{i}|\pmb{y})$, and $p(x_{i}|\pmb{y})$. The R package \verb|INLA| implements this procedure, with flexible SPDE specifications for domain triangulation.
 
 \subsection{Bayesian Inference in R-INLA}
-
-% \bibliography{Baseball}
-% 
-% \end{document}
