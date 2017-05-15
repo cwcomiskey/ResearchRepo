@@ -91,30 +91,29 @@ We use g = 10, follwing the \cite{Hosmer2013} recommendation based on their simu
 
 \section{Heat Map Confidence Intervals}
 
-A heat map presents, essentially, a two dimensional surface ``painted'' with point estimates. That is, each (x,y) point on the surface maps a point estimate of a parameter to a color. This effectively communicates the behavior of the parameter, or at least the point estimates, across the spatial domain. However, the usefulness of a point estimate depends on confidence interval accompaniment; and therein lies the challenge: how to present heat map confidence intervals (CIs)? This problem exists across disparate academic areas of research---any area where heat maps are used! ``...question asked in other areas.'' For example, Dr. Sarah Emerson reports that collaborative genomics research with Dr. Yanming Di lacked a satisfactory heat map confidence interval option \citep{Emerson}, (cite paper). Next we present the current heat map CI best practices, and examine why they can and should be improved.
+A heat map presents, essentially, a two dimensional surface of point estimates. Each (x,y) point on the surface maps a point estimate of a parameter to a color. This effectively communicates the behavior of the parameter, or at least the point estimates, across the spatial domain. However, generally the usefulness of a point estimate depends on confidence interval accompaniment, and therein lies the challenge: how to present heat map confidence intervals (CIs)? This problem exists in numerous areas of application---any area where heat maps are used! ``I've heard this question asked in other areas,'' remarked Dr Sarah Emerson \citep{Emerson}. Indeed, Dr. Emerson reports that collaborative genomics research with Dr. Yanming Di lacked a satisfactory heat map confidence interval option \citep{Emerson}, (cite paper). In the next section we present the current heat map CI best practices, and examine how they can and should be improved.
 
 \subsection{Current Best Practices}
 
-The currect heat map best practice simply presents the CI lower bound heat map and upper bound heat map, and sometimes maps for additional percentiles. For example, \cite{Cross2015} provides the following collection of heat maps to communicate prediction confidence.
+The currect heat map confidence interval (CI) best practice simply presents two additional heat maps; the lower bound heat map and upper bound heat map. Sometimes the presentation includes maps for additional percentiles. For example, \cite{Cross2015} provides the following collection of heat maps to communicate prediction confidence.
 
   \begin{figure}[H]
-	\includegraphics[scale=.085]{Images/CrossHMCI.jpg}
-	\caption{In line with best practices, \cite{Cross2015} present four percentiles to convey confidence interval information for the point estimate heat map in the middle. We submit this method resists easy comprehension and intuition.}
+	\includegraphics[scale=.07]{Images/CrossHMCI.jpg}
+	\caption{In line with best practices, \cite{Cross2015} present four percentiles to convey confidence interval information for the point estimate heat map in the center. We submit this method resists easy comprehension and intuition.}
 	\end{figure}
 
-This heat map collection unfortunately challenges the viewer to understand the information content, conceptually and intuitively. To elaborate, consider a one-dimensional, hypothetical point estimate 2 and CI (0,4) which makes plain its information content and structure. Our familiarity with the number line contributes to easy comprehension.
+This heat map collection unfortunately confuses the audience with conceptually and intuitively inaccessible content. To elaborate, consider a hypothetical paremter and point estimate $\hat{\theta} = 2$, and hypothetical CI for $\hat{\theta}$ of (0,4). This combination makes plain its information content and structure; our familiarity with the number line contributes to easy comprehension.
   \begin{figure}[H]
   \centering
 	\includegraphics[scale=.6]{Images/NumberLine.jpg}
-	\caption{Our brain readily understands and interprets the content of a confidence interval on the number line. However, the same is not true for the color spectrum.}
+	\caption{Our brain readily understands and interprets the content of a confidence interval on the number line. On the other hand, our brain does not so easily understand and fill in intervals of the color spectrum.}
 	\end{figure}
-While one quickly, intuitively, and easily understand the content of the number line, this is not necessarily true for the color spectrum. Heat map CIs are less clear because {\it colors} represent the point estimate and confidence bounds! A point estimate of ``green'' with a CI of (purple, red) confounds.
+While one quickly, intuitively, and easily understands the content of the number line, we typically do not so easily fill in missing segments of the color spectrum. With heat map CIs, {\it colors} represent the point estimate and confidence bounds! A point estimate of ``green'' with a CI of (purple, red) confounds.
   \begin{figure}[H]
   \centering
 	\includegraphics[scale=.75]{Images/Lower.jpeg}
 	\includegraphics[scale=.75]{Images/SpectrumPE.jpg}
 	\includegraphics[scale=.75]{Images/Upper.jpeg}
-
 	\caption{This representation of a confidence interval on the color spectrum demonstrates the interpretive challenge. What stream of colors exist between each bound and the point estimate?}
 	\end{figure}
 
@@ -122,26 +121,26 @@ However, comprehension comes more easily with the entire spectrum within the con
   \begin{figure}[H]
   \centering
 	\includegraphics[scale=.65]{Images/SpectrumCI.jpg}
-	\caption{This representation of a confidence interval on the color spectrum hints at the interpretive solution. Interpretation simplifies with the portions of the color spectrum between each bound and the point estimate visible. The question then---how do we achieve this for a heat map {\it surface}?}
+	\caption{Interpretation of a colored confidence interval simplifies with the portions of the color spectrum between each bound and the point estimate visible. How do we achieve this for a heat map surface? This representation of a confidence interval on the color spectrum hints at the interpretive solution. }
 	\end{figure}
-This simplifies interpretation immensely. However, the problem remains; how do we acheive this for a heat map surface? A continuous model maps a limitless number of point estimates to a color on a surface, making a visible color spectrum confidence interval for each point estimate infeasible. We propose a dynamic solution using RStudio's Shiny \citep{Shiny}, \citep{RStudio}.
+This simplifies interpretation immensely. However, the problem remains; how do we acheive this for a heat map surface? A continuous model maps innumerable point estimates to a color on a surface, making a visible color spectrum CI for each point estimate infeasible. We propose a dynamic solution using RStudio's Shiny \citep{Shiny}, \citep{RStudio}.
 
 \subsection{Shiny Innovation}
 
 The inimitable RStudio created the Shiny framework to facilitate interactive web application development. Deployed directly out of the RStudio integrated development environment (IDE) \citep{IDE}, Shiny applications provide statisticians, all scientists in fact, with a powerful new tool for presenting analytical results. We take advantage of Shiny's capability to innovate a solution to the heat map CI problem articulated in the previous section.
 
-Recall the GLM fit heat map for Jhony Peralta. Figure 7 shows the lower and upper 95\% pointwise CI heat maps.
+Recall the GLM model heat map for Jhony Peralta. Figure 7 shows the lower and upper 95\% pointwise CI heat maps.
 
   \begin{figure}[H]
 	\centering
 	\includegraphics[scale=.25]{Images/Lower.pdf}
 	\includegraphics[scale=.25]{Images/Perralta_fit.pdf}
 	\includegraphics[scale=.25]{Images/Upper.pdf}
-	\caption{Current best practices for a heat map confidence interval (CI). The generalized linear model fit for Jhony Peralta in the center, the pointwise CI lower bound on the left, and the pointwise CI upper bound on the right. Our interactive, dynamic heat map CIs will make improve interpretability.}
+	\caption{Current best practices for a heat map confidence interval (CI). The generalized linear model fit for Jhony Peralta in the center, the pointwise CI lower bound on the left, and the pointwise CI upper bound on the right. Our interactive, dynamic heat map CIs will improve interpretability.}
 	\end{figure}
-The heat map on the left gives the lower bound of the 95\% CI, the heat map in the middle gives the model fit point estimates, and the heat map on the right gives the upper bound of the 95\% CI. The labels are removed from the left and right heat maps for simplicity. The challenge lies in somehow filling in the space between the bounds and point estimate.
+The heat map on the left gives the lower bound of the 95\% CI, the heat map in the middle gives the model fit point estimates, and the heat map on the right gives the upper bound of the 95\% CI. We removed labels from the left and right heat maps for simplicity. The challenge lies in filling the space between the bounds and point estimate.
 
-The static image of the interactive Shiny app in Figure 8 includes a slider in the lower left. The user adjusts the slider, a type of ``widget'' in Shiny, to move through the CI.
+The static image of the interactive Shiny app in Figure 8 includes a slider in the lower left. The user adjusts the slider, a type of ``widget'' in Shiny, to move {\bf through} the CI.
 
   \begin{figure}[H]
 	\centering
@@ -162,11 +161,4 @@ Figure 9 shows a sequence of static images in which the slider progressively nar
 	\caption{A dynamic, Shiny, interactive heat map confidence interval. As the user adjusts the Shiny widget slider, the heat maps bounds adjust. This interactive app lets you move {\bf through} a heat map confidence interval.}
 	\end{figure}
 
-The slider for a row of three heat maps sits below that row. Moving from the top row to the bottom row, notice how the left and right-hand images increasingly resemble the middle image, until they all three match. While the paper version resembles that from \cite{Cross2015}, this interactive CI figuratively jumps off the page and comes to life as an interactive web application, and shines.
-
-
-% \subsection{Appendix: ShinyHMCI, An R Package}
-
-% \bibliography{Baseball}
-%
-% \end{document}
+The slider for a row of three heat maps sits below that row. Moving from the top row to the bottom row, notice how the left and right-hand images increasingly resemble the middle image, until they all three match. While the paper version resembles that from \cite{Cross2015}, this interactive CI figuratively jumps off the page and comes to life as an interactive web application... and shines.
