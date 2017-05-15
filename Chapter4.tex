@@ -48,16 +48,77 @@ To estimate model parameters for (4) we tried:
 
 Note that the ultimate goal of this research is practical, real-time applications for baseball fans, broadcasts, players, scouts, and teams. Therefore, model fitting speed matters on a finer time scale than academic research demands.  
 
-\subsection{Markov Chains}
+\subsection{Markov Chain Monte Carlo}
 
-Hierarchical Modeling and Analysis for Spatial Data \citep{Banerjee2014}
+Simple Bayesian models sometimes yield closed form posterior distributions, but more complex models rarely do. In these cases, Markov chain simulations offer an iterative procedure that converges to the true posterior distribution. This class of procedures, often called Markov Chain Monte Carlo (MCMC), presents its own challenges, and even weaknesses, but with sufficient computing power it gives the desired posterior distributions. These posterior distributions present empirically, as draws from the distribution of interest, rather than as a closed form. Nevertheless, in modern Bayesian computational practice MCMC methods dominate \cite{Banerjee2014}.
+
+A Markov chain is a sequence of random variables such that the distribution of $X_{n+1}$ given $X_{1}, X_{2}, \hdots , X_{n}$ depends only on $X_{n}$; this is known as the Markov property. This property, in combination with a few other properties, yield Markov chains with equilibrium distributions \citep{Brooks2011}. MCMC algorithms work by creating Markov chains that possess the necessary characteristics for convergence, constructed so that they converge to the posterior distribution of interest.
+
+The two most popular MCMC algorithms are the Gibbs sampler and the Metropolis-Hastings algorithm.
+
+\subsubsection{Gibbs Sampler}
         \begin{itemize} % ===============
-        \item ``Without doubt, the most popular computing tools in Bayesian practice today are Markov chain Monte Carlo (MCMC) methods.'' 
-        \item inference from posteriors of ``...arbitrarily large dimension, essentially by reducing the problem to one of recursively solving a series of lower-dimensional (often unidimensional) problems.'' 
-        \item ``...work by producing not a closed form for posterior, but a sample of values $\{\theta^{(g)}, g = 1, \dots, G\}$ from this distribution.'' ($G$ = number of draws from posterior) 
-        \item Two issues: MCMC algorithms produce {\it correlated} draws from poster (hence thinning, acf(), pacf(), and {\it convergence} diagnosis 
-        \item Two most popular MCMC algorithms: (1) Gibbs sampler (2) Metropolis Hastings algorithm
+        \item Suppose $\pmb{\theta} = (\theta_{1}, \dots, \theta_{k})'$ 
+        \item {\bf Assume samples can be generated from full/complete conditional distributions} $\{p(\theta_{i}|\theta_{j \neq i},y)\}$ 
+              \begin{itemize}
+              \item Directly or indirectly (rejection sampling: adaptive rejection sampling or Metropolis algorithm)
+              \end{itemize}
+        \item Under mild conditions, the collection of full conditionals uniquely determines the joint posterior distribution $p(\pmb{\theta}|\pmb{y})$, and all marginal posteriors $p(\theta_{i}|\pmb{y})$
         \end{itemize} % ===============
+
+\subsubsection{Gibbs Sampler Algorithm}
+        \begin{itemize} % ===============
+        \item (Step 1) Draw $\theta_{1}^{t}$ from $p \left( \theta_{1}|\theta_{2}^{t-1}, \theta_{3}^{t-1},\dots,\theta_{k}^{t-1},\pmb{y} \right)$ 
+        
+        \item (Step 2) Draw $\theta_{2}^{t}$ from $p \left(\theta_{2}|\theta_{1}^{t}, \theta_{3}^{t-1},\dots,\theta_{k}^{t-1},\pmb{y} \right)$ \\
+        $\vdots$ 
+        \item (Step k) Draw $\theta_{k}^{t}$ from $p \left( \theta_{k}|\theta_{1}^{t}, \theta_{3}^{t},\dots,\theta_{k-1}^{t},\pmb{y} \right)$ \\
+        \item This converges to true joint posterior; for sufficiently large $t$, $\pmb{\theta}$ is a (correlated) sample from posterior.
+        \item Can run parallel chains for convergence diagnostic purposes
+        \end{itemize} % ===============
+
+\subsubsection{Metropolis-Hastings Algorithm}
+        \begin{itemize}
+        \item What if it is {\bf not feasible to sample from full conditionals}? If the {\bf closed forms are not even available}?!? ...M-H to the rescue!!
+        \item Even when $p(\theta_{i}|\pmb{\theta}_{j \neq i}, \pmb{y})$ is unavailable, it {\bf WILL} be available up to a proportionality constant, since it is proportional to portion of $f(\pmb{y}|\pmb{\theta})\times p(\pmb{\theta})$ that involves $\theta_{i}$.
+        \item Interest is still sampling/generating from full conditionals (now indirectly, with candidate rejection step)
+        \item Suppose $p(\pmb{\theta}|\pmb{y}) \propto h(\pmb{\theta}) \equiv f(\pmb{y}|\pmb{\theta})p(\pmb{\theta})$
+        \item Specify candidate density $q(\pmb{\theta}^{*}|\pmb{\theta}^{t-1})$ that is valid density for every possible value of $\pmb{\theta}^{t-1}$, and satisfies $q(\pmb{\theta}^{*}|\pmb{\theta}^{t-1}) = q(\pmb{\theta}^{t-1}|\pmb{\theta}^{*})$ ($q$ symmetric in its arguments)
+        \item Given a starting value $\pmb{\theta}^{(0)}$ at iteration $t=0$...
+        \item For $(t \in 1:T)$, repeat:
+            \begin{enumerate} % =================
+            \item Draw $\pmb{\theta}^{*}$ from $q(\cdot|\pmb{\theta}^{(t-1)})$
+            \item Compute the ratio $r=h(\pmb{\theta}^{*})/h(\pmb{\theta}^{t-1}) = \text{exp}[\text{log }h(\pmb{\theta}^{*}) - \text{log }h(\pmb{\theta}^{(t-1)}) $
+            \item If $r \geq  1$, set $\pmb{\theta}^{t} = \pmb{\theta}^{*}$; \\
+            If $r < 1$, set 
+            \[ 
+            \pmb{\theta}^{t} = 
+            \begin{cases} 
+            \pmb{\theta}^{*} \text{with prob. r} \\
+            \pmb{\theta}^{(t-1)} \text{with prob. 1 - r} \\
+            \end{cases}
+            \]
+            \end{enumerate} % =================
+        \end{itemize} % =================
+
+\subsection{Evaluate Inverse? Yes.}
+
+
+\begin{itemize}
+\item logit\{EY(s)\} = $\pmb{X}(s)\pmb{\beta} + Z(s)$, with $Z(s) \sim MVN\{\pmb{0}, \Sigma_{s}\}$
+\item $f(\pmb{\beta}, \phi, \sigma^{2}, \pmb{Z}|\pmb{Y}) \propto f(\pmb{Y}|\pmb{\beta}, \phi, \sigma^{2}, \pmb{Z})f(\pmb{\beta})f(\pmb{Z}|\phi, \sigma^{2})f(\phi)f(\sigma^{2})$
+\item M-H proposal, iteration i: $Z_{10,i}$
+$$ r = \frac{ f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \pmb{\beta}_{i-1}, \phi_{i}, \sigma^{2}_{i})}{f(Z_{10,i-1}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \pmb{\beta}_{i-1}, \phi_{i}, \sigma^{2}_{i})} $$
+ 
+\item Note: $f(z_{1}, z_{2}, z_{3}|\pmb{Y}) = f(z_{1}|z_{2},z_{3},\pmb{Y})f(z_{2},z_{3}|\pmb{Y})$. So... $$r \propto \frac{f(\pmb{Y}|\pmb{\theta}_{i})f(\pmb{\beta})f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})f(\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}|\phi_{i}, \sigma^{2}_{i})f(\phi)f(\sigma^{2})} {f(\pmb{Y}|\pmb{\theta}_{i-1})f(\pmb{\beta})f(Z_{10,i-1}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})f(\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}|\phi_{i}, \sigma^{2}_{i})f(\phi)f(\sigma^{2})}$$
+
+$$ r \propto \frac{f(\pmb{Y}|\pmb{\theta}_{i})f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})}
+{f(\pmb{Y}|\pmb{\theta}_{i-1})f(Z_{10,i-1}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})} $$
+
+\item And $f(\pmb{Z})$, $f(Z_{i}|\pmb{Z}_{-i})$, etc. are $MVN\{\cdot,\Sigma^{*}\}$, where $\Sigma^{*}$ either is, or is some function of, $\Sigma_{\pmb{s}}$; with PDF kernal containing $\Sigma_{\pmb{s}}^{*-1}$, (containing $\phi_{i}, \sigma^{2}_{i})$.
+
+\end{itemize}
+        
 
 \section{Optimization in Stan} % =================
 
@@ -164,25 +225,6 @@ Z_mod = L * Z;
 hit ~ bernoulli_logit(Q*theta + Z_mod);
 \end{verbatim}
 The first line performs a Cholesky decomposition on the covariance matrix \verb|Sigma|. A Cholesky decomposition factors symmetric matrix \verb|Sigma| such that $\Sigma = \text{\pmb{LL}}'$. The second, ``vectorized scalar'' line generates $n$ standard normal random variables, by reusing \verb|normal(0, 1)| for every element of \verb|Z|. These two lines remove the dependence of random vector \pmb{Z}, which must be generated, on unknown parameters to be estimated \cite{Trangucci2017}. The third line transforms \verb|Z| to have the desired distribution. Note that $\text{Var}(\text{\pmb{LZ}}) = \text{\pmb{L}} \text{I}_{n}\text{\pmb{L}}' = \Sigma$, so that $\pmb{LZ} \sim N(\pmb{0}, \Sigma)$ as desired.
-
-
-\subsection{Evaluate Inverse? Yes.}
-
-
-\begin{itemize}
-\item logit\{EY(s)\} = $\pmb{X}(s)\pmb{\beta} + Z(s)$, with $Z(s) \sim MVN\{\pmb{0}, \Sigma_{s}\}$
-\item $f(\pmb{\beta}, \phi, \sigma^{2}, \pmb{Z}|\pmb{Y}) \propto f(\pmb{Y}|\pmb{\beta}, \phi, \sigma^{2}, \pmb{Z})f(\pmb{\beta})f(\pmb{Z}|\phi, \sigma^{2})f(\phi)f(\sigma^{2})$
-\item M-H proposal, iteration i: $Z_{10,i}$
-$$ r = \frac{ f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \pmb{\beta}_{i-1}, \phi_{i}, \sigma^{2}_{i})}{f(Z_{10,i-1}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \pmb{\beta}_{i-1}, \phi_{i}, \sigma^{2}_{i})} $$
- 
-\item Note: $f(z_{1}, z_{2}, z_{3}|\pmb{Y}) = f(z_{1}|z_{2},z_{3},\pmb{Y})f(z_{2},z_{3}|\pmb{Y})$. So... $$r \propto \frac{f(\pmb{Y}|\pmb{\theta}_{i})f(\pmb{\beta})f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})f(\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}|\phi_{i}, \sigma^{2}_{i})f(\phi)f(\sigma^{2})} {f(\pmb{Y}|\pmb{\theta}_{i-1})f(\pmb{\beta})f(Z_{10,i-1}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})f(\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}|\phi_{i}, \sigma^{2}_{i})f(\phi)f(\sigma^{2})}$$
-
-$$ r \propto \frac{f(\pmb{Y}|\pmb{\theta}_{i})f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})}
-{f(\pmb{Y}|\pmb{\theta}_{i-1})f(Z_{10,i-1}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})} $$
-
-\item And $f(\pmb{Z})$, $f(Z_{i}|\pmb{Z}_{-i})$, etc. are $MVN\{\cdot,\Sigma^{*}\}$, where $\Sigma^{*}$ either is, or is some function of, $\Sigma_{\pmb{s}}$; with PDF kernal containing $\Sigma_{\pmb{s}}^{*-1}$, (containing $\phi_{i}, \sigma^{2}_{i})$.
-
-\end{itemize}
 
 \section{Dimension Reduction with Predictive Process Models} % =========
 
