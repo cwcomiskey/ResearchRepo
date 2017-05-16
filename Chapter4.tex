@@ -37,7 +37,12 @@ In our situation, we know that the computational costs of fitting a SGLMM increa
 $$t(n) \leq M \cdot n^{3} \text{ as } n \rightarrow \infty.$$
 In practical terms, the upper bound on the amount of time required for model fitting increases at the same rate as $n^{3}$. Referring back to the MVN pdf, notice the $n \times n$ covariance matrix inverse and determinant. These calculations, required in every iteration of an MCMC algorthm, account for the $\mathcal{O}(n^{3})$ rate of increase, and the ``Big N'' problem.
 
-In practical terms, this rate of increase translates to prohibitively slow model fitting. To attempt fitting SGLMMs in practically useful time spans, we try: 
+In practical terms, this rate of increase translates to prohibitively slow model fitting. 
+
+
+************************WHERE SHOULD THIS GO???**************
+
+To attempt fitting SGLMMs in practically useful time spans, we try: 
 
 To estimate model parameters for (4) we tried:
 \begin{enumerate}
@@ -48,13 +53,17 @@ To estimate model parameters for (4) we tried:
 
 Note that the ultimate goal of this research is practical, real-time applications for baseball fans, broadcasts, players, scouts, and teams. Therefore, model fitting speed matters on a finer time scale than academic research demands.  
 
+************************************************************
+
 \subsection{Markov Chain Monte Carlo}
 
-Simple Bayesian models sometimes yield closed form posterior distributions, but more complex models rarely do. In these cases, Markov chain simulations offer an iterative procedure that converges to the true posterior distribution. This class of procedures, often called Markov Chain Monte Carlo (MCMC), presents its own challenges, and even weaknesses, but with sufficient computing power it gives the desired posterior distributions. These posterior distributions present empirically, as draws from the distribution of interest, rather than as a closed form. Nevertheless, in modern Bayesian computational practice MCMC methods dominate \cite{Banerjee2014}.
+Elementary Bayesian models sometimes yield closed form posterior distributions, but more complex models rarely do. In these cases, Markov chain simulations, usually called Markov Chain Monte Carlo (MCMC), offer an iterative procedure that converges to the true posterior distribution. This class of procedures presents its own challenges, and even weaknesses.  Nevertheless, with sufficient computing power MCMC can provide the desired posterior distributions for drastically more problems, hence their widespread use \cite{Banerjee2014}. The solution presents empirically, as draws from the posterior distribution of interest, rather than as a closed form. 
 
-A Markov chain is a sequence of random variables such that the distribution of $X_{n+1}$ given $X_{1}, X_{2}, \hdots , X_{n}$ depends only on $X_{n}$; this is known as the Markov property. This property, in combination with a few other properties, yield Markov chains with equilibrium distributions \citep{Brooks2011}. MCMC algorithms work by creating Markov chains that possess the necessary characteristics for convergence, constructed so that they converge to the posterior distribution of interest.
+The Markov chain properties, as the name suggests, supply fundamental theoretical elements of MCMC, including the Markov property. A sequence of possibly multivariate random variables, e, $\pmb{X}_{1}, \pmb{X}_{2}, \hdots$ with the Markov property---the distribution of $\pmb{X}_{n+1}$ given $\pmb{X}_{1}, \pmb{X}_{2}, \hdots , \pmb{X}_{n}$ depends only on $\pmb{X}_{n}$---defines a Markov chain. MCMC algorithms use carefully constructed Markov chains that possess the necessary technical properties to assure an equilibrium distribution \citep{Brooks2011}. In fact, these chains are constructed so that they  converge to an equilibrium distribution they equivalent to the posterior distribution of interest.
 
-The two most popular MCMC algorithms are the Gibbs sampler and the Metropolis-Hastings algorithm.
+The two most popular MCMC algorithms are the Gibbs sampler and the Metropolis algorithm.
+
+Stan uses HMC sampling and a ``Metropolis reject step'' \citep{STANtheMan}. spBayes uses ``random walk Metropolis sampler'' \citep{Finley2015}.
 
 \subsubsection{Gibbs Sampler}
         \begin{itemize} % ===============
