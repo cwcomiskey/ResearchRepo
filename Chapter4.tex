@@ -63,9 +63,20 @@ The Markov chain properties, as the name suggests, supply fundamental theoretica
 
 Both Bayesian estimation programs in this chapter use the Metropolis sampling algorithm, one of the most popular MCMC algorithms. 
 
-Stan uses HMC sampling and a ``Metropolis reject step'' \citep{STANtheMan}. spBayes uses ``random walk Metropolis sampler'' \citep{Finley2015}.
+Stan uses HMC sampling and a ``Metropolis reject step'' \citep{STANtheMan}. spBayes, for our purposes, uses a ``Metropolis-within-Gibbs'' sampler \citep{Finley2015}.
 
-\subsubsection{Metropolis Algorithm} \citep{Banerjee2014}
+\subsection{Gibbs Sampler \citep{Banerjee2014}}
+In high dimensional problems that are now common, the Gibbs Sampler achieves success, in part, because it iteratively reduces the dimension of the problem. To understand how, and give the algorithm, define parameter vector $\pmb{\theta} = (\theta_{1}, \dots, \theta_{k})'$, and assume we can draw samples from $p(\theta_{i}|\theta_{j \neq i},y)$ directly, or using the Metropolis algorithm described in the next section. The Gibbs sampler proceeds with the following steps, for iterations $(t \in 1:T)$. 
+        \begin{itemize} 
+        \item Step 1: draw $\theta_{1}^{t}$ from $p \left( \theta_{1}|\theta_{2}^{t-1}, \theta_{3}^{t-1},\dots,\theta_{k}^{t-1},\pmb{y} \right)$ 
+        
+        \item Step 2: draw $\theta_{2}^{t}$ from $p \left(\theta_{2}|\theta_{1}^{t}, \theta_{3}^{t-1},\dots,\theta_{k}^{t-1},\pmb{y} \right)$ \\
+        $\vdots$ \\ 
+        \item Step k: draw $\theta_{k}^{t}$ from $p \left( \theta_{k}|\theta_{1}^{t}, \theta_{3}^{t},\dots,\theta_{k-1}^{t},\pmb{y} \right)$ 
+        \end{itemize} 
+With certain conditions met, as they are in MCMC usage, this sequence of draws converges to (correlated) draws from the true posterior distribution $p(\pmb{\theta}|\pmb{y})$ \citep{Banerjee2014}.
+
+\subsubsection{Metropolis Algorithm \citep{Banerjee2014}} 
 Typically the closed form for the target distribution, the posterior of interst, is unavailable. However, it will be available up to a proportionality constant, which is easy to see in the familiar Bayes proportionality, for observation vector $\pmb{y}$ and parameter vector $\theta$.
 $$p(\pmb{\theta}|\pmb{y}) \propto f(\pmb{y}|\pmb{\theta})p(\pmb{\theta})$$
 We see that the kernal, or the portion that contains the parameters of interest, is available; call it $h(\pmb{\theta})$. The Metropolis algorithm leverages this information to take a sequence of draws whose distributions converge to the target distribution. The draws of interest are full conditionals, $p(\theta_{i}|\pmb{\theta}_{-i})$, effectively reducing a possibly high dimensional problem to a series of lower dimension problems. Before the algorithm procedds, one must specify a candidate density, $q(\pmb{\theta}_{t}|\pmb{\theta}_{t-1})$, such that
@@ -92,50 +103,6 @@ $$ r=h(\pmb{\theta}^{*})/h(\pmb{\theta}^{t-1}) = \text{exp}[\text{log }h(\pmb{\t
   \end{enumerate}
 
 ***************************************************
-
-        \begin{itemize}
-        \item Interest is still sampling/generating from full conditionals (now indirectly, with candidate rejection step)
-        \item Suppose $p(\pmb{\theta}|\pmb{y}) \propto h(\pmb{\theta}) \equiv f(\pmb{y}|\pmb{\theta})p(\pmb{\theta})$
-        \item Specify candidate density $q(\pmb{\theta}^{*}|\pmb{\theta}^{t-1})$ that is valid density for every possible value of $\pmb{\theta}^{t-1}$, and satisfies $q(\pmb{\theta}^{*}|\pmb{\theta}^{t-1}) = q(\pmb{\theta}^{t-1}|\pmb{\theta}^{*})$ ($q$ symmetric in its arguments)
-        \item Given a starting value $\pmb{\theta}^{(0)}$ at iteration $t=0$...
-        \item For $(t \in 1:T)$, repeat:
-            \begin{enumerate} % =================
-            \item Draw $\pmb{\theta}^{*}$ from $q(\cdot|\pmb{\theta}^{(t-1)})$
-            \item Compute the ratio $r=h(\pmb{\theta}^{*})/h(\pmb{\theta}^{t-1}) = \text{exp}[\text{log }h(\pmb{\theta}^{*}) - \text{log }h(\pmb{\theta}^{(t-1)}) $
-            \item If $r \geq  1$, set $\pmb{\theta}^{t} = \pmb{\theta}^{*}$; \\
-            If $r < 1$, set 
-            \[ 
-            \pmb{\theta}^{t} = 
-            \begin{cases} 
-            \pmb{\theta}^{*} \text{with prob. r} \\
-            \pmb{\theta}^{(t-1)} \text{with prob. 1 - r} \\
-            \end{cases}
-            \]
-            \end{enumerate} % =================
-        \end{itemize} % =================
-
-\subsubsection{Gibbs Sampler}
-        \begin{itemize} % ===============
-        \item Suppose $\pmb{\theta} = (\theta_{1}, \dots, \theta_{k})'$ 
-        \item {\bf Assume samples can be generated from full/complete conditional distributions} $\{p(\theta_{i}|\theta_{j \neq i},y)\}$ 
-              \begin{itemize}
-              \item Directly or indirectly (rejection sampling: adaptive rejection sampling or Metropolis algorithm)
-              \end{itemize}
-        \item Under mild conditions, the collection of full conditionals uniquely determines the joint posterior distribution $p(\pmb{\theta}|\pmb{y})$, and all marginal posteriors $p(\theta_{i}|\pmb{y})$
-        \end{itemize} % ===============
-
-\subsubsection{Gibbs Sampler Algorithm}
-        \begin{itemize} % ===============
-        \item (Step 1) Draw $\theta_{1}^{t}$ from $p \left( \theta_{1}|\theta_{2}^{t-1}, \theta_{3}^{t-1},\dots,\theta_{k}^{t-1},\pmb{y} \right)$ 
-        
-        \item (Step 2) Draw $\theta_{2}^{t}$ from $p \left(\theta_{2}|\theta_{1}^{t}, \theta_{3}^{t-1},\dots,\theta_{k}^{t-1},\pmb{y} \right)$ \\
-        $\vdots$ 
-        \item (Step k) Draw $\theta_{k}^{t}$ from $p \left( \theta_{k}|\theta_{1}^{t}, \theta_{3}^{t},\dots,\theta_{k-1}^{t},\pmb{y} \right)$ \\
-        \item This converges to true joint posterior; for sufficiently large $t$, $\pmb{\theta}$ is a (correlated) sample from posterior.
-        \item Can run parallel chains for convergence diagnostic purposes
-        \end{itemize} % ===============
-
-
 
 \subsection{Evaluate Inverse? Yes.}
 
