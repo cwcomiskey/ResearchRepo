@@ -61,9 +61,58 @@ Elementary Bayesian models sometimes yield closed form posterior distributions, 
 
 The Markov chain properties, as the name suggests, supply fundamental theoretical elements of MCMC, including the Markov property. A sequence of possibly multivariate random variables, e, $\pmb{X}_{1}, \pmb{X}_{2}, \hdots$ with the Markov property---the distribution of $\pmb{X}_{n+1}$ given $\pmb{X}_{1}, \pmb{X}_{2}, \hdots , \pmb{X}_{n}$ depends only on $\pmb{X}_{n}$---defines a Markov chain. MCMC algorithms use carefully constructed Markov chains that possess the necessary technical properties to assure an equilibrium distribution \citep{Brooks2011}. In fact, these chains are constructed so that they  converge to an equilibrium distribution they equivalent to the posterior distribution of interest.
 
-The two most popular MCMC algorithms are the Gibbs sampler and the Metropolis algorithm.
+Both Bayesian estimation programs in this chapter use the Metropolis sampling algorithm, one of the most popular MCMC algorithms. 
 
 Stan uses HMC sampling and a ``Metropolis reject step'' \citep{STANtheMan}. spBayes uses ``random walk Metropolis sampler'' \citep{Finley2015}.
+
+\subsubsection{Metropolis Algorithm} \citep{Banerjee2014}
+Typically the closed form for the target distribution, the posterior of interst, is unavailable. However, it will be available up to a proportionality constant, which is easy to see in the familiar Bayes proportionality, for observation vector $\pmb{y}$ and parameter vector $\theta$.
+$$p(\pmb{\theta}|\pmb{y}) \propto f(\pmb{y}|\pmb{\theta})p(\pmb{\theta})$$
+We see that the kernal, or the portion that contains the parameters of interest, is available; call it $h(\pmb{\theta})$. The Metropolis algorithm leverages this information to take a sequence of draws whose distributions converge to the target distribution. The draws of interest are full conditionals, $p(\theta_{i}|\pmb{\theta}_{-i})$, effectively reducing a possibly high dimensional problem to a series of lower dimension problems. Before the algorithm procedds, one must specify a candidate density, $q(\pmb{\theta}_{t}|\pmb{\theta}_{t-1})$, such that
+  \begin{enumerate}
+  \item Candidate density has non-zero density for all possible values of $\pmb{\theta}_{t}$ and $\pmb{\theta}_{t-1}$; 
+  \item The candidate density is symmetric, $q(\pmb{\theta}_{t}|\pmb{\theta}_{t-1}) = q(\pmb{\theta}_{t-1}|\pmb{\theta}_{t})$.
+  \item We can readily draw sample from $q(\pmb{\theta}_{t}|\pmb{\theta}_{t-1})$.
+  \end{enumerate}
+
+Next, choose an initial value for $\pmb{\theta}$, call it $\pmb{\theta}_{0}$. Then, the Metropolis algorithm steps follow, for $(t \in 1:T)$, where T is some prescribed number of iterations.
+\begin{enumerate}
+\item Draw candidate value of $\pmb{\theta}$, call it $\pmb{\theta}^{*}$, from $q(\pmb{\theta}^{*}|\pmb{\theta}_{t})$.
+\item Compute the ratio of kernals,
+$$ r=h(\pmb{\theta}^{*})/h(\pmb{\theta}^{t-1}) = \text{exp}[\text{log }h(\pmb{\theta}^{*}) - \text{log }h(\pmb{\theta}^{(t-1)}). $$
+\item If $r \geq  1$, set $\pmb{\theta}^{t} = \pmb{\theta}^{*}$; \\
+            If $r < 1$, set 
+            \[ 
+            \pmb{\theta}^{t} = 
+            \begin{cases} 
+            \pmb{\theta}^{*} \text{ with probability r} \\
+            \pmb{\theta}^{(0)} \text{ with probability 1 - r} \\
+            \end{cases}
+            \]
+  \end{enumerate}
+
+***************************************************
+
+        \begin{itemize}
+        \item Interest is still sampling/generating from full conditionals (now indirectly, with candidate rejection step)
+        \item Suppose $p(\pmb{\theta}|\pmb{y}) \propto h(\pmb{\theta}) \equiv f(\pmb{y}|\pmb{\theta})p(\pmb{\theta})$
+        \item Specify candidate density $q(\pmb{\theta}^{*}|\pmb{\theta}^{t-1})$ that is valid density for every possible value of $\pmb{\theta}^{t-1}$, and satisfies $q(\pmb{\theta}^{*}|\pmb{\theta}^{t-1}) = q(\pmb{\theta}^{t-1}|\pmb{\theta}^{*})$ ($q$ symmetric in its arguments)
+        \item Given a starting value $\pmb{\theta}^{(0)}$ at iteration $t=0$...
+        \item For $(t \in 1:T)$, repeat:
+            \begin{enumerate} % =================
+            \item Draw $\pmb{\theta}^{*}$ from $q(\cdot|\pmb{\theta}^{(t-1)})$
+            \item Compute the ratio $r=h(\pmb{\theta}^{*})/h(\pmb{\theta}^{t-1}) = \text{exp}[\text{log }h(\pmb{\theta}^{*}) - \text{log }h(\pmb{\theta}^{(t-1)}) $
+            \item If $r \geq  1$, set $\pmb{\theta}^{t} = \pmb{\theta}^{*}$; \\
+            If $r < 1$, set 
+            \[ 
+            \pmb{\theta}^{t} = 
+            \begin{cases} 
+            \pmb{\theta}^{*} \text{with prob. r} \\
+            \pmb{\theta}^{(t-1)} \text{with prob. 1 - r} \\
+            \end{cases}
+            \]
+            \end{enumerate} % =================
+        \end{itemize} % =================
 
 \subsubsection{Gibbs Sampler}
         \begin{itemize} % ===============
@@ -86,29 +135,7 @@ Stan uses HMC sampling and a ``Metropolis reject step'' \citep{STANtheMan}. spBa
         \item Can run parallel chains for convergence diagnostic purposes
         \end{itemize} % ===============
 
-\subsubsection{Metropolis-Hastings Algorithm}
-        \begin{itemize}
-        \item What if it is {\bf not feasible to sample from full conditionals}? If the {\bf closed forms are not even available}?!? ...M-H to the rescue!!
-        \item Even when $p(\theta_{i}|\pmb{\theta}_{j \neq i}, \pmb{y})$ is unavailable, it {\bf WILL} be available up to a proportionality constant, since it is proportional to portion of $f(\pmb{y}|\pmb{\theta})\times p(\pmb{\theta})$ that involves $\theta_{i}$.
-        \item Interest is still sampling/generating from full conditionals (now indirectly, with candidate rejection step)
-        \item Suppose $p(\pmb{\theta}|\pmb{y}) \propto h(\pmb{\theta}) \equiv f(\pmb{y}|\pmb{\theta})p(\pmb{\theta})$
-        \item Specify candidate density $q(\pmb{\theta}^{*}|\pmb{\theta}^{t-1})$ that is valid density for every possible value of $\pmb{\theta}^{t-1}$, and satisfies $q(\pmb{\theta}^{*}|\pmb{\theta}^{t-1}) = q(\pmb{\theta}^{t-1}|\pmb{\theta}^{*})$ ($q$ symmetric in its arguments)
-        \item Given a starting value $\pmb{\theta}^{(0)}$ at iteration $t=0$...
-        \item For $(t \in 1:T)$, repeat:
-            \begin{enumerate} % =================
-            \item Draw $\pmb{\theta}^{*}$ from $q(\cdot|\pmb{\theta}^{(t-1)})$
-            \item Compute the ratio $r=h(\pmb{\theta}^{*})/h(\pmb{\theta}^{t-1}) = \text{exp}[\text{log }h(\pmb{\theta}^{*}) - \text{log }h(\pmb{\theta}^{(t-1)}) $
-            \item If $r \geq  1$, set $\pmb{\theta}^{t} = \pmb{\theta}^{*}$; \\
-            If $r < 1$, set 
-            \[ 
-            \pmb{\theta}^{t} = 
-            \begin{cases} 
-            \pmb{\theta}^{*} \text{with prob. r} \\
-            \pmb{\theta}^{(t-1)} \text{with prob. 1 - r} \\
-            \end{cases}
-            \]
-            \end{enumerate} % =================
-        \end{itemize} % =================
+
 
 \subsection{Evaluate Inverse? Yes.}
 
