@@ -126,7 +126,7 @@ HMC works by reframing the variables and distribution of interest as though part
 
 \subsubsection{Hamilton Equations for MCMC} % =================
 
-Let $q(t)$ be a d-dimensional ($d$ parameters of interest) position vector that is a function of time $t$; and $U(q(t))$ represent the potential energy at time $t$. Let $p(t)$ give the d-dimensional momentum at time $t$, and $K(p(t))$ represent kinetic energy at time $t$. Then the Hamilton equation,
+Let d-dimensional function and position vector $q(t)$ depend on time $t$ (dimension of $q(t)$ equal to dimension of parameter of interst); and $U(q(t))$ represent the potential energy at time $t$. Let $p(t)$ give the d-dimensional momentum at time $t$, and $K(p(t))$ represent kinetic energy at time $t$. Then the Hamilton equation,
 \begin{equation}
 H(q(t),p(t)) = U(q(t)) + K(p(t)),
 \end{equation}
@@ -136,8 +136,7 @@ For HMC applications, we let the potential energy, $U(q)$, be minus the log of t
 \begin{align}
 H(q,p) = -\text{log}f_{q}(q) + p^{T}\pmb{M}^{-1}p/2.
 \end{align}
-
-This clever formulation provides useful partial derivatives for calculating the change in position and momentum over time. For $i = 1,\dots, d$:
+This clever formulation provides relatively simple partial derivatives for calculating the change in position and momentum over time. For $i = 1,\dots, d$:
 \begin{align}
 \frac{d q_{i}(t)}{dt} &= \frac{\partial H}{\partial p_{i}}, \\
 \frac{d p_{i}(t)}{dt} &= -\frac{\partial H}{\partial q_{i}}.
@@ -147,24 +146,16 @@ Substituting in Hamilton's equation (5) and simplifying gives
 \frac{d q_{i}(t)}{dt} &=  [\pmb{M}^{-1}p]_{i} \\
 \frac{d p_{i}(t)}{dt} &= \frac {\partial \left[ \text{log}f_{q}(q) \right]}{\partial q_{i}}
 \end{align}
-The solutions to these two differential equations, that is $q(t)$ and p(t) such that (8) and (9) hold, give the instantaneous rate of change of position and momentum at time t. 
+The solutions to these two differential equations, $q(t)$ and p(t) such that (8) and (9) hold, give the instantaneous rate of change of position and momentum at time t. 
 
-\subsubsection{MCMC Using Hamiltonian Dynamics } % =================
-Steps.
-\citep{Neal2011}
-\begin{itemize}
+This structure and the ``leapfrom method'' combine to for the HMC method. The ``leapfrog method'' calculates changes in the Hamilton through small time steps, which involvs discretizing the continuously defined Hamilton equation using Taylor Series approximations \citep{Neal2011}. In summary, the algorithm readily samples from K(p), the kinetic energy as a function of momentum, chosen for its sampling ease and simplicity; and calculates new U(q) values, the potential energy as a function of position, and also the variables of interest. This methods yields high probability, yet well mixed, Metropolis proposals
 
-\item {\bf Leapfrog method} = for calculating new position (q) and momentum (p) through tiny time steps
-  \begin{itemize}
-  \item for {\bf discretizing Hamilton equations}
-  \item akin to Taylor Series appoximations
-  \item Postion (q) (or momentum (p)) at $t_{0}$ plus time step times rate of change of position (q) (momentum (p)) variable at $t_{0}$
-  \item Leapfrom Method does half step for momentum (p), full step for postion (q), other half step for momentum (p). Damn good.
+% \subsubsection{MCMC Using Hamiltonian Dynamics } % ======
+%   \begin{itemize}
+%   \item Postion (q) (or momentum (p)) at $t_{0}$ plus time step times rate of change of position (q) (momentum (p)) variable at $t_{0}$ \citep{Neal2011}
+%   \item Leapfrom Method does half step for momentum (p), full step for postion (q), other half step for momentum (p). Damn good.
+%   \end{itemize}
 
-  \end{itemize}
-
-\item Short version: randomly sample from K(p) (kinetic, momentum), calculate U(k) (potential, position*) --- that's your Metropolis proposal.
-\end{itemize}
 
 
 \subsection{Optimizing in Stan} % =================
