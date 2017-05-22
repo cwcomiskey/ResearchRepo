@@ -1,2 +1,2 @@
 # ResearchRepo
-Baseball Research Repository
+Baseball Research Repository, PhD research
