@@ -749,7 +749,7 @@ to eliminate warning message.
   \item MySQL book; 
   \item ``Baseball Data with R'' book, Cross-Sylvan;
   \end{itemize}
-* Mention the ridiculous scarcity of literature on baseball analysis with this rich new source of data.
+* Mention the almost complete scarcity of literature on baseball analysis with this rich new source of data.
 
 * Call the subsection ``Research and Literature Overview''
 \item Okay to leave out labels/clutter on ``choose your own resolution'' portion.
@@ -763,12 +763,111 @@ to eliminate warning message.
 \item Good idea to look at old dissertations in stats library, get a sense of things, how the introduction should look, for example.
 \end{itemize}
 
+\section{8 May 2017}
+\begin{itemize}
+\item Cool idea: a heat map of confidence interval widths should accompany original heat map of point estimates. : )
+\item Writing Hosmer-Lemeshow section. Took notes on first page of notebook. Downloaded appropriate chapter from their book. 
+\end{itemize}
+
+\section{Meeting}
+\begin{itemize}
+\item Which photo of me for website? none of them, too informal.
+\item Heat map idea - eh.
+\item Color dissertation? Costs extra.
+\item mid-sentence citations? Rarely.
+\item USGS, Joe's role???
+\item ``Faculty research assistant'' (somebody's research grant)
+\item OSU job site??
+\item Samaritan???
+\item NuScale! (nuclear engineering)
+\end{itemize}
+
+\section*{May 18, 2017}
+\begin{itemize}
+\item Confidence intervals for $\hat{p}$; in \cite{Myers2012}, pg 143
+\item Recall, from Fall meeting notes:`` Alix read my [first chapter], made some comments, said it was good. She thinks at the end there should be a section of sorts that helps the (baseball) reader understand and interpret the new map, rather than than just understanding the algorithm. What do the box sizes tell us? What does the particular spatial variation in box size tell us?''
+\end{itemize}
+
+\section*{May 22, 2017}
+
+\begin{itemize}
+\item Git/github tutorial: http://kbroman.org/github\_tutorial/
+\item Nice example personal webpage: http://alyssafrazee.com/
+\end{itemize}
+
+\subsection*{``Personal R Packages''}
+https://hilaryparker.com/2013/04/03/personal-r-packages/
+\begin{verbatim}
+install_github('broman','kbroman')
+library('broman')
+\end{verbatim}
+``Note that \verb|install_github| is a function in the \verb|devtools| package.''
+
+\subsection*{``Writing an R package from scratch''}
+\verb|https://hilaryparker.com/2014/04/29/writing-an-r-package-from-scratch/|
+\begin{enumerate}
+\item Packages you will need, \verb|devtools| and \verb|roxygen2|.
+\begin{verbatim}
+install.packages("devtools")
+library("devtools")
+devtools::install_github("klutometis/roxygen")
+library(roxygen2)
+\end{verbatim}
+\item Create package directory, bare minimum folders
+\begin{verbatim}
+setwd("parent_directory")
+create("cats")
+\end{verbatim}
+This creates a folder called \verb|cats| in the parent directory, with two folders (\verb|man|, \verb|R|) and a file (\verb|DESCRIPTION|) inside.
+\item Add functions - add files containing the functions to the \verb|R| folder (cats-package.r created automatically)
+\item Add documentation (with Superhero help: \verb|roxygen2|). Example:
+\begin{verbatim}
+#' A Cat Function
+#'
+#' This function allows you to express love of cats.
+#' @param love Do you love cats? Defaults to TRUE.
+#' @keywords cats
+#' @export
+#' @examples
+#' cat_function()
+ 
+cat_function <- function(love=TRUE){
+    if(love==TRUE){print("I love cats!")}
+    else {print("I am not a cool person.")}
+}
+\end{verbatim}
+\item Process your documentation (that you already created, previous step)
+\begin{verbatim}
+setwd("./cats")
+document()
+\end{verbatim}
+\item Install
+\begin{verbatim}
+setwd("..")
+install("cats")
+\end{verbatim}
+\item (Optional) Make the package a GitHub repo
+\begin{verbatim}
+install_github('cats','github_username')
+\end{verbatim}
+\end{enumerate}
+
+\subsection*{Meeting}
+\begin{itemize}
+\item Make packages
+\item dissertation rough draft, ready
+\item How did Charlotte post her RMarkdown .docs, for example?
+\end{itemize}
+
 \subsection*{As of Now}
 \begin{itemize}
-\item Write, write, write
-\item Make US resume
-\item Git, webpage
-\item Write Ch 3, SPINLA theory
+\item 
+\item Webpage
+  \begin{itemize}
+  \item Talks (JSM, seminar)
+  \item Data Analytics, RMarkdown
+  \item Consulting reports/summaries
+  \end{itemize}
 \item Graduation and commencement: \\
 (1) http://gradschool.oregonstate.edu/progress/commencement \\ 
 (2) http://gradschool.oregonstate.edu/progress/deadlines \\
