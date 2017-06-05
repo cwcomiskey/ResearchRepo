@@ -1,26 +1,23 @@
 \section{``Get a Good Ball to Hit''}
-In 1971 left-handed hitter Ted Williams published what many baseball players consider a bible of their craft,``The Science of Hitting'' \citep{Williams1971}. In it, Williams credits baseball legend Rogers Hornsby for unsurpassed advice: ``Get a good ball to hit.'' Horsby meant, and Williams understood, that location makes some pitches easier to hit successfully than others. Williams's famous strike zone visual in Figure 1 encapsulates this advice.\footnote{Please see Appendix A for baseball background information and rules; or \citep{Wiki}}
+In 1971 left-handed hitter Ted Williams published what many baseball players consider a bible of their craft,``The Science of Hitting'' \citep{Williams1971}. In it, Williams credits baseball legend Rogers Hornsby for unsurpassed advice: ``Get a good ball to hit.'' Horsby meant, and Williams understood, that location makes some pitches easier to hit successfully than others. Williams's famous strike zone visual in Figure 1 encapsulates this advice.\footnote{Please see Appendix A for baseball background and rules; or \citep{Wiki}}
         \begin{figure}[H]
       	\centering
-      	\includegraphics[scale=.29]{Images/Williams.jpg} 
-      	\includegraphics[scale=0.55]{Images/SZ.jpg}
-      	\caption{In this famous image Ted Williams insightfully divided the strike zone into pitch locations with specific probabilities of getting a hit. In this iconic image he labeled the baseballs with a personal batting average estimate for pitches in that location \citep{Williams1971}.}
+      	\includegraphics[scale=.35]{Images/Williams.jpg} 
+      	\includegraphics[scale=0.65]{Images/SZ.jpg}
+      	\caption{Ted Williams carefully considered which pitch locations he preferred. In this image he divided the strike zone into pitch locations with specific probabilities of getting a hit. He labeled the baseballs with a personal batting average estimates for pitches in that location \citep{Williams1971}.}
       	\end{figure} 
-Prior to 2008, no data existed to analyze, visualize, and model William's location-based conception of hitting success. However, in 2008 MLB collaborated with a company called Sportsvision to implement a new technology called PITCHf/x\textsuperscript{\textregistered}, which collects the  data necessary for such an analysis.
+The strike zone, enlarged on the right, contains baseballs labelled with the batting averages Williams estimated he achieved swinging at pitches in that location. Williams based his estimates on experience and intuition, because no such data existed. In fact, it took another 40 years for technology capable of collecting this type of data make it to MLB\textsuperscript{\textregistered}.
+
+In 2008 MLB collaborated with a company called Sportsvision to implement a new technology called PITCHf/x\textsuperscript{\textregistered}, which collects the data necessary to analyze, visualize, and model William's location-based conception of hitting success.
 
 \section{The Data} % ============================================
-Sportvision, Inc., based in Chicago, provides the technology to collect PITCHf/x\textsuperscript{\textregistered} data. In 2008 Sportvision finished installing two high speed stereoscopic cameras in every MLB\textsuperscript{\textregistered} stadium. These cameras take 20 images of each pitch in flight and determine its 3-D path \citep{Fast2010}. Sportsvision licenses PITCHf/x\textsuperscript{\textregistered} data to Major League Baseball Advanced Media (MLBAM\textsuperscript{\textregistered}) \citep{Baumer2010}. 
+Sportvision, Inc., based in Chicago, provides the technology to collect PITCHf/x\textsuperscript{\textregistered} data. In 2008 Sportvision finished installing two high speed stereoscopic cameras in every MLB\textsuperscript{\textregistered} stadium. These cameras take 20 images of each pitch in flight and determine its path in three dimensions \citep{Fast2010}. Sportsvision licenses PITCHf/x\textsuperscript{\textregistered} data to Major League Baseball Advanced Media (MLBAM\textsuperscript{\textregistered}) \citep{Baumer2010}. 
 
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.4]{Images/PITCHfx.jpg} 
-<<<<<<< HEAD
-      	\caption{PITCHf/x\textsuperscript{\textregistered} data in your home. Television broacasts include pitch trajectory and strike zone data in real time for the viewer to see.}
-=======
-      	\caption{Boom.}
->>>>>>> 5bb7cf7b054c446befd8f37e9885128a286888d2
+      	\caption{PITCHf/x\textsuperscript{\textregistered} data in your home. Television broacasts include pitch trajectory and strike zone data, in real time, for the viewer to see.}
       	\end{figure} 
-
 MLBAM\textsuperscript{\textregistered} makes PITCHf/x\textsuperscript{\textregistered} data publicly available online in XML format, calling it ``Gameday'' data \citep{Sievert2014}. A homepage exists for every game, with links organizing data into XML tables with names such as {\it game, inning, at bat, pitch, team, player}, and {\it umpire} \citep{Sievert2014}. The {\it at bat} table, for example, contains data for 15 variables across 1,711,211 at bats. The format and size--on the order of gigabytes--of the data precludes direct download. Instead, XML scripts automate database ready downloads \citep{Adler2006}. We used a MySQL database, and \verb|dplyr| database management capabilities in R, to manipulate and store 13 PITCHf/x\textsuperscript{\textregistered} tables \citep{Tahaghoghi2006}, \citep{Wickham2016}. 
 
 As an ``in-memory'' application, R uses a computer's limited RAM to host the R environment data \citep{Smith2013}. As a result, data manipulation on this scale requires ``memory management'' techniques \citep{Wickham2014}.  We applied Split-Apply-Combine operations to tables inside the MySQL database, before importing data frames to R \citep{Wickham2011}.
@@ -39,15 +36,9 @@ We collected the variables relevant for this research primarily from the {\it at
   \end{itemize}
 
 % Note the variable \verb|des|, short for `description,' that describes pitch outcomes. In this study, we use swing outcomes described in \verb|des| to define a Bernoulli random variable $S$ (Section 3.1) that equals one for a hit, and equals zero for {\it any} swing that does not result in a hit. This modifies the current standard, where analyses include only swings that end at bats \citep{Cross2015}, \citep{Baumer2010}, \citep{Fast2011}. We submit that {\it every} swing represents a trial, and failure to get a hit should be evaluated separately from the count in the at bat at the time of the trial.
-<<<<<<< HEAD
-=======
 
-Professional baseball teams, fans, and the baseball media--including TV, radio, and print--seek continually more insightful analysis. The collection and availability of this data comes in response to this demand. In the next section we discuss the relevance of statistical analysis of baseball data, and of our research in particular, to these groups.
->>>>>>> 5bb7cf7b054c446befd8f37e9885128a286888d2
+Professional baseball teams, fans, and the baseball media (TV, radio, print, etc)  continually seek more insightful analysis. The collection and distribution of PITCHf/x\textsuperscript{\textregistered} data comes in response to this demand. In the next section we discuss the relevance of statistical analysis of baseball data, and of our research in particular, to these groups.
 
-Professional baseball teams, fans, and the baseball media--including TV, radio, and print--seek continually more insightful analysis. The collection and availability of this data comes in response to this demand. In the next section we discuss the relevance of statistical analysis of baseball data, and of our research in particular, to these groups.
-
-<<<<<<< HEAD
 \section{Significance to Professional Baseball Organizations and Media}
 
 Major League Baseball (MLB\textsuperscript{\textregistered}) teams exploy approximately 156 quantitative analysts, at a total cost of approximately \$15 million annually \citep{Lindbergh2016}. Teams strive to gain marginal competitive advantages; analysis of strike zone data provides just this sort of edge, so would generate interest. For example, exploratory data analysis indicate hitters have greater success in the lower one-third of the strike zone than in the top one-third; this contradicts baseball conventional wisdom, which advises pitchers to ``keep the ball down'' \citep{Stallings2003}. A model-based justification for this reversal would generate interest, because teams with this understanding could intelligently target and exploit the misconception. Taking it further, if these justifications are in biomechanical terms, biomechanists could analyze the relationship between body types and spatial success probabilities. MLB\textsuperscript{\textregistered} team scouting departments could use this information to more accurately predict hitting success for amateur players of varying builds, a notorously difficult but lucrative challenge. A second example at the player level, some MLB\textsuperscript{\textregistered} hitters, such as Joey Votto, have a keen interest in using the most sophisticated analytics available to understand the keys to their success and failure\citep{Daugherty2015}. The Votto model coefficient estimates could indicate imperceptible stregths and weaknesses to exploit or avoid. Votto, who carries a dog-eared copy of ``The Science of Hitting'' in his bag, pursues such nuances of his craft. 
@@ -60,32 +51,12 @@ With regard to baseball media interest, television broadcasts of MLB\textsupersc
       	\caption{PITCHf/x\textsuperscript{\textregistered} data on TV. The top image shows pitch trajectory and strike zone location in a game on Turner Broacast System. The lower image includes what appears to be a smoothed empirical heat map on New England Sports Network. We envision an integration of these two visuals.}
       	\end{figure} 
 Figure 1.3 shows two televised baseball features made possible by PITCHf/x\textsuperscript{\textregistered}; pitch trajectory and strike zone location; and a heat map. The heat map appears to be a smoothed empirical heat map. We envision more complete, modelled heat maps integrated with the strike zone location rectangle. Improved visuals serves the interests of MLB\textsuperscript{\textregistered} and the networks; ESPN\textsuperscript{\textregistered} and MLB\textsuperscript{\textregistered} recently agreed to an eight year, \$5.6 billion contract \citep{Newman2012}.
-=======
-Major League Baseball (MLB\textsuperscript{\textregistered}) teams exploy approximately 156 quantitative analysts, at a total cost of approximately \$15 million annually \citep{Lindbergh2016}. Teams strive to gain marginal competitive advantages; analysis of strike zone data provides just this sort of edge, so would generate interest. For example, exploratory data analysis indicate hitters have greater success in the lower one-third of the strike zone than in the top one-third; this contradicts baseball conventional wisdom, which advises pitchers to ``keep the ball down'' \citep{Stallings2003}. A model-based justification for this reversal would generate interest, because teams with this understanding could intelligently target and exploit the misconception. Taking it further, if these justifications are in biomechanical terms, biomechanists could analyze the relationship between body types and spatial success probabilities. MLB\textsuperscript{\textregistered} team scouting departments could use this information to more accurately predict hitting success for amateur players of varying builds, a notorously difficult but lucrative challenge. A second example at the player level, some MLB\textsuperscript{\textregistered} hitters, such as Joey Votto, have a keen interest in using the most sophisticated analytics available to understand the keys to their success and failure\citep{Daugherty2015}. The Votto model coefficient estimates could indicate imperceptible stregths and weaknesses to exploit or avoid. Votto, who carries a dog-eared copy of ``The Science of Hitting'' in his bag, pursues such nuances of his craft. 
-
-With regard to baseball media interest, television broadcasts of MLB\textsuperscript{\textregistered} games, such as those on ESPN, regularly integrate PITCHf/x\textsuperscript{\textregistered}, in real time, into the viewing experience \citep{Cross2015}. 
-        \begin{figure}[H]
-      	\centering
-      	\includegraphics[scale=.4]{Images/PITCHfx2.jpg} 
-      	\includegraphics[scale=.25]{Images/Varitek.png} 
-      	\caption{Boom.}
-      	\end{figure} 
-More informative, cutting-edge heat maps would improve the quality of game broadcasts; this serves the interests of MLB\textsuperscript{\textregistered} and  ESPN\textsuperscript{\textregistered}, who recently agreed to an eight year, \$5.6 billion contract \citep{Newman2012}.
-
-As the dollar amounts indicate, the pursuit of insightful analysis rages on. However, the solutions require an array of statistical and computational competencies. In addition, the data are quite new, and relatively inaccessible without data management and programming skills. We are in a unique position, with the requisite expertise and data accessibility, to contribute such insightful analysis.
-
-In the next section we describe the prexisting statistical methods and research to provide context for this dissertation.
->>>>>>> 5bb7cf7b054c446befd8f37e9885128a286888d2
 
 As the dollar amounts suggest, the pursuit of insightful analysis rages on. We are in a unique position, with the requisite expertise and data accessibility, to contribute such insightful analysis. In the next section we describe the preexisting statistical methods and research to provide context for this dissertation.
 
-<<<<<<< HEAD
 % spatial statistics \citep{Oliver2005}, and Bayesian hierarchical models \citep{Gelman2014}. We will employ these methodologies using the statistical software R \citep{R2015},baseball specific programming techniques \citep{Marchi2013}, 
 
 \section{Context and Contributions}
-=======
-\section{Statistical Research Contributions and Context}
->>>>>>> 5bb7cf7b054c446befd8f37e9885128a286888d2
 
 % This research includes novel applications of advanced, cutting edge statistical techniques. In addition, as of publication, only one article in a peer reviewed journal focuses on our area of application. This combination---novel application of existing techniques to an unstudied area---constitutes a statistical research contribution. 
 
