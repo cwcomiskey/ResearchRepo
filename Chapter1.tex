@@ -4,13 +4,13 @@ In 1971 left-handed hitter Ted Williams published what many baseball players con
       	\centering
       	\includegraphics[scale=.35]{Images/Williams.jpg} 
       	\includegraphics[scale=0.65]{Images/SZ.jpg}
-      	\caption{Ted Williams carefully considered which pitch locations he preferred. In this image he divided the strike zone into pitch locations with specific probabilities of getting a hit. He labeled the baseballs with a personal batting average estimates for pitches in that location \citep{Williams1971}.}
+      	\caption{Ted Williams carefully considered which pitch locations he preferred for hitting success. He demonstrated in this image, where he divided the strike zone into pitch locations with specific probabilities of getting a hit. He labeled the baseballs with a personal batting average estimates for pitches in that location \citep{Williams1971}.}
       	\end{figure} 
 The strike zone, enlarged on the right, contains baseballs labelled with the batting averages Williams estimated he achieved swinging at pitches in that location. Williams based his estimates on experience and intuition, because no such data existed. In fact, it took another 40 years for technology capable of collecting this type of data make it to MLB\textsuperscript{\textregistered}.
 
 In 2008 MLB collaborated with a company called Sportsvision to implement a new technology called PITCHf/x\textsuperscript{\textregistered}, which collects the data necessary to analyze, visualize, and model William's location-based conception of hitting success.
 
-\section{The Data} % ============================================
+\section{PITCHf/x\textsuperscript{\textregistered} Data} % ============================================
 Sportvision, Inc., based in Chicago, provides the technology to collect PITCHf/x\textsuperscript{\textregistered} data. In 2008 Sportvision finished installing two high speed stereoscopic cameras in every MLB\textsuperscript{\textregistered} stadium. These cameras take 20 images of each pitch in flight and determine its path in three dimensions \citep{Fast2010}. Sportsvision licenses PITCHf/x\textsuperscript{\textregistered} data to Major League Baseball Advanced Media (MLBAM\textsuperscript{\textregistered}) \citep{Baumer2010}. 
 
         \begin{figure}[H]
@@ -39,7 +39,7 @@ We collected the variables relevant for this research primarily from the {\it at
 
 Professional baseball teams, fans, and the baseball media (TV, radio, print, etc)  continually seek more insightful analysis. The collection and distribution of PITCHf/x\textsuperscript{\textregistered} data comes in response to this demand. In the next section we discuss the relevance of statistical analysis of baseball data, and of our research in particular, to these groups.
 
-\section{Significance to Professional Baseball Organizations and Media}
+\section{Baseball Context and Motivation}
 
 Major League Baseball (MLB\textsuperscript{\textregistered}) teams exploy approximately 156 quantitative analysts, at a total cost of approximately \$15 million annually \citep{Lindbergh2016}. Teams strive to gain marginal competitive advantages; analysis of strike zone data provides just this sort of edge, so would generate interest. For example, exploratory data analysis indicate hitters have greater success in the lower one-third of the strike zone than in the top one-third; this contradicts baseball conventional wisdom, which advises pitchers to ``keep the ball down'' \citep{Stallings2003}. A model-based justification for this reversal would generate interest, because teams with this understanding could intelligently target and exploit the misconception. Taking it further, if these justifications are in biomechanical terms, biomechanists could analyze the relationship between body types and spatial success probabilities. MLB\textsuperscript{\textregistered} team scouting departments could use this information to more accurately predict hitting success for amateur players of varying builds, a notorously difficult but lucrative challenge. A second example at the player level, some MLB\textsuperscript{\textregistered} hitters, such as Joey Votto, have a keen interest in using the most sophisticated analytics available to understand the keys to their success and failure\citep{Daugherty2015}. The Votto model coefficient estimates could indicate imperceptible stregths and weaknesses to exploit or avoid. Votto, who carries a dog-eared copy of ``The Science of Hitting'' in his bag, pursues such nuances of his craft. 
 
@@ -56,7 +56,7 @@ As the dollar amounts suggest, the pursuit of insightful analysis rages on. We a
 
 % spatial statistics \citep{Oliver2005}, and Bayesian hierarchical models \citep{Gelman2014}. We will employ these methodologies using the statistical software R \citep{R2015},baseball specific programming techniques \citep{Marchi2013}, 
 
-\section{Context and Contributions}
+\section{Statistical Context and Contributions}
 
 % This research includes novel applications of advanced, cutting edge statistical techniques. In addition, as of publication, only one article in a peer reviewed journal focuses on our area of application. This combination---novel application of existing techniques to an unstudied area---constitutes a statistical research contribution. 
 
