@@ -9,11 +9,7 @@
 hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv") # for DATA file
 cutoff<- 200 # Function argument
 
-# Loop Zero =====
-
-# GrZero <- summarise(hitter,min.x = min(px),max.x = max(px), min.y = min(pz),max.y = max(pz), Hitting = mean(hit), Count = dim(hitter)[1], x = (max(px)+min(px))/2, y = (max(pz)+min(pz))/2)
-
-# ABCE <- with(GrZero,cbind.data.frame(px = x, pz = y,Hitting = round(Hitting, 2),Count,widths = max.x - min.x,heights = max.y - min.y))
+# Loop 0 (4^0 =    1 possible) =====
 
 ABCE <- with(hitter,
              cbind.data.frame(
@@ -28,19 +24,11 @@ ABCE <- with(hitter,
 
 mapit(ABCE)
 
-# Loop 1 (4) ===================================
-
-# ABCE <-  with(GrZero, mutate(ABCE, width = max.x - min.x, height = max.y - min.y))
+# Loop 1 (4^1 =    4 possible) ===================================
 
 # as.image(...)
 gridder <- with(hitter,
                 as.image(hit, cbind.data.frame(px, pz), nx = 2, ny = 2))
-
-# Manually add bounds and centers
-# gridder$xbb <- with(GrZero, seq(min.x, max.x, , 5))[c(1,3,5)] # x box boundaries
-# gridder$ybb <- with(GrZero, seq(min.y, max.y, , 5))[c(1,3,5)] # y box boundaries
-# gridder$x <- with(GrZero, seq(min.x, max.x, , 5))[c(2,4)] # x box centers
-# gridder$y <- with(GrZero, seq(min.y, max.y, , 5))[c(2,4)] # y box centers
 
 gridder$xbb <- with(hitter, seq(min(px), max(px), , 5))[c(1,3,5)] # x box boundaries
 gridder$ybb <- with(hitter, seq(min(pz), max(pz), , 5))[c(1,3,5)] # y box boundaries
@@ -51,7 +39,7 @@ gridder$y <- with(hitter, seq(min(pz), max(pz), , 5))[c(2,4)] # y box centers
 gridder$bw <- gridder$xbb[2] - gridder$xbb[1] # box widths
 gridder$bh <- gridder$ybb[2] - gridder$ybb[1] # box heights
 
-# Create important-stuff matrix: box centers, BA, counts
+# Box: centers, p_hat, counts, widths, heights
 ABCE <- with(gridder, cbind(
   expand.grid(px = x, pz = y),
   Hitting = as.vector(z),
@@ -61,11 +49,11 @@ ABCE <- with(gridder, cbind(
                             )
              )
 
-mapit(ABCE, widths, heights)
+mapit(ABCE)
 
-# Loop 2 (16) ===================================
+# Loop 2 (4^2 =   16 possible) ==============================
 counter <- 0
-for(i in 1:2){
+for(i in 1:2){ # Should change: use ABCE, instead of gridder$weight
   for(j in 1:2){
     if(gridder$weights[i,j] > cutoff){ # Why gridder, not ABCE?
 
@@ -91,8 +79,8 @@ for(i in 1:2){
       ABCE_Box_ij <- with(gridder_ij, cbind(expand.grid(px = x, pz = y),
                                             Hitting = as.vector(z),
                                             Count = as.vector(weights),
-                                            widths = rep(gridder$bw/2, 2),
-                                            heights = rep(gridder$bh/2, 2)
+                                            widths = rep(gridder$bw/2, 4),
+                                            heights = rep(gridder$bh/2, 4)
                                             )
                           )
 
@@ -114,31 +102,29 @@ for(i in 1:2){
 
 mapit(ABCE)
 
-# Loop 3 (64) ========================================
-
-dim(ABCE)[1] # [1] 16
+# Loop 3 (4^3 =   64 possible) ========================================
 counter <- 0
 LoopData <- data.frame()
 
 for(r in 1:dim(ABCE)[1]){ # Iterate through rows (boxes) of ABCE
 
   if(ABCE$Count[r] > cutoff){
-    counter <- counter + 1
+    counter <- counter + 1     # Counting chopping bloxes
 
-    # Divided Box Bounds Lower/Upper
+    # Target Box Bounds Lower/Upper
     Dbbl.x <- ABCE[r,"px"] - ABCE[r, "widths"]/2
     Dbbu.x <- ABCE[r,"px"] + ABCE[r, "widths"]/2
     Dbbl.y <- ABCE[r, "pz"] - ABCE[r, "heights"]/2
     Dbbu.y <- ABCE[r, "pz"] + ABCE[r, "heights"]/2
 
-    # Filter original data
+    # Filter original data, to target box
     Box_r <- with(ABCE, filter(hitter,
                                px >=  Dbbl.x & px <= Dbbu.x,
                                pz >=  Dbbl.y & pz <= Dbbu.y))
 
     # Divided box centers
-    Dbc.x <- with(ABCE, seq(Dbbl.x, Dbbu.x, , 5)[c(2,4)])
-    Dbc.y <- with(ABCE, seq(Dbbl.y, Dbbu.y, , 5)[c(2,4)])
+    Dbc.x <- seq(Dbbl.x, Dbbu.x, , 5)[c(2,4)]
+    Dbc.y <- seq(Dbbl.y, Dbbu.y, , 5)[c(2,4)]
 
     # Griddify sub_sub_box
     gridder_r <- with(Box_r,
@@ -148,10 +134,6 @@ for(r in 1:dim(ABCE)[1]){ # Iterate through rows (boxes) of ABCE
                                grid=list(x = Dbc.x, y=Dbc.y)
                       )
     )
-
-    # # For ABCE, for book keeping, for plotting
-    # heights <- rep(ABCE[r,"heights"]/2, 4)
-    # widths <- rep(ABCE[r,"widths"]/2, 4)
 
     # Important-stuff data frame
     ABCE_Box_r <- with(gridder_r,
@@ -170,10 +152,8 @@ ABCE <- rbind.data.frame(filter(ABCE, Count <= cutoff), LoopData)
 
 mapit(ABCE)
 
-# Loop 4 (256) ======================================
+# Loop 4 (4^4 =  256 possible) ======================================
 counter <- 0
-dim(ABCE)[1] # [1] 49 (of 64 possible)
-
 LoopData <- data.frame()
 
 for(r in 1:dim(ABCE)[1]){ # Iterate through rows (boxes) of ABCE
@@ -193,8 +173,8 @@ for(r in 1:dim(ABCE)[1]){ # Iterate through rows (boxes) of ABCE
                                pz >=  Dbbl.y & pz <= Dbbu.y))
 
     # Divided box centers
-    Dbc.x <- with(ABCE, seq(Dbbl.x, Dbbu.x, , 5)[c(2,4)])
-    Dbc.y <- with(ABCE, seq(Dbbl.y, Dbbu.y, , 5)[c(2,4)])
+    Dbc.x <- seq(Dbbl.x, Dbbu.x, , 5)[c(2,4)]
+    Dbc.y <- seq(Dbbl.y, Dbbu.y, , 5)[c(2,4)]
 
     # Griddify sub_sub_box
     gridder_r <- with(Box_r,
@@ -227,7 +207,7 @@ ABCE <- rbind.data.frame(filter(ABCE, Count <= cutoff), LoopData)
 
 mapit(ABCE)
 
-# Loop 5 (4^5) ===========================================
+# Loop 5 (4^5 = 1024 possible) ===========================================
 counter <- 0
 LoopData <- data.frame()
 
@@ -277,5 +257,4 @@ for(r in 1:dim(ABCE)[1]){ # Iterate through rows (boxes) of ABCE
 
 # Remove subdivided, combine with new
 ABCE <- rbind.data.frame(filter(ABCE, Count <= cutoff), LoopData)
-
 mapit(ABCE)
