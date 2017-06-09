@@ -30,24 +30,32 @@ mapit(ABCE)
 gridder <- with(hitter,
                 as.image(hit, cbind.data.frame(px, pz), nx = 2, ny = 2))
 
-gridder$xbb <- with(hitter, seq(min(px), max(px), , 5))[c(1,3,5)] # x box boundaries
-gridder$ybb <- with(hitter, seq(min(pz), max(pz), , 5))[c(1,3,5)] # y box boundaries
+xseq <- with(hitter, seq(min(px), max(px), , 5))
+yseq <- with(hitter, seq(min(pz), max(pz), , 5))
 
-gridder$x <- with(hitter, seq(min(px), max(px), , 5))[c(2,4)] # x box centers
-gridder$y <- with(hitter, seq(min(pz), max(pz), , 5))[c(2,4)] # y box centers
+gridder$xbb <- xseq[c(1,3,5)] # x box boundaries
+gridder$ybb <- yseq[c(1,3,5)] # y box boundaries
 
-gridder$bw <- gridder$xbb[2] - gridder$xbb[1] # box widths
-gridder$bh <- gridder$ybb[2] - gridder$ybb[1] # box heights
+gridder$x <- xseq[c(2,4)] # x box centers
+gridder$y <- yseq[c(2,4)] # y box centers
+
+gridder$bw <- with(gridder, xbb[2] - xbb[1]) # box widths
+gridder$bh <- with(gridder, ybb[2] - ybb[1]) # box heights
 
 # Box: centers, p_hat, counts, widths, heights
 ABCE <- with(gridder, cbind(
-  expand.grid(px = x, pz = y),
+  expand.grid(px = xseq[c(2,4)], pz = yseq[c(2,4)]),
   Hitting = as.vector(z),
   Count = as.vector(weights),
-  widths = rep(bw, 4),
-  heights = rep(bh, 4)
+  width = rep(bw, 4),
+  height = rep(bh, 4)
                             )
              )
+
+ABCE <- mutate(ABCE,
+       xlb = px - width/2, xub = px + width/2,
+       ylb = pz - height/2, yub = pz + height/2
+)
 
 mapit(ABCE)
 
