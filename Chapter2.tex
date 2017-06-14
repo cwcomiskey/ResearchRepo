@@ -79,10 +79,12 @@ To illustrate, recall the $16 \times 16$ map in Figure 1.2. With this map as a s
       	\includegraphics[scale=.3]{Images/Chapter8x8_200.pdf} 
       	\caption{These heat maps show the empirical hitting success probability of Johnny Peralta, for pitches passing through the space represented by each square region of the hitting zone.  Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers. All boxes with a sample size greater than 200 in the heat map on the left, have been subdivided in the heat map on the right. Box 22, and others like it, remain intact because further subdivision yields uninformatively low sample sizes.}
       	\end{figure} 
-      	
-% LEFT OFF HERE ============================================      	
-      	
-Notice all four corner boxes remain intact, indicating Peralta seldom swings at pitches in these locations. The boxes toward the middle of the map tend to have larger sample sizes, and higher $\hat{p}_{b}$. Pitches pass through the middle of the hitting zone more frequently because many pitch target margin of error circles overlap there; and it is the region where pitch target margin of error circles are entirely inside the strike zone. Sixteen boxes still have a sample size greater than 200, and 11 still have a sample size greater than 300. We iterate again, and further subdivide 16 boxes where $n_{b} > 200$.
+Notice all corner boxes remain intact. This indicates Peralta less often swings at pitches in these locations, and/or less often sees pitches in these locations. EXPLAIN WHY
+
+
+The boxes toward the middle of the map generally contain more observations, and higher success probabilities $\hat{p}_{b}$. This indicates Peralta indeed hits pitches in the center of the hitting zone better than pitches toward the edges of the hitting zone. Also, Peralta sees and/or swings at more pitches toward the middle of the hitting zone. From the pitching side, pitchers throw through the middle of the hitting zone more frequently for a few reasons. First, aiming for the midde of the strike yields the highest probability of a strike; missing his target by up to approximately ten inches in any direction still yields a strike. On the other hand, when aiming away from the middle of the strike zone some pitches that miss their target will still {\it end up} in the middle of the strike zone. From the hitter's side, other things equal, these are the easiest pitches to hit. Peralta will swing at these pitches almost every chance he gets.
+
+Sixteen boxes still have a sample size greater than 200, and 11 still have a sample size greater than 300. We iterate again, and further subdivide 16 boxes where $n_{b} > 200$.
         \begin{figure}[H]
       	\centering
       	
