@@ -70,11 +70,9 @@ All six resolution options include trade-offs. We propose a new heat map approac
 
 \section{Spatially Varying Resolution} % ==========
 
-Consider again the heat map in Figure 1.2. Recall box 22 contains 22 swings, a sample size where subdividing would yield uninformatively small sample sizes, and thus prohibitively high estimation variance $\text{Var}(\hat{p}_{b})$. In contrast, box 1694 would support estimates that are more spatially accurate without $\text{Var}(\hat{p}_{b})$ increasing beyond acceptable levels. We propose resolution increase decisions occur box by box, according to an algorithm which includes a stopping rule and a subdivision method.
+Consider again the heat map in Figure 1.2. Recall box 22 contains 22 swings, a sample size where subdividing would yield uninformatively small sample sizes, and thus prohibitively high estimation variance $\text{Var}(\hat{p}_{b})$. In contrast, box 1694 would support estimates that are more spatially accurate without $\text{Var}(\hat{p}_{b})$ increasing beyond acceptable levels. We propose resolution increase decisions occur box by box, according to an algorithm which includes a stopping rule and a subdivision method. Note that the stopping rule and subdivision algorithm can be defined by the map's creator, offering flexibility to create the heat map structure that suits the data. 
 
-\subsection{Steps}
-
-To illustrate, recall the $16 \times 16$ map in Figure 1.2. On this map we divide all boxes where $n_{b} > 200$, into four smaller, equally sized boxes. Figure 1.5 shows the map before and after the procedure. Moving through all boxes of the map to the left, subdividing when $n_{b} > 200$, yields the heat map to the right.
+To demonstrate, recall the $16 \times 16$ map in Figure 1.2. On this map we divide all boxes where $n_{b} > 200$, into four smaller, equally sized boxes. Figure 1.5 shows the map before and after the procedure. Moving through all boxes of the map to the left, subdividing when $n_{b} > 200$, yields the heat map to the right.
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.3]{Images/Chapter4x4.pdf} 
@@ -98,8 +96,6 @@ Getting back to heat map features pertinent to further subdivision, sixteen boxe
       	\end{figure}
 The left-hand and middle heat maps in Figure 1.6 reproduce Figure 1.5. Notice the middle heat map in Figure 1.6 contains 16 boxes with $n_{b} > 200$. We subdivide these 16 boxes, each into four smaller, equally sized boxes; yielding the right-hand map. The right-hand heat map consists of 97 boxes, with a mean box sample size of 94.57, and median of 94. Box 9 contains the fewest observations, and box 189 contains the most. Box 63 serves as the first quartile, while box 125 serves as the third quartile. 
 
-\subsection{Data Density}
-
 In variable resolution heat maps, box size corresponds to data density. Figure 1.7 demonstrates this correspondence. 
         \begin{figure}[H]
       	\centering
@@ -108,10 +104,6 @@ In variable resolution heat maps, box size corresponds to data density. Figure 1
       	\caption{A scatterplot and a variable-resolution heat map of Johnny Peralta's empirical, spatial hitting success probabilities. The finer resolution regions in the heat map correspond to greater data density, as demonstrated in the scatterplot. Traditional heat maps omit this information.}
       	\end{figure}
 Notice how smaller boxes inidicate greater density of pitch-swings, while larger boxes relect lower density of pitch-swings. This contrasts favorably to a traditional heat maps, whose uniform resolution hides data density. Variable-resolution heat maps convey valuable, previously omitted data density information to the viewer. This marks a noteworthy improvement over tradiional heatmaps.
-
-% ============= STOPPED HERE =============== 
-
-Note that the stopping rule and subdivision algorithm can be defined by the map's creator, offering flexibility to create the heat map structure that suits the data. 
 
 Figure 8 gives the full sequence of heat maps that result from applying the stopping rule $n_{b} < 200$, starting with a single box.
         \begin{figure}[H]
@@ -124,9 +116,7 @@ Figure 8 gives the full sequence of heat maps that result from applying the stop
       	\caption{These heat maps convey the empirical batting average of batter 425509, Johnny Peralta, in each boxed region of the hitting zone. Each box maps $\hat{p}_{b}$ to a color. The number printed on each box represents the number of pitches the hitter swung at that passed through that box. All boxes with a sample size greater than 200 in each heat map have been subdivided in the subsequent heat map.}
       	\end{figure}
       	
-\subsection{Stopping Rule}
-
-To demonstrate the flexibility, consider a different stopping rule, $n_{b} < 100$. Figure 8 gives the sequence of heat maps that result from applying this stopping rule, with the same subdivision algorithm (DELINEATE WHAT THIS ALGORITHM IS). 
+To demonstrate the flexibility, consider a different stopping rule with the same subdivision algorithm. We subdivide boxes with $n_{b} > 100$, and Figure 1.9 gives the resulting sequence of heat maps.
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.2]{Images/Chapter1x1.pdf}
@@ -135,17 +125,31 @@ To demonstrate the flexibility, consider a different stopping rule, $n_{b} < 100
       	\includegraphics[scale=.2]{Images/Chapter8x8_100.pdf}
       	\includegraphics[scale=.2]{Images/Chapter16x16_100.pdf}
       	\includegraphics[scale=.2]{Images/Chapter32x32_100.pdf}
-      	\caption{(REMOVE NUMBER; TOO SMALL ANYWAY) These heat maps convey the empirical batting average of batter 425509, Johnny Peralta, in each boxed region of the hitting zone. Each box maps $\hat{p}_{b}$ to a color. The number printed on each box represents the number of pitches the hitter swung at that passed through that box. All boxes with a sample size greater than 100 in each heat map have been subdivided in the subsequent heat map.}
+      	\caption{(REMOVE NUMBERS; TOO SMALL ANYWAY) These heat maps convey the empirical batting average of batter 425509, Johnny Peralta, in each boxed region of the hitting zone. Each box maps $\hat{p}_{b}$ to a color. The number printed on each box represents the number of pitches the hitter swung at that passed through that box. All boxes with a sample size greater than 100 in each heat map have been subdivided in the subsequent heat map.}
 \end{figure} 	
-Compare this sequence to Figure 7, where the stopping rule was $n_{b} < 100$. The top row of heat maps in Figure 7 and Figure 8 are identical, but notice in the four by four heat map that $100 < n_{(2,1)} < 200, \text{ and } 100 < n_{(1,4)} < 200$. This implies one stopping rule applies, but the other does not.
+Compare this sequence for stopping rule $n_{b} < 100$, to Figure 1.8 for stopping rule $n_{b} < 200$. The the top row of maps in Figure 1.8 matches exactly the top row of maps in Figure 1.9. However, notice in the four by four heat map that $100 < n_{158} < 200, \text{ and } 100 < n_{101} < 200$. This implies diverging paths, where one stopping rule prevents further subdivision, while the other compels further subdivision.
         \begin{figure}[H]
       	\centering      
       	\includegraphics[scale=.2]{Images/Chapter4x4.pdf}
       	\includegraphics[scale=.2]{Images/Chapter8x8_200.pdf}
       	\includegraphics[scale=.2]{Images/Chapter8x8_100.pdf}
-      	\caption{...(these images, and others, need labels: (A) (B) (C) etc)}
+      	\caption{Variable-resolution heat maps diverge when box totals fall between sample size stopping rules. Boxes 158 and 101 remain for stopping rule $n_{b} < 200$ (left), but further subdivided for stopping rule $n_{b} < 100$ (right). Context should guide stopping rule selection (THIS CAN BE BETTER; LABELS? GRAPHIC WITH DIVERGING ARROWS?)}
 \end{figure} 
-For this reason the bottom left heat maps in Figures 7 and 8, shown in Figure 9, differ in the number of boxes of each size, and the total number of boxes. This divergence continues at the next iteration, where the stopping rule $n_{b} < 100$ requires 28 box subdivisions in Figure 8, map three; and $n_{b} < 200$ gives 16 box subdivisions in Figure 7, map three.
+We see the bottom left heat maps in Figures 1.8 and 1.9, shown in Figure 1.10, differ in the number of boxes of each size, and the total number of boxes. 
+
+This differences increase at the next iteration, where the stopping rule $n_{b} < 100$ requires 28 box subdivisions, shown in Figure 1.9; and $n_{b} < 200$ gives 16 box subdivisions, shown in Figure 1.8.
+        \begin{figure}[H]
+      	\centering      
+      	\includegraphics[scale=.2]{Images/Chapter4x4.pdf}
+      	\includegraphics[scale=.2]{Images/Chapter8x8_200.pdf}
+      	\includegraphics[scale=.2]{Images/Chapter16x16_200.pdf}
+      	\includegraphics[scale=.2]{Images/Chapter4x4.pdf}
+      	\includegraphics[scale=.2]{Images/Chapter8x8_100.pdf}
+      	\includegraphics[scale=.2]{Images/Chapter16x16_100.pdf}
+      	\caption{Variable-resolution heat maps diverge when box totals fall between sample size stopping rules. The top row of maps subdivides according to stopping rule $n_{b} < 200$; the bottom row further subdivides for stopping rule $n_{b} < 100$. The stopping rules concur through three iterations, the last of which we see first in each row. However, the next two iterations produce different maps. Context should guide stopping rule selection.}
+\end{figure}
+
+% ======== LEFT OFF HERE - SHOULD GO BACK AND BUILD MORE OF THE DISCUSSION AROUND BETTER "3 VS 3" COMPARISON PICTURE ===========
 
 % *Alix: ``I wonder if there's any literature on the physics from a hitter's perspective in terms of how small a difference in location is even detectable.
 
