@@ -36,8 +36,8 @@ for(r in 1:dim(ABCE)[1]){
 
     # For subdivision
     Box_r <- with(ABCE, filter(hitter,
-                               px >= xlb[r] & px < xub[r],
-                               pz >= ylb[r] & pz < yub[r]))
+                               px >= xlb[r] & px <= xub[r],
+                               pz >= ylb[r] & pz <= yub[r]))
 
     # For as.image
     xbc <- with(ABCE, seq(xlb[r], xub[r], , 5)[c(2,4)]) # x
