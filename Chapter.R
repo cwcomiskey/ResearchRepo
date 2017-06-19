@@ -2,14 +2,50 @@
 
 library("ggplot2")
 library(fields)
-library("dplyr")
 library("reshape2")
 library("gridExtra")
+library("dplyr")
+
+# Empirical Mothership plot, n = 0 ==============================
+
+righties <- read.csv("~/Desktop/ResearchRepo/Data/righties.csv")
+
+coordsR <- with(righties, cbind.data.frame(px, pz))
+hitgridR <- with(righties, as.image(hit, coordsR, nx = 55, ny = 75)) 
+ABC.R <- with(hitgridR, 
+              cbind(expand.grid(x, y), as.vector(z)))
+names(ABC.R) <- c("Horizontal", "Vertical", "Hitting")
+
+kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95), 
+                    y = c(1.6, 3.5, 3.5, 1.6, 1.6))
+
+ggplot(ABC.R, aes(Horizontal, Vertical, fill = Hitting)) + 
+  geom_tile() + 
+  xlim(-1.5, 1.5) + ylim(1, 4) + 
+  scale_fill_distiller(palette = "Spectral",
+                       limits = c(0, 0.18), 
+                       guide = guide_legend(title = expression(hat(p)))) + 
+  geom_path(aes(x, y, fill=NULL), data = kZone, 
+            lwd = 1.5, col = "blue", linetype = 2) + 
+  coord_equal() + ggtitle("P(Hit|Swing)") +
+  xlab("Feet from \n Middle of Home Plate") +
+  ylab("Feet Off Ground") +
+  theme(legend.key.size = unit(2, "cm"), 
+        legend.text = element_text(size = 30),
+        legend.title = element_text(size = 40),
+        legend.title.align = 0.25,
+        axis.title.x = element_text(size=28),
+        axis.title.y = element_text(size=28),
+        title = element_text(size = 28),
+        plot.title = element_text(hjust = 0.5),
+        axis.text = element_text(size = 28))
+
+# ggsave("Mothership.pdf", height = 8.5, width = 8.5) # righties empirical
+
 
 # Empirical Mothership plot ==============================
 
 hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
-
 
 coordsR <- with(hitter, cbind.data.frame(px, pz))
 hitgridR <- with(hitter, as.image(hit, coordsR, nx = 20, ny = 20)) 
@@ -283,12 +319,19 @@ ABCE <- rbind.data.frame(filter(ABCE, Count <= cutoff), LoopData)
 ABCE <- filter(ABCE, Count != "NA", Hitting != "NA")
 
 
-G256 <- ggplot(ABCE, aes(px, pz, fill=Hitting)) + 
+ggplot(ABCE, aes(px, pz, fill = Hitting)) + 
   with(ABCE, geom_tile(width = widths, height = heights)) + 
   coord_equal() + 
-  scale_fill_distiller(palette = "Spectral", trans="reverse") +
-  geom_text(aes(fill = Hitting, # print counts
-                label = Count), size = 2.5)
+  scale_fill_distiller(palette = "Spectral") +
+  # geom_text(aes(label = Count), size = 2.5)
+
+hmm = ggplot(hitter, aes(px, pz)) + 
+  geom_point(size = 0.5, alpha = 1/3) + coord_equal() 
+
+ggplot_build(hmm)
+
+# ggsave("/Users/ABC/Desktop/ResearchRepo/Images/density.jpg", height = 8.5, width = 8.5)
+
 
 # ggsave("Movie5.jpg", height = 8.5, width = 8.5)
 
@@ -517,4 +560,33 @@ ggplot(aes(px, pz, fill = p), data = hitzone) +
         axis.text = element_text(size = 28))
 
 # ggsave("Peralta_polar.pdf", height = 8.5, width = 8.5, path = "/Users/ABC/Desktop/Research/Images")
+
+
+# Line and Bands =====================
+
+set.seed(955)
+# Make some noisily increasing data
+dat <- data.frame(cond = rep(c("A", "B"), each=10),
+                  xvar = 1:20 + rnorm(20,sd=3),
+                  yvar = 1:20 + rnorm(20,sd=3))
+head(dat)
+#>   cond      xvar         yvar
+#> 1    A -4.252354  3.473157275
+#> 2    A  1.702318  0.005939612
+#> 3    A  4.323054 -0.094252427
+#> 4    A  1.780628  2.072808278
+#> 5    A 11.537348  1.215440358
+#> 6    A  6.672130  3.608111411
+
+library(ggplot2)
+
+# Basic scatterplots with regression lines =======
+
+ggplot(dat, aes(x=xvar, y=yvar)) +
+  geom_point(size = 3) +    
+  geom_smooth(method=lm)
+
+ggsave("CIBands.pdf", height = 8.5, width = 8.5, path = "/Users/ABC/Desktop/ResearchRepo/Images")
+
+
 
