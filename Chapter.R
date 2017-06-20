@@ -78,6 +78,7 @@ ggplot(ABC.R, aes(Horizontal, Vertical, fill = Hitting)) +
 
 # ggsave("Mothership.pdf", height = 8.5, width = 8.5) # righties empirical
 
+
 # Var-res plots ===============
 
 kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95), 
@@ -85,51 +86,66 @@ kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95),
 
 hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
 
-cutoff <- 200
+cutoff <- 1
 
 # Blank (yellow) Slate (1) =========================
 
-GrZero <- summarise(hitter, min.x = min(px), max.x = max(px), # x bounds
+GrZero <- summarise(hitter, 
+                    min.x = min(px), max.x = max(px), # x bounds
                     min.y = min(pz), max.y = max(pz), # y bounds 
-                    Hitting = mean(hit), Count = dim(hitter)[1], # stats
+                    Hitting = mean(hit), 
+                    Count = dim(hitter)[1], # stats
                     x = (max(px)+min(px))/2, # x center
                     y = (max(pz)+min(pz))/2) # y center
 
-ABCE <- with(GrZero, cbind.data.frame(x, y, round(Hitting, 2), Count))
+ABCE <- with(GrZero, 
+             cbind.data.frame(x, y, round(Hitting, 2), Count))
 names(ABCE) <- c("px", "pz", "Hitting", "Count")
 
 
-G1 <- ggplot(ABCE, aes(px, pz, fill = Hitting)) + 
+ggplot(ABCE, aes(px, pz, fill = Hitting)) + 
+  geom_tile() +
   with(GrZero, geom_tile(
-    width = max.x - min.x, height = max.y - min.y)) + 
+    width = max.x - min.x, 
+    height = max.y - min.y)) + 
   coord_equal() +
-  scale_fill_distiller(palette = "Spectral", trans="reverse") + 
-  geom_text(aes(label = Count), size = 3.5) # ****
+  scale_fill_distiller(palette = "Spectral") + 
+  geom_text(aes(label = Count), size = 3.5) 
 
 # ggsave("Chapter1x1.pdf", height = 8.5, width = 8.5)
 
 # Loop 1 (4) =================================== 
 
-ABCE <-  with(GrZero, mutate(ABCE, width = max.x - min.x, height = max.y - min.y))
+ABCE <-  with(GrZero, mutate(ABCE, 
+                     width = max.x - min.x, 
+                     height = max.y - min.y))
 
 # Magic step
-gridder <- with(hitter, as.image(hit, cbind.data.frame(px, pz), nx = 2, ny = 2)) 
+gridder <- with(hitter, 
+                as.image(hit, 
+                         cbind.data.frame(px, pz), 
+                         nx = 2, ny = 2)
+                ) 
 
-# Manually add (bounds) and correct (centers)
-gridder$xbb <- with(GrZero, seq(min.x, max.x, , 5))[c(1,3,5)] # x box boundaries
-gridder$ybb <- with(GrZero, seq(min.y, max.y, , 5))[c(1,3,5)] # y box boundaries 
-gridder$x <- with(GrZero, seq(min.x, max.x, , 5))[c(2,4)] # x box centers
-gridder$y <- with(GrZero, seq(min.y, max.y, , 5))[c(2,4)] # y box centers
+# Box bounds and centers
+gridder$xbb <- with(GrZero, seq(min.x, max.x, , 5))[c(1,3,5)] 
+gridder$ybb <- with(GrZero, seq(min.y, max.y, , 5))[c(1,3,5)] 
+gridder$x <- with(GrZero, seq(min.x, max.x, , 5))[c(2,4)]  
+gridder$y <- with(GrZero, seq(min.y, max.y, , 5))[c(2,4)] 
 
 # Create important-stuff matrix: box centers, BA, counts
-ABCE <- with(gridder, cbind(expand.grid(x, y), as.vector(z), as.vector(weights)))
+ABCE <- with(gridder, 
+             cbind(expand.grid(x, y), 
+                   as.vector(z), 
+                   as.vector(weights)))
 
 names(ABCE) <- c("px", "pz", "Hitting", "Count")
 
-G4 <- ggplot(ABCE, aes(px, pz, fill = Hitting)) + 
+# G4 <- 
+  ggplot(ABCE, aes(px, pz, fill = Hitting)) + 
   geom_tile() + coord_equal() +
-  scale_fill_distiller(palette = "Spectral", trans="reverse") + 
-  geom_text(aes(fill = Hitting, label = Count), size = 3.5)
+  scale_fill_distiller(palette = "Spectral") + 
+  geom_text(aes(label = Count), size = 3.5)
 
 # ggsave("Chapter2x2.pdf", path = "/Users/ABC/Desktop/Baseball Research/Images", height = 8.5, width = 8.5) 
 # ggsave("Movie2.jpg", height = 8.5, width = 8.5) 
@@ -174,12 +190,12 @@ heights <- with(gridder, c(rep(bh, 4 - sdb), rep(bh/2, 4*sdb)))
 ABCE <- cbind(ABCE, heights, widths)
 
 
-G16 <- ggplot(ABCE, aes(px, pz, fill=Hitting)) + 
+# G16 <- 
+  ggplot(ABCE, aes(px, pz, fill=Hitting)) + 
   geom_tile(width = widths, height = heights) + 
   coord_equal() + 
-  scale_fill_distiller(palette = "Spectral", trans="reverse") +
-  geom_text(aes(fill = Hitting, # print counts
-                label = Count), size = 3.5)
+  scale_fill_distiller(palette = "Spectral") +
+  geom_text(aes(label = Count), size = 3.5)
 
 
 # ggsave("Chapter4x4.pdf", height = 8.5, width = 8.5) 
@@ -243,12 +259,12 @@ ABCE <- rbind.data.frame(filter(ABCE, Count <= cutoff), LoopData)
 
 ABCE <- filter(ABCE, Count != "NA", Hitting != "NA")
 
-G64 <- ggplot(ABCE, aes(px, pz, fill=Hitting)) + 
+# G64 <- 
+  ggplot(ABCE, aes(px, pz, fill=Hitting)) + 
   with(ABCE, geom_tile(width = widths, height = heights)) + 
   coord_equal() + 
-  scale_fill_distiller(palette = "Spectral", trans="reverse") +
-  geom_text(aes(fill = Hitting, # print counts
-                label = Count), size = 3.5) # +
+  scale_fill_distiller(palette = "Spectral") +
+  geom_text(aes(label = Count), size = 3.5) # +
 # geom_path(aes(x, y, fill=NULL), data = kZone, 
 #         lwd = 1.5, col = "blue", linetype = 2) 
 
@@ -323,7 +339,7 @@ ggplot(ABCE, aes(px, pz, fill = Hitting)) +
   with(ABCE, geom_tile(width = widths, height = heights)) + 
   coord_equal() + 
   scale_fill_distiller(palette = "Spectral") +
-  # geom_text(aes(label = Count), size = 2.5)
+  geom_text(aes(label = Count), size = 2.5)
 
 hmm = ggplot(hitter, aes(px, pz)) + 
   geom_point(size = 0.5, alpha = 1/3) + coord_equal() 
@@ -405,12 +421,15 @@ ggplot(ABCE, aes(px, pz, fill=Hitting)) +
 
 # ggsave("Chapter32x32_100.pdf", height = 8.5, width = 8.5)
 
+
 # Grid - Increasing resolution on `batter == 425509' =======
-pdf("Chapter_VarRes.pdf", width = 8, height = 10, paper = "USr")
-grid.arrange(G1, G4, G16, G64, G256,  ncol = 3)
+# pdf("Chapter_VarRes.pdf", width = 8, height = 10, paper = "USr")
+grid.arrange(G1, G4, G16, G64, ncol = 3)
 dev.off()
 
 # Varying resolution heat maps ===================
+
+hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
 
 gridder <- with(hitter, as.image(hit, cbind.data.frame(px, pz), nx = 3, ny = 3)) 
 # counts_image <- gridder$weights 
@@ -431,26 +450,16 @@ heatmapper <- function(hitterdata, NX, NY){
   kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95), 
                       y = c(1.6, 3.5, 3.5, 1.6, 1.6))
   ABC.R <- filter(ABC.R, Hitting != "NA")
-  ggplot(ABC.R, aes(Horizontal, Vertical, fill = Hitting)) + 
-    geom_tile() + 
-    #  xlim(-1.5, 1.5) + ylim(1, 4) + 
+  ggplot(ABC.R, aes(Horizontal, Vertical)) + 
+    geom_tile(aes(fill = Hitting)) + 
+    # xlim(-1.5, 1.5) + ylim(1, 4) + 
     scale_fill_distiller(palette = "Spectral", trans="reverse", 
                          limits = c(0, 0.5), 
                          guide = guide_legend(title = expression(hat(p)))) + 
-    geom_path(aes(x, y, fill=NULL), data = kZone, 
+    geom_path(aes(x, y), data = kZone, 
               lwd = 1.5, col = "blue", linetype = 2) + 
-    coord_equal() # + ggtitle("P(Hit|Swing)") +
-  #  xlab("Feet from \n Middle of Home Plate") +
-  #  ylab("Feet Off Ground") # +
-  #   theme(legend.key.size = unit(2, "cm"), 
-  #         legend.text = element_text(size = 30),
-  #         legend.title = element_text(size = 40),
-  #         legend.title.align = 0.25,
-  #         axis.title.x = element_text(size=28),
-  #         axis.title.y = element_text(size=28),
-  #         title = element_text(size = 28),
-  #         axis.text = element_text(size = 28)) 
-  
+    coord_equal() 
+
 } # heat map function 
 
 # Increasing resolution on `batter == 425509' =======
