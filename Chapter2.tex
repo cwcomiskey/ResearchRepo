@@ -41,11 +41,15 @@ In this section, we use batter 425509, a veteran player named Jhonny Peralta, to
       	\includegraphics[scale=.35]{Images/Chapter4x4.pdf} 
       	\caption{This four by four heat map shows the empirical batting average of Johnny Peralta, for pitches passing through the space represented by each of 16 square regions of the hitting zone. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers.}
       	\end{figure} 
-In just a single heat map, as a single resolution, interpretable patterns already appear. For example, why did Peralta see so many fewer pitches in box 22 than in the four center boxes?  We interpret this sample size contrast in baseball terms as an example. 
+Interpretable patterns emerge in this heat map. For example, why did Peralta see so many fewer pitches in box 22 than in the four center boxes? 
+
+\subsection{Hitter vs. Pitcher} % =====================
 
 Three primary factors influence pitch location: pitcher game theoretic strategy, pitch location margin of error (distance by which a pitch misses its intended target), and game state. Game theoretic strategy concerns the pitcher's knowledge of the hitter's strengths and weaknesses, and the hitter's reciprocal knowledge. Margin of error concerns the pitcher's tendency to miss his intended target by some amount. The game state includes the count (number of balls and strikes), the number of outs, and baserunner presence/absence. Two example game state pressures include the increased penalty for throwing a pitch outside the strike zone on a three ball count (the runner gets on base at four balls); and the increased penalty for a hit with a runner in ``scoring position.'' Our data includes pitches across all game states, so we will not rely on them for interpretation. However, we can use game theory and margin of error rationale. 
 
 Of all low or inside (left-hand side) pitch locations, Peralta enjoyed the most success low and inside, in box 22. The orange color of box 22, compares favorably to the otherwise green, yellow, and blue low or inside pitches. Therefore, we speculate that pitchers simply avoided this location when pitching low or inside. On the other hand, Peralta enjoyed as much or more success in middle of the strike zone, boxes 1694, 1642, 1274, and 1694; and saw and swung at far more pitches there. Why did pitchers not avoid those locations too? They probably tried! However, game state pressures frequently compel pitchers to throw a strike, and the middle of the strike zone offers the pitcher his best chance; missing the target in the middle of the strike zone will, more often than any other location, still result in a strike. In addition, Peralta, like almost all hitters, strives to swing almost every time the pitcher accidentally throws the easiest pitch to hit.
+
+\subsection{Resolution Considerations} % ------------------
 
 Getting back to resolution considerations, the four by four resolution suffices for box 22; further subdivision might yield trivially small subdivided-box sample sizes. On the other hand, the center boxes, all with sample sizes above 1200, can and should provide more location specific $\hat{p}$ estimates. This motivates finer resolution in that region of space, but at the expense of box 22. With this trade-off in mind, we subdivide all boxes further. 
 
@@ -61,12 +65,12 @@ The centermost 16 boxes still contain sample sizes sufficient to support low var
 With this range of box sample sizes due to the varying spatial density of the data, the heat map at any resolution will contain boxes of exceedingly small sample sizes (high variance), and boxes of unnecessarily large sample size (unnecessarily low variance). Figure 1.4 shows six different resolutions for Peralta's data. We started with one box, and subdivided each box into four at each iteration. This simple resolution increase algorithm plainly illustrates the resolution selection challenge, and provides a foundation for our innovation in the next section. 
         \begin{figure}[H]
       	\centering
-      	\includegraphics[scale=.35]{Images/Chapter_VarRes.png} 
-      	\caption{These {\bf SIX (?); ADD ONE MORE} heat maps show the same data for Johnny Peralta, at increasing resolutions. The maps range from obviously too coarse to perhaps excessively fine. Notice how dramatically the image changes as the resolution increases. Which resolution yields the highest quality heat map?}
+      	\includegraphics[scale=.055]{Images/Chapter_VarRes.jpg} 
+      	\caption{These six heat maps show the same data for Johnny Peralta, at increasing resolutions. The maps range from obviously too coarse to perhaps excessively fine. Notice how dramatically the image changes as the resolution increases. Which resolution yields the highest quality heat map?}
       	\end{figure} 
-Which of these five resolutions best balances spatially precise estimates of $p$ with acceptable box sample sizes? The viewer interested in the center of the strike zone might prefer the heat map six (NEED LABELS), as the box sample sizes support such spatially specific estimates. However, the boxes closer to the edges of the strike zone then contain higher variance, less reliable estimates due to prohibitively small sample sizes. 
+Which of these five resolutions best balances spatially precise estimates of $p$ with acceptable box sample sizes? The viewer interested in the center of the strike zone might prefer the middle-bottom map, as the box sample sizes support such spatially specific estimates. However, the boxes closer to the edges of the strike zone then contain higher variance, less reliable estimates due to prohibitively small sample sizes. 
 
-All six resolution options include trade-offs. We propose a new heat map approach the eliminates trade-offs. The solution combines resolutions according to the data's varying spatial density.
+All six resolution options include trade-offs. We propose a new heat map approach the eliminates trade-offs. The solution combines multiple resolutions into one map, according to the data's varying spatial density.
 
 \section{Spatially Varying Resolution} % ==========
 
@@ -77,7 +81,7 @@ To demonstrate, recall the $16 \times 16$ map in Figure 1.2. On this map we divi
       	\centering
       	\includegraphics[scale=.3]{Images/Chapter4x4.pdf} 
       	\includegraphics[scale=.3]{Images/Chapter8x8_200.pdf} 
-      	\caption{These heat maps show the empirical hitting success probability of Johnny Peralta, for pitches passing through the space represented by each square region of the hitting zone.  Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers (MAKE NUMBERS LARGER). All boxes with a sample size greater than 200 in the heat map on the left, have been subdivided in the heat map on the right. Box 22, and others like it, remain intact because further subdivision yields uninformatively low sample sizes.}
+      	\caption{These heat maps show the empirical hitting success probability of Johnny Peralta, for pitches passing through the space represented by each square region of the hitting zone.  Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers. All boxes with a sample size greater than 200 in the heat map on the left, have been subdivided in the heat map on the right. Box 22, and others like it, remain intact because further subdivision yields uninformatively low sample sizes.}
       	\end{figure} 
       	
 Notice all four corner boxes remain intact. This indicates Peralta  swings less often at pitches in the stike zone corners, and/or less often sees pitches in the corners of the strike zone. He probably swings at these pitches less often because they are, quite simply, difficult to hit successfully. On the other hand, pitchers may {\it throw} to these spots less often because of their relatively greater associated risk; they are less likely to induce swings, and small errors yield an unfavorable outcome. 
@@ -125,15 +129,14 @@ To demonstrate the flexibility, consider a different stopping rule with the same
       	\includegraphics[scale=.2]{Images/Chapter8x8_100.pdf}
       	\includegraphics[scale=.2]{Images/Chapter16x16_100.pdf}
       	\includegraphics[scale=.2]{Images/Chapter32x32_100.pdf}
-      	\caption{(REMOVE NUMBERS; TOO SMALL ANYWAY) These heat maps convey the empirical batting average of batter 425509, Johnny Peralta, in each boxed region of the hitting zone. Each box maps $\hat{p}_{b}$ to a color. The number printed on each box represents the number of pitches the hitter swung at that passed through that box. All boxes with a sample size greater than 100 in each heat map have been subdivided in the subsequent heat map.}
+      	\caption{These heat maps convey the empirical batting average of batter 425509, Johnny Peralta, in each boxed region of the hitting zone. Each box maps $\hat{p}_{b}$ to a color. The number printed on each box represents the number of pitches the hitter swung at that passed through that box. All boxes with a sample size greater than 100 in each heat map have been subdivided in the subsequent heat map.}
 \end{figure} 	
 Compare this sequence for stopping rule $n_{b} < 100$, to Figure 1.8 for stopping rule $n_{b} < 200$. The the top row of maps in Figure 1.8 matches exactly the top row of maps in Figure 1.9. However, notice in the four by four heat map that $100 < n_{158} < 200, \text{ and } 100 < n_{101} < 200$. This implies diverging paths, where one stopping rule prevents further subdivision, while the other compels further subdivision.
         \begin{figure}[H]
       	\centering      
-      	\includegraphics[scale=.2]{Images/Chapter4x4.pdf}
-      	\includegraphics[scale=.2]{Images/Chapter8x8_200.pdf}
-      	\includegraphics[scale=.2]{Images/Chapter8x8_100.pdf}
-      	\caption{Variable-resolution heat maps diverge when box totals fall between sample size stopping rules. Boxes 158 and 101 remain for stopping rule $n_{b} < 200$ (left), but further subdivided for stopping rule $n_{b} < 100$ (right). Context should guide stopping rule selection (THIS CAN BE BETTER; LABELS? GRAPHIC WITH DIVERGING ARROWS?)}
+      	\includegraphics[scale=.25]{Images/Chapter8x8_200.pdf}
+      	\includegraphics[scale=.25]{Images/Chapter8x8_100.pdf}
+      	\caption{Variable-resolution heat maps diverge when box totals fall between sample size stopping rules. Boxes 158 and 101 remain for stopping rule $n_{b} < 200$ (left), but further subdivided for stopping rule $n_{b} < 100$ (right). Context should guide stopping rule selection}
 \end{figure} 
 We see the bottom left heat maps in Figures 1.8 and 1.9, shown in Figure 1.10, differ in the number of boxes of each size, and the total number of boxes. 
 
@@ -149,7 +152,6 @@ This differences increase at the next iteration, where the stopping rule $n_{b} 
       	\caption{Variable-resolution heat maps diverge when box totals fall between sample size stopping rules. The top row of maps subdivides according to stopping rule $n_{b} < 200$; the bottom row further subdivides for stopping rule $n_{b} < 100$. The stopping rules concur through three iterations, the last of which we see first in each row. However, the next two iterations produce different maps. Context should guide stopping rule selection.}
 \end{figure}
 
-% ======== LEFT OFF HERE - SHOULD GO BACK AND BUILD MORE OF THE DISCUSSION AROUND BETTER "3 VS 3" COMPARISON PICTURE ===========
 
 % *Alix: ``I wonder if there's any literature on the physics from a hitter's perspective in terms of how small a difference in location is even detectable.
 

@@ -79,7 +79,7 @@ ggplot(ABC.R, aes(Horizontal, Vertical, fill = Hitting)) +
 # ggsave("Mothership.pdf", height = 8.5, width = 8.5) # righties empirical
 
 
-# Var-res plots ===============
+# Increasing Resolution Plots ===============
 
 kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95), 
                     y = c(1.6, 3.5, 3.5, 1.6, 1.6))
@@ -103,7 +103,7 @@ ABCE <- with(GrZero,
 names(ABCE) <- c("px", "pz", "Hitting", "Count")
 
 
-ggplot(ABCE, aes(px, pz, fill = Hitting)) + 
+G1 <- ggplot(ABCE, aes(px, pz, fill = Hitting)) + 
   geom_tile() +
   with(GrZero, geom_tile(
     width = max.x - min.x, 
@@ -141,7 +141,7 @@ ABCE <- with(gridder,
 
 names(ABCE) <- c("px", "pz", "Hitting", "Count")
 
-# G4 <- 
+G4 <- 
   ggplot(ABCE, aes(px, pz, fill = Hitting)) + 
   geom_tile() + coord_equal() +
   scale_fill_distiller(palette = "Spectral") + 
@@ -190,7 +190,7 @@ heights <- with(gridder, c(rep(bh, 4 - sdb), rep(bh/2, 4*sdb)))
 ABCE <- cbind(ABCE, heights, widths)
 
 
-# G16 <- 
+G16 <- 
   ggplot(ABCE, aes(px, pz, fill=Hitting)) + 
   geom_tile(width = widths, height = heights) + 
   coord_equal() + 
@@ -259,7 +259,7 @@ ABCE <- rbind.data.frame(filter(ABCE, Count <= cutoff), LoopData)
 
 ABCE <- filter(ABCE, Count != "NA", Hitting != "NA")
 
-# G64 <- 
+G64 <- 
   ggplot(ABCE, aes(px, pz, fill=Hitting)) + 
   with(ABCE, geom_tile(width = widths, height = heights)) + 
   coord_equal() + 
@@ -335,16 +335,15 @@ ABCE <- rbind.data.frame(filter(ABCE, Count <= cutoff), LoopData)
 ABCE <- filter(ABCE, Count != "NA", Hitting != "NA")
 
 
-ggplot(ABCE, aes(px, pz, fill = Hitting)) + 
+G256 <- ggplot(ABCE, aes(px, pz, fill = Hitting)) + 
   with(ABCE, geom_tile(width = widths, height = heights)) + 
   coord_equal() + 
   scale_fill_distiller(palette = "Spectral") +
   geom_text(aes(label = Count), size = 2.5)
 
-hmm = ggplot(hitter, aes(px, pz)) + 
-  geom_point(size = 0.5, alpha = 1/3) + coord_equal() 
+# ggplot(hitter, aes(px, pz)) + 
+#  geom_point(size = 0.5, alpha = 1/3) + coord_equal() 
 
-ggplot_build(hmm)
 
 # ggsave("/Users/ABC/Desktop/ResearchRepo/Images/density.jpg", height = 8.5, width = 8.5)
 
@@ -410,28 +409,35 @@ for(r in 1:dim(ABCE)[1]){ # Iterate through rows (boxes) of ABCE
 
 sum(as.numeric(ABCE$Count > cutoff)) # number boxes subdivided
 # Remove subdivided, combine with new
-ABCE <- rbind.data.frame(filter(ABCE, Count <= cutoff), LoopData)
 
-ggplot(ABCE, aes(px, pz, fill=Hitting)) + 
-  with(ABCE, geom_tile(width = widths, height = heights)) + 
+
+ABCE <- rbind.data.frame(filter(ABCE, Count <= cutoff), LoopData)
+ABCE <- filter(ABCE, Count != "NA")
+
+summary(ABCE$Count)
+
+G1024 <- ggplot(ABCE, aes(px, pz, fill=Hitting)) + 
+  with(ABCE, geom_tile(width = widths, height = heights)) +
   coord_equal() + 
-  scale_fill_distiller(palette = "Spectral", trans="reverse") +
-  geom_text(aes(fill = Hitting, # print counts
-                label = Count), size = 3.5)
+  scale_fill_distiller(palette = "Spectral") +
+  geom_text(aes(label = Count), size = 3.5)
 
 # ggsave("Chapter32x32_100.pdf", height = 8.5, width = 8.5)
 
 
-# Grid - Increasing resolution on `batter == 425509' =======
-# pdf("Chapter_VarRes.pdf", width = 8, height = 10, paper = "USr")
-grid.arrange(G1, G4, G16, G64, ncol = 3)
-dev.off()
+# Grid - Increasing resolution, Peralta =======
 
-# Varying resolution heat maps ===================
+g <- grid.arrange(G1, G4, G16, G64, G256, G1024, ncol = 3)
+dev.off()
+ggsave("Chapter_VarRes.jpg", g, 
+       width = 8.5*3, height = 8.5*2)
+
+# Increasing resolution heat maps ===================
 
 hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
 
 gridder <- with(hitter, as.image(hit, cbind.data.frame(px, pz), nx = 3, ny = 3)) 
+
 # counts_image <- gridder$weights 
 # ci <- counts_image # counts image, for surgery
 # z <- gridder$z; # box BAs image
@@ -443,9 +449,12 @@ counts <- filter(counts, count != "NA")
 heatmapper <- function(hitterdata, NX, NY){
   # x, y, and "hit" as "visual-spatial" matrix
   hitgridR <- with(hitterdata, 
-                   as.image(hit, cbind.data.frame(px, pz), nx = NX, ny = NY)) 
+                   as.image(hit, 
+                            cbind.data.frame(px, pz), 
+                            nx = NX, ny = NY)) 
   # melt
-  ABC.R <- with(hitgridR,  cbind(expand.grid(x, y), as.vector(z))) 
+  ABC.R <- with(hitgridR,  
+                cbind(expand.grid(x, y), as.vector(z))) 
   names(ABC.R) <- c("Horizontal", "Vertical", "Hitting") 
   kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95), 
                       y = c(1.6, 3.5, 3.5, 1.6, 1.6))
@@ -455,12 +464,12 @@ heatmapper <- function(hitterdata, NX, NY){
     # xlim(-1.5, 1.5) + ylim(1, 4) + 
     scale_fill_distiller(palette = "Spectral", trans="reverse", 
                          limits = c(0, 0.5), 
-                         guide = guide_legend(title = expression(hat(p)))) + 
+                         guide = guide_legend(
+                           title = expression(hat(p)))) + 
     geom_path(aes(x, y), data = kZone, 
               lwd = 1.5, col = "blue", linetype = 2) + 
     coord_equal() 
-
-} # heat map function 
+  } # heat map function 
 
 # Increasing resolution on `batter == 425509' =======
 res <- c(2, 4, 8, 16, 32, 64, 128) # granularities 
