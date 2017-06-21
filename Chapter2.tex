@@ -1,11 +1,11 @@
+\section{The Setup}
+\subsection{Introduction}
 
-\section{Introduction}
+As the old adage says, ``a picture is worth a thousand words.'' Statisticians, and scientists in general, rely on graphical displays---pictures, essentially---to communicate information, analysis, and results. We deploy graphical displays to efficiently communicate data set information content to other statisticians, and, perhaps more importantly, to non-statisticians. As technology generates more data, and statistical analysis becomes more widespread, graphical displays become more important; therefore, our graphic-making abilities must improve. The R data visualization package \verb|ggplot2| stands out as the single most downloaded R package, which highlights the importance of graphical displays and the continued need for graphical innovations \citep{rdoc}.
 
-As the old adage says, a picture is worth a thousand words. Statisticians, and scientists in general, rely on graphical displays---pictures, essentially---to communicate information, analysis, and results. We deploy graphical displays to efficiently communicate data set information content to other statisticians, and, perhaps more importantly, to non-statisticians. As technology generates more data, and statistical analysis becomes more widespread, graphical displays become more important; therefore, our graphic-making abilities must improve. The R data visualization package \verb|ggplot2| stands out as the single most downloaded R package, which highlights the importance of graphical displays and the continued need for graphical innovations \citep{rdoc}.
+In this chapter we focus on one type of graphical display: heat maps. We argue uniform resolution throughout the heat map domain, the current best practice, inadequately accomodates spatially varying data density; and misses an opportunity to communicate data density information. We offer a solution that addresses this shortcoming.
 
-In this chapter we focus on one type of graphical display: heat maps. We argue uniform resolution throughout the heat map domain, the current resolution best practice, inadequately accomodates spatially varying data density. We offer a solution that addresses this shortcoming.
-
-\section{Bernoulli Swings}
+\subsection{Bernoulli Swings}
 
 % Note the variable \verb|des|, short for `description,' that describes pitch outcomes. In this study, we use swing outcomes described in \verb|des| to define a Bernoulli random variable $S$ (Section 3.1) that equals one for a hit, and equals zero for {\it any} swing that does not result in a hit. 
 
@@ -13,7 +13,7 @@ Baseball centers around a series of contests between the hitter and the pitcher,
 
 Accordingly, we define success as swings where the variable \verb|des|, short for description, equals \verb|in play, no out|, and failure as swings where \verb|des| equals \verb|Foul|, \verb|Foul (Runner Going)|, \verb|Foul Tip|, \verb|In play out(s)|, \verb|Swinging Strike|, or \\ \verb|Swinging Strike (Blocked)|. With this interpretation of the data, next we explain the setup and interpretation of a baseball strike zone heat map.
 
-\section{Empirical Strike Zone Heat Maps}
+\subsection{Empirical Strike Zone Heat Maps}
 
 Empirical baseball strike zone heat maps cover the two-dimensional, vertical face of the strike zone with a grid, containing empirical success probabilities ($\hat{p}$, defined below) in each grid box.  We start with a data set containing PITCHf/x\textsuperscript{\textregistered} data on 1,932 right-handed hitters, taking 1,582,581 swings between 2008 and 2015.  Let $b = 1, \dots, 627$ index grid boxes. Let $i = 1, \dots, 1,582,581$ index swings, and define $n_{b} = \displaystyle\sum_{i} \text{I}_{\{i \in b \}}$ as the total number of swings in box $b$.
 
@@ -25,15 +25,27 @@ Define Bernoulli random variable, $S_{i}$, to equal one for swing success and ze
 	\end{figure} 
 While not sophisticated statistically, the graphic efficiently conveys empirical spatial success probabilities, by mapping the statistic $\hat{p}_{b}$ to the color spectrum. However, note that the statistician---not the data---determines the map's resolution.
 
-\section{Resolution} % ============== =============
+\section{Traditional Heat Maps}
 
-A heat map's creator {\it chooses} a resolution, thereby determining a uniform grid box size for the heat map prior to audience viewing. This decision carries consequences; resolution selection influences heat map quality and appearance markedly, in much the same way bin width selection influences histograms. Also, note that heat map resolution fails to convey varying spatial data density through the domain, or the strike zone in our case. Thus, the viewer gets no spatial density information, and therefore no understanding of spatially varying estimate sample sizes, variances, etc. As a rule, heat maps do not communicate this information.
+\subsection{Resolution} % ============== =============
 
-The heat map in Figure 1.1 divided the strike zone into relatively small boxes, because the data supported it. By ``supported it'' we mean the small, spatially specific boxes retained a sample size large enough to prevent unacceptable $\hat{p}_{b}$ variance inflation. Defining ``acceptable'' variance depends on context and objectives. For example, a pitching coach might want estimates accurate to within 10 batting average points, 95\% of the time. This margin of error, 0.02, requires a sample size of 32 when $p_{b} = 0.09$.\footnote{Note that the variance depends on the mean for a Bernoulli random variable.} In contrast to the data set used for Figure 1.1, individual hitter data sets vary dramatically in size; ranging from a single swing to over 10,000 swings. 
+Though often overlooked, a heat map's creator {\it chooses} a resolution. This choice determines a uniform grid box size for the heat map, which influences heat map quality and appearance markedly. This influence is analagous to the impact of bin width selection on histogram appearance. 
 
-To reiterate, the choice of resolution can dramatically affect heat map quality, appearance, and the usefulness of the depicted parameter estimates. The decision usually depends on the size and nature of the data set in question, and its spatial dispersion through the domain. In the next section we explore this decision in detail.
+Also, notice that heat maps fail to convey varying spatial data density, i.e. through the strike zone. With no spatial density information, heat maps conceal estimate sample sizes and variances.  As a rule, heat maps do not communicate this information.
 
-\section{Resolution Selection}
+The heat map in Figure 1.2 divides the strike zone into relatively small boxes, because the data supports it.
+  \begin{figure}[H]
+	\centering
+	\includegraphics[scale=.4]{Images/Mothership3.jpg} 
+  \caption{This heat map grids the hitting zone with approximately 3/4 inch by 3/4 inch boxes. The dashed blue line approximately outlines the strike zone. Each grid box color represents the empirical success probability ($\hat{p}_{b}$) of hitter swings at pitches passing through that box.  The data consists of 1,932 right handed hitters, swinging at 1,582,581 pitches between 2008 and 2015.}
+	\end{figure} 
+By ``supports it'' we mean the small, spatially specific boxes retain sample sizes large enough to avoid unacceptable $\hat{p}_{b}$ variance inflation. Defining ``acceptable'' variance depends on context and objectives. For example, a pitching coach might want estimates accurate to within 10 batting average points, 95\% of the time. This margin of error, 0.02, requires a sample size of 32 when $p_{b} = 0.09$.\footnote{Note that the variance depends on the mean for a Bernoulli random variable.} In contrast to the data for all right-handed hitters over seven years used for Figure 1.1, individual hitter data sets vary dramatically in size. Hitter data ranges from a single swing to over 10,000 swings. In data sets for individual hitters, then, the resolution choice becomes more complicated. This complexity owes to non-uniform data density, meaning that different regions may support very different resolutions. 
+
+As stated before, the choice of resolution sometimes dramatically affects heat map appearance, but also usefulness. For example, for a heat map overly coarse in regions of interest, the parameter estimates lose value. 
+
+This important resolution decision usually depends on the size and nature of the data set in question, and its spatial dispersion through the domain. In the next section we explore this decision in detail, along with its inherent compromises.
+
+\subsection{Resolution Selection}
 
 In this section, we use batter 425509, a veteran player named Jhonny Peralta, to explore resolution selection and its implications. Our data set includes 9,177 Peralta swings. Peralta's swing data yields the heat map in Figure 1.2, which divides the hitting zone into 16 equally sized boxes. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers. We will use box sample sizes to reference boxes. For example, we will call the box in the lower-left ``box 22.'' (**NOTE: MAKE LABELS BIGGER)
         \begin{figure}[H]
@@ -41,17 +53,8 @@ In this section, we use batter 425509, a veteran player named Jhonny Peralta, to
       	\includegraphics[scale=.35]{Images/Chapter4x4.pdf} 
       	\caption{This four by four heat map shows the empirical batting average of Johnny Peralta, for pitches passing through the space represented by each of 16 square regions of the hitting zone. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers.}
       	\end{figure} 
-Interpretable patterns emerge in this heat map. For example, why did Peralta see so many fewer pitches in box 22 than in the four center boxes? 
 
-\subsection{Hitter vs. Pitcher} % =====================
-
-Three primary factors influence pitch location: pitcher game theoretic strategy, pitch location margin of error (distance by which a pitch misses its intended target), and game state. Game theoretic strategy concerns the pitcher's knowledge of the hitter's strengths and weaknesses, and the hitter's reciprocal knowledge. Margin of error concerns the pitcher's tendency to miss his intended target by some amount. The game state includes the count (number of balls and strikes), the number of outs, and baserunner presence/absence. Two example game state pressures include the increased penalty for throwing a pitch outside the strike zone on a three ball count (the runner gets on base at four balls); and the increased penalty for a hit with a runner in ``scoring position.'' Our data includes pitches across all game states, so we will not rely on them for interpretation. However, we can use game theory and margin of error rationale. 
-
-Of all low or inside (left-hand side) pitch locations, Peralta enjoyed the most success low and inside, in box 22. The orange color of box 22, compares favorably to the otherwise green, yellow, and blue low or inside pitches. Therefore, we speculate that pitchers simply avoided this location when pitching low or inside. On the other hand, Peralta enjoyed as much or more success in middle of the strike zone, boxes 1694, 1642, 1274, and 1694; and saw and swung at far more pitches there. Why did pitchers not avoid those locations too? They probably tried! However, game state pressures frequently compel pitchers to throw a strike, and the middle of the strike zone offers the pitcher his best chance; missing the target in the middle of the strike zone will, more often than any other location, still result in a strike. In addition, Peralta, like almost all hitters, strives to swing almost every time the pitcher accidentally throws the easiest pitch to hit.
-
-\subsection{Resolution Considerations} % ------------------
-
-Getting back to resolution considerations, the four by four resolution suffices for box 22; further subdivision might yield trivially small subdivided-box sample sizes. On the other hand, the center boxes, all with sample sizes above 1200, can and should provide more location specific $\hat{p}$ estimates. This motivates finer resolution in that region of space, but at the expense of box 22. With this trade-off in mind, we subdivide all boxes further. 
+Notice the four by four resolution suffices for box 22; further subdivision might yield trivially small subdivided-box sample sizes. On the other hand, the center boxes, all with sample sizes above 1200, can and should provide more location specific $\hat{p}$ estimates. This motivates finer resolution in that region of space, but at the expense of box 22. With this trade-off in mind, we subdivide all boxes further. 
 
 For simplicity we divide each box into four equally sized sub-boxes. Note, however, that subdivision algorithms could take countless forms. Figure 3 shows the eight by eight result.
         \begin{figure}[H]
@@ -73,6 +76,8 @@ Which of these five resolutions best balances spatially precise estimates of $p$
 All six resolution options include trade-offs. We propose a new heat map approach the eliminates trade-offs. The solution combines multiple resolutions into one map, according to the data's varying spatial density.
 
 \section{Spatially Varying Resolution} % ==========
+
+\subsection{A Solution}
 
 Consider again the heat map in Figure 1.2. Recall box 22 contains 22 swings, a sample size where subdividing would yield uninformatively small sample sizes, and thus prohibitively high estimation variance $\text{Var}(\hat{p}_{b})$. In contrast, box 1694 would support estimates that are more spatially accurate without $\text{Var}(\hat{p}_{b})$ increasing beyond acceptable levels. We propose resolution increase decisions occur box by box, according to an algorithm which includes a stopping rule and a subdivision method. Note that the stopping rule and subdivision algorithm can be defined by the map's creator, offering flexibility to create the heat map structure that suits the data. 
 
@@ -120,6 +125,8 @@ Figure 8 gives the full sequence of heat maps that result from applying the stop
       	\caption{These heat maps convey the empirical batting average of batter 425509, Johnny Peralta, in each boxed region of the hitting zone. Each box maps $\hat{p}_{b}$ to a color. The number printed on each box represents the number of pitches the hitter swung at that passed through that box. All boxes with a sample size greater than 200 in each heat map have been subdivided in the subsequent heat map.}
       	\end{figure}
       	
+\subsection{Stopping Rule Example}
+      	
 To demonstrate the flexibility, consider a different stopping rule with the same subdivision algorithm. We subdivide boxes with $n_{b} > 100$, and Figure 1.9 gives the resulting sequence of heat maps.
         \begin{figure}[H]
       	\centering
@@ -152,10 +159,17 @@ This differences increase at the next iteration, where the stopping rule $n_{b} 
       	\caption{Variable-resolution heat maps diverge when box totals fall between sample size stopping rules. The top row of maps subdivides according to stopping rule $n_{b} < 200$; the bottom row further subdivides for stopping rule $n_{b} < 100$. The stopping rules concur through three iterations, the last of which we see first in each row. However, the next two iterations produce different maps. Context should guide stopping rule selection.}
 \end{figure}
 
+\subsection{Hitter vs. Pitcher} % =====================
 
-% *Alix: ``I wonder if there's any literature on the physics from a hitter's perspective in terms of how small a difference in location is even detectable.
+Interpretable patterns abound in this heat map. For example, why did Peralta see so many fewer pitches in box 22 than in the four center boxes?
 
 % *Alix: ``Great start Chris. --> need to add more about how one would now interpret the ``best'' empirical heat map.
+
+Three primary factors influence pitch location: pitcher game theoretic strategy, pitch location margin of error (distance by which a pitch misses its intended target), and game state. Game theoretic strategy concerns the pitcher's knowledge of the hitter's strengths and weaknesses, and the hitter's reciprocal knowledge. Margin of error concerns the pitcher's tendency to miss his intended target by some amount. The game state includes the count (number of balls and strikes), the number of outs, and baserunner presence/absence. Two example game state pressures include the increased penalty for throwing a pitch outside the strike zone on a three ball count (the runner gets on base at four balls); and the increased penalty for a hit with a runner in ``scoring position.'' Our data includes pitches across all game states, so we will not rely on them for interpretation. However, we can use game theory and margin of error rationale. 
+
+Of all low or inside (left-hand side) pitch locations, Peralta enjoyed the most success low and inside, in box 22. The orange color of box 22, compares favorably to the otherwise green, yellow, and blue low or inside pitches. Therefore, we speculate that pitchers simply avoided this location when pitching low or inside. On the other hand, Peralta enjoyed as much or more success in middle of the strike zone, boxes 1694, 1642, 1274, and 1694; and saw and swung at far more pitches there. Why did pitchers not avoid those locations too? They probably tried! However, game state pressures frequently compel pitchers to throw a strike, and the middle of the strike zone offers the pitcher his best chance; missing the target in the middle of the strike zone will, more often than any other location, still result in a strike. In addition, Peralta, like almost all hitters, strives to swing almost every time the pitcher accidentally throws the easiest pitch to hit.
+
+% *Alix: ``I wonder if there's any literature on the physics from a hitter's perspective in terms of how small a difference in location is even detectable.
 
 % \subsection{Appendix: VarResHM, An R Package}
 
