@@ -1,0 +1,16 @@
+Package: varyres
+Title: Variable-resolution Heat Maps
+Version: 0.0.0.9000
+Authors@R: person("Chris", "Comiskey", email = "cwcomiskey@gmail.com", role = c("aut", "cre"))
+Description: This package provides a function to create variable resolution 
+    heat maps (VRHMs). VRHMs specialize in heat maps for spatial data 
+    whose density varies over the domain, such that it makes sense to have 
+    regionally defined resolution. The function determines resolution 
+    according to a user specified stopping rule.
+Depends: R (>= 3.3.2)
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+Imports: dplyr,
+    fields
+RoxygenNote: 6.0.1
