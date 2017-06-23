@@ -19,3 +19,12 @@ cutoff <- 50; dataset <- torn_vr
 
 tornado_vr <- varyres(torn_vr, 50)
 mapit(tornado_vr[[8]])
+
+
+ggplot(tornado_vr[[8]], aes(px, pz, fill=statistic)) +
+    with(tornado_vr[[8]], geom_tile(width = width, height = height)) +
+    coord_fixed(1.3) +
+    scale_fill_distiller(palette = "Spectral") 
+
+
+

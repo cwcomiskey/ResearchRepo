@@ -184,7 +184,15 @@ Of the four corner locations beyond the strike zone, Peralta enjoyed the most su
 
 % *Alix: ``I wonder if there's any literature on the physics from a hitter's perspective in terms of how small a difference in location is even detectable.
 
-\section{Example}
+\section{Tornado Example}
+
+The National Weather Service, a division of the National Oceanic and Atmospheric Administration (NOAA), maintains seven National Centers for Environmental Protection. One of these, the Storm Prediction Center, collects tornado data, and provides it to the public at their website \citep{NOAA}. In this section we use spatial tornado data between 1950 and 2017 to show variable-resolution heat maps in another area of application. The data consists of numerous covariates; we use only the longitude, latitude, and F-Scale rating for approximately 30,000 tornados in the last 67 years. The variable-resolution heat map in Figure 1.14 shows the spatially varying intensity and density of tornados.
+        \begin{figure}[H]
+      	\centering      
+      	\includegraphics[scale=.13]{Images/vr_tornados.jpg}
+      	\caption{This variable-resolution heat map shows tornado F-Scale intensity and density across the U.S. Each box maps average intensity to a color. In addition, the map conveys data density information; box size corresponds to the observation density, because subdivision persisted until box sample sizes dropped below 50 tornados.}
+        \end{figure}
+Notice how the variable-resolution map conveys data density through grid box size. To the East of $-80^{\circ}$ West, tornados are moderately common, and moderately intense. However, between approximately $-80^{\circ}$ West and $-100^{\circ}$ West tornados are more intense and far more common. Moving further West, tornados become less common and less intense than either of the previous two longitudinal ranges.
 
 
 
