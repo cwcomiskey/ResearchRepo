@@ -82,6 +82,7 @@ ggplot(ABC.R, aes(Horizontal, Vertical, fill = Hitting)) +
 # ggsave("Mothership.pdf", height = 8.5, width = 8.5) # righties empirical
 
 
+
 # Increasing Resolution Plots ===============
 
 kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95),
@@ -106,7 +107,9 @@ ABCE <- with(GrZero,
 names(ABCE) <- c("px", "pz", "Hitting", "Count")
 
 
-G1 <- ggplot(ABCE, aes(px, pz, fill = Hitting)) +
+
+
+G1 <-  ggplot(ABCE, aes(px, pz, fill = Hitting)) +
   geom_tile() +
   with(GrZero, geom_tile(
     width = max.x - min.x,
@@ -114,6 +117,8 @@ G1 <- ggplot(ABCE, aes(px, pz, fill = Hitting)) +
   coord_equal() +
   scale_fill_distiller(palette = "Spectral") +
   geom_text(aes(label = Count), size = 3.5)
+
+
 
 # ggsave("Chapter1x1.pdf", height = 8.5, width = 8.5)
 
@@ -144,11 +149,16 @@ ABCE <- with(gridder,
 
 names(ABCE) <- c("px", "pz", "Hitting", "Count")
 
-G4 <-
-  ggplot(ABCE, aes(px, pz, fill = Hitting)) +
-  geom_tile() + coord_equal() +
+mapper <- function(ABCE = ABCE){
+  ggplot(ABCE, aes(px, pz)) +
+  with(ABCE, geom_tile(aes(fill = Hitting),
+            height = heights, width = widths)) +
+    coord_equal() +
   scale_fill_distiller(palette = "Spectral") +
   geom_text(aes(label = Count), size = 3.5)
+}
+
+G4 <- mapper(ABCE)
 
 # ggsave("Chapter2x2.pdf", path = "/Users/ABC/Desktop/Baseball Research/Images", height = 8.5, width = 8.5)
 # ggsave("Movie2.jpg", height = 8.5, width = 8.5)
@@ -193,13 +203,7 @@ heights <- with(gridder, c(rep(bh, 4 - sdb), rep(bh/2, 4*sdb)))
 ABCE <- cbind(ABCE, heights, widths)
 
 
-G16 <-
-  ggplot(ABCE, aes(px, pz, fill=Hitting)) +
-  geom_tile(width = widths, height = heights) +
-  coord_equal() +
-  scale_fill_distiller(palette = "Spectral") +
-  geom_text(aes(label = Count), size = 3.5)
-
+G16 <- mapper(ABCE)
 
 # ggsave("Chapter4x4.pdf", height = 8.5, width = 8.5)
 
@@ -262,26 +266,11 @@ ABCE <- rbind.data.frame(filter(ABCE, Count <= cutoff), LoopData)
 
 ABCE <- filter(ABCE, Count != "NA", Hitting != "NA")
 
-G64 <-
-  ggplot(ABCE, aes(px, pz, fill=Hitting)) +
-  with(ABCE, geom_tile(width = widths, height = heights)) +
-  coord_equal() +
-  scale_fill_distiller(palette = "Spectral") +
-  geom_text(aes(label = Count), size = 3.5) # +
-# geom_path(aes(x, y, fill=NULL), data = kZone,
-#         lwd = 1.5, col = "blue", linetype = 2)
-
-sum(as.numeric(ABCE$Count > 200))
+G64 <- mapper(ABCE)
 
 # ggsave("Chapter8x8.pdf", height = 8.5, width = 8.5)
 
-# ggsave("Chapter8x8_100.pdf", height = 8.5, width = 8.5)
-
-# sum(as.numeric(ABCE$Count > 250))
-
 # Loop 4 (256) ======================================
-
-dim(ABCE)[1] # [1] 49 (of 64 possible)
 
 ABCE <- filter(ABCE, Count != "NA")
 
@@ -332,36 +321,15 @@ for(r in 1:dim(ABCE)[1]){ # Iterate through rows (boxes) of ABCE
   }
 }
 
-sum(as.numeric(ABCE$Count > cutoff)) # number boxes subdivided
 # Remove subdivided, combine with new
 ABCE <- rbind.data.frame(filter(ABCE, Count <= cutoff), LoopData)
 ABCE <- filter(ABCE, Count != "NA", Hitting != "NA")
 
-
-G256 <- ggplot(ABCE, aes(px, pz, fill = Hitting)) +
-  with(ABCE, geom_tile(width = widths, height = heights)) +
-  coord_equal() +
-  scale_fill_distiller(palette = "Spectral") +
-  geom_text(aes(label = Count), size = 2.5)
-
-# ggplot(hitter, aes(px, pz)) +
-#  geom_point(size = 0.5, alpha = 1/3) + coord_equal()
-
+G256 <- mapper(ABCE)
 
 # ggsave("/Users/ABC/Desktop/ResearchRepo/Images/density.jpg", height = 8.5, width = 8.5)
 
-
-# ggsave("Movie5.jpg", height = 8.5, width = 8.5)
-
-# ggsave("Chapter16x16_100.pdf", height = 8.5, width = 8.5)
-
-# Fun
-# sum(as.numeric(ABCE$Count < 50))
-# ggplot(aes(x = "Peralta", y = Count), data = ABCE) + geom_boxplot()
-
 # Loop 5 (1024) ===========================================
-
-dim(ABCE)[1]
 
 LoopData <- data.frame()
 
@@ -417,18 +385,11 @@ sum(as.numeric(ABCE$Count > cutoff)) # number boxes subdivided
 ABCE <- rbind.data.frame(filter(ABCE, Count <= cutoff), LoopData)
 ABCE <- filter(ABCE, Count != "NA")
 
-summary(ABCE$Count)
-
-G1024 <- ggplot(ABCE, aes(px, pz, fill=Hitting)) +
-  with(ABCE, geom_tile(width = widths, height = heights)) +
-  coord_equal() +
-  scale_fill_distiller(palette = "Spectral") +
-  geom_text(aes(label = Count), size = 3.5)
+G1024 <- mapper(ABCE)
 
 # ggsave("Chapter32x32_100.pdf", height = 8.5, width = 8.5)
 
-
-# Grid - Increasing resolution, Peralta =======
+# grid.arrange(...) - Plot increasing resolution, Peralta =======
 
 g <- gridExtra::grid.arrange(G1, G4, G16, G64, G256, G1024, ncol = 3)
 dev.off()
@@ -450,11 +411,7 @@ names(counts) <- c("px", "pz", "count")
 counts <- filter(counts, count != "NA")
 
 heatmapper <- function(hitterdata, NX, NY){
-  # x, y, and "hit" as "visual-spatial" matrix
-  hitgridR <- with(hitterdata,
-                   as.image(hit,
-                            cbind.data.frame(px, pz),
-                            nx = NX, ny = NY))
+  hitgridR <- with(hitterdata, as.image(hit,cbind.data.frame(px, pz), nx = NX, ny = NY))
   # melt
   ABC.R <- with(hitgridR,
                 cbind(expand.grid(x, y), as.vector(z)))
