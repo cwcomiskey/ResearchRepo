@@ -6,31 +6,34 @@ library("reshape2")
 library("gridExtra")
 library("dplyr")
 
+hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
+dat <- varyres(hitter, 200)
+
 # Empirical Mothership plot, n = 0 ==============================
 
 righties <- read.csv("~/Desktop/ResearchRepo/Data/righties.csv")
 
 coordsR <- with(righties, cbind.data.frame(px, pz))
-hitgridR <- with(righties, as.image(hit, coordsR, nx = 55, ny = 75)) 
-ABC.R <- with(hitgridR, 
+hitgridR <- with(righties, as.image(hit, coordsR, nx = 55, ny = 75))
+ABC.R <- with(hitgridR,
               cbind(expand.grid(x, y), as.vector(z)))
 names(ABC.R) <- c("Horizontal", "Vertical", "Hitting")
 
-kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95), 
+kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95),
                     y = c(1.6, 3.5, 3.5, 1.6, 1.6))
 
-ggplot(ABC.R, aes(Horizontal, Vertical, fill = Hitting)) + 
-  geom_tile() + 
-  xlim(-1.5, 1.5) + ylim(1, 4) + 
+ggplot(ABC.R, aes(Horizontal, Vertical, fill = Hitting)) +
+  geom_tile() +
+  xlim(-1.5, 1.5) + ylim(1, 4) +
   scale_fill_distiller(palette = "Spectral",
-                       limits = c(0, 0.18), 
-                       guide = guide_legend(title = expression(hat(p)))) + 
-  geom_path(aes(x, y, fill=NULL), data = kZone, 
-            lwd = 1.5, col = "blue", linetype = 2) + 
+                       limits = c(0, 0.18),
+                       guide = guide_legend(title = expression(hat(p)))) +
+  geom_path(aes(x, y, fill=NULL), data = kZone,
+            lwd = 1.5, col = "blue", linetype = 2) +
   coord_equal() + ggtitle("P(Hit|Swing)") +
   xlab("Feet from \n Middle of Home Plate") +
   ylab("Feet Off Ground") +
-  theme(legend.key.size = unit(2, "cm"), 
+  theme(legend.key.size = unit(2, "cm"),
         legend.text = element_text(size = 30),
         legend.title = element_text(size = 40),
         legend.title.align = 0.25,
@@ -48,26 +51,26 @@ ggplot(ABC.R, aes(Horizontal, Vertical, fill = Hitting)) +
 hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
 
 coordsR <- with(hitter, cbind.data.frame(px, pz))
-hitgridR <- with(hitter, as.image(hit, coordsR, nx = 20, ny = 20)) 
-ABC.R <- with(hitgridR, 
+hitgridR <- with(hitter, as.image(hit, coordsR, nx = 20, ny = 20))
+ABC.R <- with(hitgridR,
               cbind(expand.grid(x, y), as.vector(z)))
 names(ABC.R) <- c("Horizontal", "Vertical", "Hitting")
 
-kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95), 
+kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95),
                     y = c(1.6, 3.5, 3.5, 1.6, 1.6))
 
-ggplot(ABC.R, aes(Horizontal, Vertical, fill = Hitting)) + 
-  geom_tile() + 
-  xlim(-1.5, 1.5) + ylim(1, 4) + 
-  scale_fill_distiller(palette = "Spectral", trans="reverse", 
-                       limits = c(0, 0.18), 
-                       guide = guide_legend(title = expression(hat(p)))) + 
-  geom_path(aes(x, y, fill=NULL), data = kZone, 
-            lwd = 1.5, col = "blue", linetype = 2) + 
+ggplot(ABC.R, aes(Horizontal, Vertical, fill = Hitting)) +
+  geom_tile() +
+  xlim(-1.5, 1.5) + ylim(1, 4) +
+  scale_fill_distiller(palette = "Spectral", trans="reverse",
+                       limits = c(0, 0.18),
+                       guide = guide_legend(title = expression(hat(p)))) +
+  geom_path(aes(x, y, fill=NULL), data = kZone,
+            lwd = 1.5, col = "blue", linetype = 2) +
   coord_equal() + ggtitle("P(Hit|Swing)") +
   xlab("Feet from \n Middle of Home Plate") +
   ylab("Feet Off Ground") +
-  theme(legend.key.size = unit(2, "cm"), 
+  theme(legend.key.size = unit(2, "cm"),
         legend.text = element_text(size = 30),
         legend.title = element_text(size = 40),
         legend.title.align = 0.25,
@@ -81,7 +84,7 @@ ggplot(ABC.R, aes(Horizontal, Vertical, fill = Hitting)) +
 
 # Increasing Resolution Plots ===============
 
-kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95), 
+kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95),
                     y = c(1.6, 3.5, 3.5, 1.6, 1.6))
 
 hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
@@ -90,65 +93,65 @@ cutoff <- 1
 
 # Blank (yellow) Slate (1) =========================
 
-GrZero <- summarise(hitter, 
+GrZero <- dplyr::summarise(hitter,
                     min.x = min(px), max.x = max(px), # x bounds
-                    min.y = min(pz), max.y = max(pz), # y bounds 
-                    Hitting = mean(hit), 
+                    min.y = min(pz), max.y = max(pz), # y bounds
+                    Hitting = mean(hit),
                     Count = dim(hitter)[1], # stats
                     x = (max(px)+min(px))/2, # x center
                     y = (max(pz)+min(pz))/2) # y center
 
-ABCE <- with(GrZero, 
+ABCE <- with(GrZero,
              cbind.data.frame(x, y, round(Hitting, 2), Count))
 names(ABCE) <- c("px", "pz", "Hitting", "Count")
 
 
-G1 <- ggplot(ABCE, aes(px, pz, fill = Hitting)) + 
+G1 <- ggplot(ABCE, aes(px, pz, fill = Hitting)) +
   geom_tile() +
   with(GrZero, geom_tile(
-    width = max.x - min.x, 
-    height = max.y - min.y)) + 
+    width = max.x - min.x,
+    height = max.y - min.y)) +
   coord_equal() +
-  scale_fill_distiller(palette = "Spectral") + 
-  geom_text(aes(label = Count), size = 3.5) 
+  scale_fill_distiller(palette = "Spectral") +
+  geom_text(aes(label = Count), size = 3.5)
 
 # ggsave("Chapter1x1.pdf", height = 8.5, width = 8.5)
 
-# Loop 1 (4) =================================== 
+# Loop 1 (4) ===================================
 
-ABCE <-  with(GrZero, mutate(ABCE, 
-                     width = max.x - min.x, 
+ABCE <-  with(GrZero, mutate(ABCE,
+                     width = max.x - min.x,
                      height = max.y - min.y))
 
 # Magic step
-gridder <- with(hitter, 
-                as.image(hit, 
-                         cbind.data.frame(px, pz), 
+gridder <- with(hitter,
+                as.image(hit,
+                         cbind.data.frame(px, pz),
                          nx = 2, ny = 2)
-                ) 
+                )
 
 # Box bounds and centers
-gridder$xbb <- with(GrZero, seq(min.x, max.x, , 5))[c(1,3,5)] 
-gridder$ybb <- with(GrZero, seq(min.y, max.y, , 5))[c(1,3,5)] 
-gridder$x <- with(GrZero, seq(min.x, max.x, , 5))[c(2,4)]  
-gridder$y <- with(GrZero, seq(min.y, max.y, , 5))[c(2,4)] 
+gridder$xbb <- with(GrZero, seq(min.x, max.x, , 5))[c(1,3,5)]
+gridder$ybb <- with(GrZero, seq(min.y, max.y, , 5))[c(1,3,5)]
+gridder$x <- with(GrZero, seq(min.x, max.x, , 5))[c(2,4)]
+gridder$y <- with(GrZero, seq(min.y, max.y, , 5))[c(2,4)]
 
 # Create important-stuff matrix: box centers, BA, counts
-ABCE <- with(gridder, 
-             cbind(expand.grid(x, y), 
-                   as.vector(z), 
+ABCE <- with(gridder,
+             cbind(expand.grid(x, y),
+                   as.vector(z),
                    as.vector(weights)))
 
 names(ABCE) <- c("px", "pz", "Hitting", "Count")
 
-G4 <- 
-  ggplot(ABCE, aes(px, pz, fill = Hitting)) + 
+G4 <-
+  ggplot(ABCE, aes(px, pz, fill = Hitting)) +
   geom_tile() + coord_equal() +
-  scale_fill_distiller(palette = "Spectral") + 
+  scale_fill_distiller(palette = "Spectral") +
   geom_text(aes(label = Count), size = 3.5)
 
-# ggsave("Chapter2x2.pdf", path = "/Users/ABC/Desktop/Baseball Research/Images", height = 8.5, width = 8.5) 
-# ggsave("Movie2.jpg", height = 8.5, width = 8.5) 
+# ggsave("Chapter2x2.pdf", path = "/Users/ABC/Desktop/Baseball Research/Images", height = 8.5, width = 8.5)
+# ggsave("Movie2.jpg", height = 8.5, width = 8.5)
 
 # Loop 2 (16) ===================================
 gridder$bw <- gridder$xbb[2] - gridder$xbb[1] # box width
@@ -157,26 +160,26 @@ gridder$bh <- gridder$ybb[2] - gridder$ybb[1] # box height
 for(i in 1:2){
   for(j in 1:2){
     if(gridder$weights[i,j] > cutoff){
-      
+
       # Filter original data
-      Box_ij <- with(gridder, filter(hitter, 
-                                     px >= xbb[i] & px < xbb[i+1], 
+      Box_ij <- with(gridder, filter(hitter,
+                                     px >= xbb[i] & px < xbb[i+1],
                                      pz >= ybb[j] & pz < ybb[j+1]))
-      
+
       # subdivided box centers (sbc)
       sbc.x <- with(gridder, seq(xbb[i], xbb[i+1], , 5)[c(2,4)])
       sbc.y <- with(gridder, seq(ybb[j], ybb[j+1], , 5)[c(2,4)])
-      
+
       gridder_ij <- with(Box_ij, as.image(hit, cbind.data.frame(px, pz), nx = 2, ny =2, grid = list(x = sbc.x, y = sbc.y))) # specify new box centers
-      
+
       ABCE_Box_ij <- with(gridder_ij, cbind(expand.grid(x, y), as.vector(z), as.vector(weights)))
-      
+
       names(ABCE_Box_ij) <- c("px", "pz", "Hitting", "Count")
-      
+
       # ABCE: Remove old box (i,j), add new boxes ======== #
       ABCE <- with(gridder, filter(ABCE, !(px == x[i] & pz == y[j])))
       ABCE <- rbind.data.frame(ABCE, ABCE_Box_ij)
-      
+
     }
   }
 }
@@ -185,88 +188,88 @@ for(i in 1:2){
 sdb <- (dim(ABCE)[1] - 4)/3 # number of subdivided boxes
 
 # New box dimensions for ggplot() and geom_tile()
-widths <- with(gridder, c(rep(bw, 4 - sdb), rep(bw/2, 4*sdb))) 
-heights <- with(gridder, c(rep(bh, 4 - sdb), rep(bh/2, 4*sdb))) 
+widths <- with(gridder, c(rep(bw, 4 - sdb), rep(bw/2, 4*sdb)))
+heights <- with(gridder, c(rep(bh, 4 - sdb), rep(bh/2, 4*sdb)))
 ABCE <- cbind(ABCE, heights, widths)
 
 
-G16 <- 
-  ggplot(ABCE, aes(px, pz, fill=Hitting)) + 
-  geom_tile(width = widths, height = heights) + 
-  coord_equal() + 
+G16 <-
+  ggplot(ABCE, aes(px, pz, fill=Hitting)) +
+  geom_tile(width = widths, height = heights) +
+  coord_equal() +
   scale_fill_distiller(palette = "Spectral") +
   geom_text(aes(label = Count), size = 3.5)
 
 
-# ggsave("Chapter4x4.pdf", height = 8.5, width = 8.5) 
+# ggsave("Chapter4x4.pdf", height = 8.5, width = 8.5)
 
-# Loop 3 (64) ======================================== 
+# Loop 3 (64) ========================================
 
 dim(ABCE)[1] # [1] 16
 
 LoopData <- data.frame()
 
 for(r in 1:dim(ABCE)[1]){ # Iterate through rows (boxes) of ABCE
-  
-  if(ABCE$Count[r] > cutoff){ 
-    
+
+  if(ABCE$Count[r] > cutoff){
+
     # Divided Box Bounds Lower/Upper
-    Dbbl.x <- ABCE[r,"px"] - ABCE[r, "widths"]/2 
+    Dbbl.x <- ABCE[r,"px"] - ABCE[r, "widths"]/2
     Dbbu.x <- ABCE[r,"px"] + ABCE[r, "widths"]/2
     Dbbl.y <- ABCE[r, "pz"] - ABCE[r, "heights"]/2
     Dbbu.y <- ABCE[r, "pz"] + ABCE[r, "heights"]/2
-    
+
     # Filter original data
-    Box_r <- with(ABCE, filter(hitter, 
+    Box_r <- with(ABCE, filter(hitter,
                                px >=  Dbbl.x & px <= Dbbu.x,
                                pz >=  Dbbl.y & pz <= Dbbu.y))
-    
+
     # Divided box centers
     Dbc.x <- with(ABCE, seq(Dbbl.x, Dbbu.x, , 5)[c(2,4)])
     Dbc.y <- with(ABCE, seq(Dbbl.y, Dbbu.y, , 5)[c(2,4)])
-    
+
     # Griddify sub_sub_box
-    gridder_r <- with(Box_r, 
-                      as.image(hit, 
-                               cbind.data.frame(px, pz), 
-                               nx=2, ny=2, 
+    gridder_r <- with(Box_r,
+                      as.image(hit,
+                               cbind.data.frame(px, pz),
+                               nx=2, ny=2,
                                grid=list(x = Dbc.x, y=Dbc.y)
                       )
     )
-    
+
     # For ABCE, for book keeping, for plotting
     heights <- rep(ABCE[r,5]/2, 4)
     widths <- rep(ABCE[r,6]/2, 4)
-    
+
     # Important-stuff data frame
-    ABCE_Box_r <- with(gridder_r, 
-                       cbind(expand.grid(x,y), 
-                             as.vector(z), 
-                             as.vector(weights), 
-                             heights, 
+    ABCE_Box_r <- with(gridder_r,
+                       cbind(expand.grid(x,y),
+                             as.vector(z),
+                             as.vector(weights),
+                             heights,
                              widths))
-    
+
     names(ABCE_Box_r) <- c("px", "pz", "Hitting", "Count", "heights", "widths")
-    
+
     LoopData <- rbind.data.frame(LoopData, ABCE_Box_r)
   }
 }
 
-# Boxes subdivided 
+# Boxes subdivided
 sdb <- sum(as.numeric(ABCE$Count > cutoff))
 # Remove subdivided, combine with new
 ABCE <- rbind.data.frame(filter(ABCE, Count <= cutoff), LoopData)
 
 ABCE <- filter(ABCE, Count != "NA", Hitting != "NA")
 
-G64 <- 
-  ggplot(ABCE, aes(px, pz, fill=Hitting)) + 
-  with(ABCE, geom_tile(width = widths, height = heights)) + 
-  coord_equal() + 
+G64 <-
+  ggplot(ABCE, aes(px, pz, fill=Hitting)) +
+  with(ABCE, geom_tile(width = widths, height = heights)) +
+  coord_equal() +
   scale_fill_distiller(palette = "Spectral") +
   geom_text(aes(label = Count), size = 3.5) # +
-# geom_path(aes(x, y, fill=NULL), data = kZone, 
-#         lwd = 1.5, col = "blue", linetype = 2) 
+# geom_path(aes(x, y, fill=NULL), data = kZone,
+#         lwd = 1.5, col = "blue", linetype = 2)
 
 sum(as.numeric(ABCE$Count > 200))
 
@@ -285,46 +288,46 @@ ABCE <- filter(ABCE, Count != "NA")
 LoopData <- data.frame()
 
 for(r in 1:dim(ABCE)[1]){ # Iterate through rows (boxes) of ABCE
-  
-  if(ABCE$Count[r] > cutoff){ 
-    
+
+  if(ABCE$Count[r] > cutoff){
+
     # Divided Box Bounds Lower/Upper
-    Dbbl.x <- ABCE[r,"px"] - ABCE[r, "widths"]/2 
+    Dbbl.x <- ABCE[r,"px"] - ABCE[r, "widths"]/2
     Dbbu.x <- ABCE[r,"px"] + ABCE[r, "widths"]/2
     Dbbl.y <- ABCE[r, "pz"] - ABCE[r, "heights"]/2
     Dbbu.y <- ABCE[r, "pz"] + ABCE[r, "heights"]/2
-    
+
     # Filter original data
-    Box_r <- with(ABCE, filter(hitter, 
+    Box_r <- with(ABCE, filter(hitter,
                                px >=  Dbbl.x & px <= Dbbu.x,
                                pz >=  Dbbl.y & pz <= Dbbu.y))
-    
+
     # Divided box centers
     Dbc.x <- with(ABCE, seq(Dbbl.x, Dbbu.x, , 5)[c(2,4)])
     Dbc.y <- with(ABCE, seq(Dbbl.y, Dbbu.y, , 5)[c(2,4)])
-    
+
     # Griddify sub_sub_box
-    gridder_r <- with(Box_r, 
-                      as.image(hit, 
-                               cbind.data.frame(px, pz), 
-                               nx=2, ny=2, 
+    gridder_r <- with(Box_r,
+                      as.image(hit,
+                               cbind.data.frame(px, pz),
+                               nx=2, ny=2,
                                grid=list(x = Dbc.x, y=Dbc.y)
                       ))
-    
+
     # For ABCE, for book keeping, for plotting
     heights <- rep(ABCE[r,5]/2, 4)
     widths <- rep(ABCE[r,6]/2, 4)
-    
+
     # Important-stuff data frame
-    ABCE_Box_r <- with(gridder_r, 
-                       cbind(expand.grid(x,y), 
-                             as.vector(z), 
-                             as.vector(weights), 
-                             heights, 
+    ABCE_Box_r <- with(gridder_r,
+                       cbind(expand.grid(x,y),
+                             as.vector(z),
+                             as.vector(weights),
+                             heights,
                              widths))
-    
+
     names(ABCE_Box_r) <- c("px", "pz", "Hitting", "Count", "heights", "widths")
-    
+
     LoopData <- rbind.data.frame(LoopData, ABCE_Box_r)
   }
 }
@@ -335,14 +338,14 @@ ABCE <- rbind.data.frame(filter(ABCE, Count <= cutoff), LoopData)
 ABCE <- filter(ABCE, Count != "NA", Hitting != "NA")
 
 
-G256 <- ggplot(ABCE, aes(px, pz, fill = Hitting)) + 
-  with(ABCE, geom_tile(width = widths, height = heights)) + 
-  coord_equal() + 
+G256 <- ggplot(ABCE, aes(px, pz, fill = Hitting)) +
+  with(ABCE, geom_tile(width = widths, height = heights)) +
+  coord_equal() +
   scale_fill_distiller(palette = "Spectral") +
   geom_text(aes(label = Count), size = 2.5)
 
-# ggplot(hitter, aes(px, pz)) + 
-#  geom_point(size = 0.5, alpha = 1/3) + coord_equal() 
+# ggplot(hitter, aes(px, pz)) +
+#  geom_point(size = 0.5, alpha = 1/3) + coord_equal()
 
 
 # ggsave("/Users/ABC/Desktop/ResearchRepo/Images/density.jpg", height = 8.5, width = 8.5)
@@ -358,51 +361,51 @@ G256 <- ggplot(ABCE, aes(px, pz, fill = Hitting)) +
 
 # Loop 5 (1024) ===========================================
 
-dim(ABCE)[1] 
+dim(ABCE)[1]
 
 LoopData <- data.frame()
 
 for(r in 1:dim(ABCE)[1]){ # Iterate through rows (boxes) of ABCE
-  
-  if(ABCE$Count[r] > cutoff){ 
-    
+
+  if(ABCE$Count[r] > cutoff){
+
     # Divided Box Bounds Lower/Upper
-    Dbbl.x <- ABCE[r,"px"] - ABCE[r, "widths"]/2 
+    Dbbl.x <- ABCE[r,"px"] - ABCE[r, "widths"]/2
     Dbbu.x <- ABCE[r,"px"] + ABCE[r, "widths"]/2
     Dbbl.y <- ABCE[r, "pz"] - ABCE[r, "heights"]/2
     Dbbu.y <- ABCE[r, "pz"] + ABCE[r, "heights"]/2
-    
+
     # Filter original data
-    Box_r <- with(ABCE, filter(hitter, 
+    Box_r <- with(ABCE, filter(hitter,
                                px >=  Dbbl.x & px <= Dbbu.x,
                                pz >=  Dbbl.y & pz <= Dbbu.y))
-    
+
     # Divided box centers
     Dbc.x <- with(ABCE, seq(Dbbl.x, Dbbu.x, , 5)[c(2,4)])
     Dbc.y <- with(ABCE, seq(Dbbl.y, Dbbu.y, , 5)[c(2,4)])
-    
+
     # Griddify sub_sub_box
-    gridder_r <- with(Box_r, 
-                      as.image(hit, 
-                               cbind.data.frame(px, pz), 
-                               nx=2, ny=2, 
+    gridder_r <- with(Box_r,
+                      as.image(hit,
+                               cbind.data.frame(px, pz),
+                               nx=2, ny=2,
                                grid=list(x = Dbc.x, y=Dbc.y)
                       ))
-    
+
     # For ABCE, for book keeping, for plotting
     heights <- rep(ABCE[r,5]/2, 4)
     widths <- rep(ABCE[r,6]/2, 4)
-    
+
     # Important-stuff data frame
-    ABCE_Box_r <- with(gridder_r, 
-                       cbind(expand.grid(x,y), 
-                             as.vector(z), 
-                             as.vector(weights), 
-                             heights, 
+    ABCE_Box_r <- with(gridder_r,
+                       cbind(expand.grid(x,y),
+                             as.vector(z),
+                             as.vector(weights),
+                             heights,
                              widths))
-    
+
     names(ABCE_Box_r) <- c("px", "pz", "Hitting", "Count", "heights", "widths")
-    
+
     LoopData <- rbind.data.frame(LoopData, ABCE_Box_r)
   }
 }
@@ -416,9 +419,9 @@ ABCE <- filter(ABCE, Count != "NA")
 
 summary(ABCE$Count)
 
-G1024 <- ggplot(ABCE, aes(px, pz, fill=Hitting)) + 
+G1024 <- ggplot(ABCE, aes(px, pz, fill=Hitting)) +
   with(ABCE, geom_tile(width = widths, height = heights)) +
-  coord_equal() + 
+  coord_equal() +
   scale_fill_distiller(palette = "Spectral") +
   geom_text(aes(label = Count), size = 3.5)
 
@@ -427,18 +430,18 @@ G1024 <- ggplot(ABCE, aes(px, pz, fill=Hitting)) +
 
 # Grid - Increasing resolution, Peralta =======
 
-g <- grid.arrange(G1, G4, G16, G64, G256, G1024, ncol = 3)
+g <- gridExtra::grid.arrange(G1, G4, G16, G64, G256, G1024, ncol = 3)
 dev.off()
-ggsave("Chapter_VarRes.jpg", g, 
+ggsave("Chapter_VarRes.jpg", g,
        width = 8.5*3, height = 8.5*2)
 
 # Increasing resolution heat maps ===================
 
 hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
 
-gridder <- with(hitter, as.image(hit, cbind.data.frame(px, pz), nx = 3, ny = 3)) 
+gridder <- with(hitter, as.image(hit, cbind.data.frame(px, pz), nx = 3, ny = 3))
 
-# counts_image <- gridder$weights 
+# counts_image <- gridder$weights
 # ci <- counts_image # counts image, for surgery
 # z <- gridder$z; # box BAs image
 
@@ -448,31 +451,31 @@ counts <- filter(counts, count != "NA")
 
 heatmapper <- function(hitterdata, NX, NY){
   # x, y, and "hit" as "visual-spatial" matrix
-  hitgridR <- with(hitterdata, 
-                   as.image(hit, 
-                            cbind.data.frame(px, pz), 
-                            nx = NX, ny = NY)) 
+  hitgridR <- with(hitterdata,
+                   as.image(hit,
+                            cbind.data.frame(px, pz),
+                            nx = NX, ny = NY))
   # melt
-  ABC.R <- with(hitgridR,  
-                cbind(expand.grid(x, y), as.vector(z))) 
-  names(ABC.R) <- c("Horizontal", "Vertical", "Hitting") 
-  kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95), 
+  ABC.R <- with(hitgridR,
+                cbind(expand.grid(x, y), as.vector(z)))
+  names(ABC.R) <- c("Horizontal", "Vertical", "Hitting")
+  kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95),
                       y = c(1.6, 3.5, 3.5, 1.6, 1.6))
   ABC.R <- filter(ABC.R, Hitting != "NA")
-  ggplot(ABC.R, aes(Horizontal, Vertical)) + 
-    geom_tile(aes(fill = Hitting)) + 
-    # xlim(-1.5, 1.5) + ylim(1, 4) + 
-    scale_fill_distiller(palette = "Spectral", trans="reverse", 
-                         limits = c(0, 0.5), 
+  ggplot(ABC.R, aes(Horizontal, Vertical)) +
+    geom_tile(aes(fill = Hitting)) +
+    # xlim(-1.5, 1.5) + ylim(1, 4) +
+    scale_fill_distiller(palette = "Spectral", trans="reverse",
+                         limits = c(0, 0.5),
                          guide = guide_legend(
-                           title = expression(hat(p)))) + 
-    geom_path(aes(x, y), data = kZone, 
-              lwd = 1.5, col = "blue", linetype = 2) + 
-    coord_equal() 
-  } # heat map function 
+                           title = expression(hat(p)))) +
+    geom_path(aes(x, y), data = kZone,
+              lwd = 1.5, col = "blue", linetype = 2) +
+    coord_equal()
+  } # heat map function
 
 # Increasing resolution on `batter == 425509' =======
-res <- c(2, 4, 8, 16, 32, 64, 128) # granularities 
+res <- c(2, 4, 8, 16, 32, 64, 128) # granularities
 map_res <- vector("list")
 for(i in 1:length(res)){map_res[[i]] <- heatmapper(hitter, NX = res[i], NY = res[i])}
 
@@ -480,23 +483,11 @@ grid.arrange(map_res[[2]], map_res[[3]], map_res[[4]], map_res[[5]], map_res[[6]
 
 # ggsave("Res_grid.jpg", height = 8.5, width = 8.5)
 
-# ********* Now figure out the pdf() thing ************
-
-# Three lines of attack
-# (1) pdf() - make sure using whole page (think plot window smush)
-# (2) grid.arrange() - spacing 
-# (3) ggsave() - spacing
-# (4) ggplot() - spacing
-
-pdf("Test.pdf", width = 8, height = 10, paper = "USr")
 grid.arrange(map_res[[2]], map_res[[3]], map_res[[4]], map_res[[5]], map_res[[6]], map_res[[7]], ncol = 3)
 dev.off()
 
-
-
-hitter <- read.csv("~/Desktop/Research/Data/hitter.csv")
-
 # POLAR GLM =======================================
+hitter <- read.csv("~/Desktop/Research/Data/hitter.csv")
 
 #    r  <- sqrt( (px+a)^2 + (pz - b)^2)
 # theta <- atan2( (pz - b), (px+a) )
@@ -510,21 +501,21 @@ hitter <- read.csv("~/Desktop/Research/Data/hitter.csv")
 
 # Convert to polar, tranlate origin
 hitter <- mutate(hitter,
-                 r = sqrt( (px + 2)^2 + (pz - 3.5)^2), 
-                 theta = atan2(pz - 3.5, px + 2)) 
+                 r = sqrt( (px + 2)^2 + (pz - 3.5)^2),
+                 theta = atan2(pz - 3.5, px + 2))
 
-# glm() fit ========================== 
-# doh <- glm(hit ~ px*pz + I(px^2)*I(pz^2), 
+# glm() fit ==========================
+# doh <- glm(hit ~ px*pz + I(px^2)*I(pz^2),
 #            family = binomial, data = hitter )
 
-mod.polar <- glm(hit ~ r*theta + I(r^2)*I(theta^2), 
+mod.polar <- glm(hit ~ r*theta + I(r^2)*I(theta^2),
                  family = binomial, data = hitter)
 summary(mod.polar)
 
 # H-L GoF test ===============
 # (pg 133 Myers)
 # H_0: Well fit
-# H_A: Lack of fit 
+# H_A: Lack of fit
 
 library(ResourceSelection)
 hoslem.test(mod.polar$y, fitted(mod.polar)) # p-value = 0.8217
@@ -534,14 +525,14 @@ hitter <- mutate(hitter, p.hat = predict(mod.polar, newdata = righties, type = "
 
 # Plot ===================
 
-# Points for plotting through the hitting zone 
-hitzone <- cbind(expand.grid(seq(-1.5, 1.5, length = 50), 
+# Points for plotting through the hitting zone
+hitzone <- cbind(expand.grid(seq(-1.5, 1.5, length = 50),
                              seq(0, 4, length = 70)))
 names(hitzone) <- c("px", "pz")
 
 # Corresponding polar coords
-hitzone <- mutate(hitzone, 
-                  r = sqrt( (px + 2)^2 + (pz - 3.5)^2), 
+hitzone <- mutate(hitzone,
+                  r = sqrt( (px + 2)^2 + (pz - 3.5)^2),
                   theta = atan2(pz - 3.5, px + 2) )
 
 hitzone <- mutate(hitzone, p = predict(mod.polar, newdata = hitzone, type = "response")) # type = "response" for `p' instead of `logit'
@@ -550,17 +541,17 @@ sum(as.numeric(is.na(hitzone$p)))
 
 max(hitzone$p)
 
-kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95), 
+kZone <- data.frame(x = c(-0.95, -0.95, 0.95, 0.95, -0.95),
                     y = c(1.6, 3.5, 3.5, 1.6, 1.6))
 
 sum(as.numeric(is.na(hitzone$p)))
 
-ggplot(aes(px, pz, fill = p), data = hitzone) + 
-  geom_tile() + geom_path(aes(x, y, fill=NULL), 
-                          data = kZone, lwd = 1.5, 
-                          col = "blue", linetype = 2) + 
+ggplot(aes(px, pz, fill = p), data = hitzone) +
+  geom_tile() + geom_path(aes(x, y, fill=NULL),
+                          data = kZone, lwd = 1.5,
+                          col = "blue", linetype = 2) +
   coord_equal() + xlim(-1.5, 1.5) + ylim(1, 4) +
-  scale_fill_distiller(palette = "Spectral", 
+  scale_fill_distiller(palette = "Spectral",
                        limits = c(0.0, .170), trans="reverse",
                        guide = guide_legend(title = expression(hat(p)))) +
 
@@ -601,7 +592,7 @@ library(ggplot2)
 # Basic scatterplots with regression lines =======
 
 ggplot(dat, aes(x=xvar, y=yvar)) +
-  geom_point(size = 3) +    
+  geom_point(size = 3) +
   geom_smooth(method=lm)
 
 ggsave("CIBands.pdf", height = 8.5, width = 8.5, path = "/Users/ABC/Desktop/ResearchRepo/Images")
