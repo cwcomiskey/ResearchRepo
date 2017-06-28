@@ -9,75 +9,102 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, echo=FALSE, fig.height=2, fig.width=2, message=FALSE, warning=FALSE}
+  library(ggplot2)
+  devtools::load_all()
+  data(hitter)
+```
+
 Imagine you have a great spatial dataset with observations on some response across a continuous domain, and you want to make a heat map. However, the density of these observations varies, sometimes dramatically, across this domain. As a result, you're having trouble choosing a resolution. Not only that, you wish you could convey this varying density in the same heat map Variable-resolution heat maps are just what the doctor ordered! They allow you to integrate region appropriate resolutions, and simultaneously convey the relative data densities in those regions. 
 
 The `varyres(...)` function in this package automates variable-resolution map creation. This vignette will introduce a motivating dataset, then walk you through how to use `varyres(...)` to create the variable-resolution heat map of your dreams.
 
 ## Data: `hitter`
 
-To motivate and demonstrate `varyres(...)`, we use `hitter`. The dataset contains `r dim(varyres::hitter)[1]` swings that baseball player Johny Peralta took between approximately 2008 and 2015. The PITCHf/x data, as it is known, comes from [Sportvision, Inc](http://www.sportvision.com/) in conjunction with [Major League Baseball Advanced Media](http://www.mlbam.com/).
+To motivate and demonstrate `varyres(...)`, we use `hitter`. The dataset contains `r dim(hitter)[1]` swings that baseball player Johny Peralta took between approximately 2008 and 2015. The PITCHf/x data, as it is known, comes from [Sportvision, Inc](http://www.sportvision.com/) in conjunction with [Major League Baseball Advanced Media](http://www.mlbam.com/).
 
 ```{r}
-library(varyres)
 dim(hitter)
 head(hitter)
 ```
 
 `hitter` contains four columns, or variables, for each swing.
 
-* `px` gives the horizontal location of the pitch as it passes through the strike zone, in feet from the middle of home plate.
-* `pz` gives the vertical location of the pitch as it passes through the strike zone, in feet from the ground.
-* `hit` is a Bernoulli random variable that equals 1 if the swing resulted in a hit, and 0 otherwise.
+* `x` gives the horizontal location of the pitch as it passes through the strike zone, in feet from the middle of home plate.
+* `y` gives the vertical location of the pitch as it passes through the strike zone, in feet from the ground.
+* `res` is a Bernoulli random variable that equals 1 if the swing resulted in a hit, and 0 otherwise.
 * `des` gives a short description of the play.
 
 ## Motivation
 
-Let's look at a scatterplot of the data to highlight the resolution selection challenge.
+A statistician must choose a resolution for his/her heat map. Let's look at a scatterplot of the data to explore resolution selection.
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.show = "hold", fig.align = "center"}
   library(ggplot2)
 
-  # kzone <- data.frame(x = c(-0.75, -0.75, 0.75, 0.75, -0.75),
-  #                     y = c(1.5, 3.5, 3.5, 1.5, 1.5))
-
-  ggplot(hitter, aes(px, pz)) +
+  ggplot(hitter, aes(x, y)) +
     geom_point(size = 0.5, alpha = 1/5) +
     coord_equal() +
-    # geom_path(data = kzone, aes(x = x, y = y),
-    #          lwd = 1.5, col = "blue", linetype = 2) +
   labs(title = "Peralta Swing Locations",
   x = "Feet from \n Middle of Home Plate",
   y = "Feet Off Ground") +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-Quite obviously the data is quite dense in the middle, but quite sparse toward the margins. Should we do the plot justice in the middle, or the edges?
+We see the data density peaks in the center of the domain, but diminishes moving out toward the margins. Should we choose a resolution that highlights variation in the middle of the strike zone? Or one that accomodates the sparse data around the edges? In other words, which region should primarily inform our choice? These maps give a few possibilities.
 
-```{r, echo = FALSE}
-  library(ggplot2)
-  devtools::load_all()
-  names(hitter) <- c("x", "y", "res", "other")
-  vr <- varyres(data = hitter, cutoff = 1, max = 7)
+```{r, echo=FALSE, fig.height=2, fig.width=2, message=FALSE, warning=FALSE}
+vr <- varyres(data = hitter, cutoff = 1, max = 4)
 
-ggplot(vr[[3]], aes(x = x, y = y)) +
-  with(vr[[3]], geom_tile(aes(fill = statistic), width = width, height = height)) + 
+mapit_simple(vr[[3]])
+mapit_simple(vr[[4]])
+mapit_simple(vr[[5]])
+```
+
+In map one the margins look great, but the middle boxes contain too many swings; in the thousands! The map conceals the abundance of central observations, but more on that in a minute. The middle of the strike zone looks great in map three, but we lose entire (empty) boxes toward the margins. With variable-resolution heat maps we don't have to choose; we can have both!
+
+Also, would it not be great if somehow our heat map conveyed the density variation. Ask and you shall receive!
+
+## Variable-resolution Heat Map
+
+The function `varyres(...)` creates variable-resolution heat maps, with the outstanding `ggplot2`. With Peralta's hitter data from above, we get this heat map.
+```{r, fig.align = "center"}
+vr <- varyres(data = hitter, cutoff = 200, max = 4)
+mapit_simple(vr[[5]])
+```
+
+Notice how the resolution is quite fine in the center, more coarse around the edges, and somewhere inbetween as needed. The function achieves this by assessing boxes one at a time, subdividing when the box contains more than observations than the argument `cutoff` specifies. This map used `cutoff = 200`, and thus all boxes contain less than 200 observations.
+
+```{r, echo = FALSE, fig.align = "center"}
+ggplot(vr[[5]], aes(x = x, y = y)) +
+  with(vr[[5]], geom_tile(aes(fill = statistic), width = width, height = height)) +
   coord_equal() +
-  scale_fill_distiller(palette = "Spectral", guide = guide_legend(title = expression(hat(p)))) +
-  geom_text(aes(label = count)) +
-  labs(title = "Empirical Success", subtitle = "Johny Peralta", x = "Feet from \n Middle of Home Plate", y = "Feet Off Ground") +
-  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))
-
+  scale_fill_distiller(palette = "Spectral", guide = FALSE) +
+  geom_text(aes(label = count), size = 2)
 ```
 
-## More Examples
+Also, notice how the box sizes implicitly convey the varying relative data density through the domain; bigger boxes imply relatively less data, smaller boxes imply relatively more data.
 
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+The `cutoff` argument gives you control over how populated you want the boxes to be. For example, `cutoff = 100` gives this map.
 
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
+```{r, fig.align = "center"}
+vr <- varyres(data = hitter, cutoff = 100, max = 5)
+mapit_simple(vr[[6]])
 ```
 
-Also a quote using `>`:
+## Enjoy the Show
 
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
+If you want to see how your v-r map took shape, you're in luck; `varyres(...)` stores the map at each iterative sweep through the remaining boxes.
+
+```{r, fig.width = 1.5, fig.height = 1.5, echo = FALSE}
+mapit_simple(vr[[1]])
+mapit_simple(vr[[2]])
+mapit_simple(vr[[3]])
+mapit_simple(vr[[4]])
+mapit_simple(vr[[5]])
+mapit_simple(vr[[6]])
+```
+
+## Summary
+
+So there you have it. Variable-resolution heat maps have arrived. No longer do analysts and PhD students have to wrestle with which resolution to choose for their heat maps.
