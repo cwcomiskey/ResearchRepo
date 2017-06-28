@@ -20,8 +20,10 @@
 
 # devtools::use_vignette("my-vingette")
 
+# vr <- varyres(hitter, cutoff = 200, max = 6)
+# mapit_simple(vr[[5]])
 
-varyres <- function(dataset, fun = mean, cutoff, max = 10){
+varyres <- function(dataset, fun = mean, cutoff, max = 6){
 
 info_list <- list()       # list of information, for return()
 iter <- 0                 # subdivision iterations
@@ -56,7 +58,7 @@ while(sum(info$count > cutoff) > 0 & iter < max) {
 
       # Create box to subdivide
       box_r <- with(info, dplyr::filter(dataset,
-                                 x >= xlb[r] & x <= xub[r], # 1e-6 here???
+                                 x >= xlb[r] & x <= xub[r],
                                  y >= ylb[r] & y <= yub[r]))
 
       # x/y box centers for as.image
