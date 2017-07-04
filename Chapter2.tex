@@ -1,27 +1,25 @@
 \section{The Setup}
-\subsection{Introduction}
+\subsection{Introduction: ``A picture is worth a thousand words.''}
 
-As the old adage says, ``a picture is worth a thousand words.'' Statisticians, and scientists in general, rely on graphical displays---pictures, essentially---to communicate information, analysis, and results. We deploy graphical displays to efficiently communicate data set information content to other statisticians, and, perhaps more importantly, to non-statisticians. As technology generates more data, and statistical analysis becomes more widespread, graphical displays become more important; therefore, our graphic-making abilities must improve. The R data visualization package \verb|ggplot2| stands out as the single most downloaded R package, which highlights the importance of graphical displays and the continued need for graphical innovations \citep{rdoc}.
+Statisticians rely on graphical displays---pictures, essentially---to communicate information, analysis, and results. As technology generates more data, and statistical analysis becomes more prevalent, graphical displays become more important; therefore, our graphic-making abilities must improve. The R data visualization package \verb|ggplot2| highlights the importance of graphical displays, and the continued need for graphical innovations; less than ten years old, it is the most downloaded R package \citep{rdoc}.
 
-In this chapter we focus on one type of graphical display: heat maps. We argue uniform resolution throughout the heat map domain, the current best practice, inadequately accomodates spatially varying data density; and misses an opportunity to communicate data density information. We offer a solution that addresses this shortcoming.
+In this chapter we focus on one type of graphical display: heat maps. Current heat maps consist of uniformly sized grid boxes across the domain. This means one resolution must suffice even if data density varies through the domain, which is something of a limitation. We present variable-resolution heat maps which, we believe, provide an improvement over current heat maps in this resepect. In addition, variable-resolution heat maps convey spatial data density through the domain, information tradiationally not a part of heat maps.
 
 \subsection{Bernoulli Swings}
 
-% Note the variable \verb|des|, short for `description,' that describes pitch outcomes. In this study, we use swing outcomes described in \verb|des| to define a Bernoulli random variable $S$ (Section 3.1) that equals one for a hit, and equals zero for {\it any} swing that does not result in a hit. 
+Baseball revolves around a series of contests between the hitter and the pitcher, comprised of pitches the hitter can swing at. Throughout our research we treat every swing as a Bernoulli trial, and evaluate success or failure of a swing independently from the count in the at bat at the time of the swing. This differs from the norm; all other known research includes only at bat ending pitches \citep{Cross2015}, \citep{Baumer2010}, \citep{Fast2011}. Therefore, shese studies exclude from analysis swinging strikes that do not end at bats and foul balls; but include called strike three pitches (non-swings) that end at bats. We consider the latter event a matter of hitter decision making, not a failed swing attempt.  
 
-Baseball centers around a series of contests between the hitter and the pitcher, comprised of pitches the hitter can swing at, or choose not to swing at. We treat every swing as a trial, and success or failure should be evaluated independently from the count in the at bat at the time of the trial. Accordingly, we consider every swing a trial in this study.  This differs from other studies that include only at bat ending pitches \citep{Cross2015}, \citep{Baumer2010}, \citep{Fast2011}. These studies {\it exclude} from analysis swinging strikes that do not end at bats, and foul balls; but {\it include} pitches that end at bats, even if the hitter did not swing. We consider these latter events a possible mistake in the hitter's decision making, not a failed swing attempt. Based on these rationales, in this work we consider every swing a trial, with some probability of success. 
-
-Accordingly, we define success as swings where the variable \verb|des|, short for description, equals \verb|in play, no out|, and failure as swings where \verb|des| equals \verb|Foul|, \verb|Foul (Runner Going)|, \verb|Foul Tip|, \verb|In play out(s)|, \verb|Swinging Strike|, or \\ \verb|Swinging Strike (Blocked)|. With this interpretation of the data, next we explain the setup and interpretation of a baseball strike zone heat map.
+Accordingly, we define success as trials where the variable \verb|des|, short for description, equals \verb|in play, no out|, and failure as swings where \verb|des| equals \verb|Foul|, \verb|Foul (Runner Going)|, \verb|Foul Tip|, \verb|In play out(s)|, \verb|Swinging Strike|, or \\ \verb|Swinging Strike (Blocked)|. Next we explain the structure and interpretation of an empirical baseball strike zone heat map.
 
 \subsection{Empirical Strike Zone Heat Maps}
 
-Empirical baseball strike zone heat maps cover the two-dimensional, vertical face of the strike zone with a grid, containing empirical success probabilities ($\hat{p}$, defined below) in each grid box.  We start with a data set containing PITCHf/x\textsuperscript{\textregistered} data on 1,932 right-handed hitters, taking 1,582,581 swings between 2008 and 2015.  Let $b = 1, \dots, 627$ index grid boxes. Let $i = 1, \dots, 1,582,581$ index swings, and define $n_{b} = \displaystyle\sum_{i} \text{I}_{\{i \in b \}}$ as the total number of swings in box $b$.
+Empirical baseball strike zone heat maps cover the two-dimensional, vertical face of the strike zone with a grid, containing empirical success probabilities  in each grid box ($\hat{p}_{b}$, defined below).  We start with PITCHf/x\textsuperscript{\textregistered} data on 1,932 right-handed hitters, taking 1,582,581 swings between 2008 and 2015.  Noting the heat map below in Figure 2.1, let $b = 1, \dots, 627$ index grid boxes; $i = 1, \dots, 1,582,581$ index swings; and define $n_{b} = \displaystyle\sum_{i} \text{I}_{\{i \in b \}}$ as the total number of swings in box $b$.
 
-Define Bernoulli random variable, $S_{i}$, to equal one for swing success and zero for swing failure, and define $\hat{p}_{b} = \frac{1}{n_{b}} \displaystyle\sum_{i} S_{i} \cdot \text{I}_{\{i \in b \}}$ as the empirical box $b$ success probability. Figure 1 displays the resulting empirical heat map for this data. The graphic maps the empirical hitter success probability, $\hat{p}_{b}$, to a color on a spectrum, for pitches that passed through the space represented by that grid box.
+Define Bernoulli random variable, $S_{i}$, to equal one for swing success and zero for swing failure, and define $\hat{p}_{b} = \frac{1}{n_{b}} \displaystyle\sum_{i} S_{i} \cdot \text{I}_{\{i \in b \}}$ as the empirical box $b$ hitter swing success probability. Figure 2.1 displays the empirical heat map for $\hat{p}_{b}$. The graphic maps $\hat{p}_{b}$ to a color on a spectrum, for pitches that passed through the space represented by that grid box.
   \begin{figure}[H]
 	\centering
 	\includegraphics[scale=.35]{Images/SZandMothership.jpg} 
-  \caption{The setup, and the heat map. The setup in the image on the left demonstrates the proper perspective for understanding the heat map on the right. This heat map grids the hitting zone with approximately 3/4 inch by 3/4 inch boxes. The dashed blue line on the right outlines, roughly, the yellow box on the left. Each grid box color represents the empirical success probability ($\hat{p}_{b}$) of hitter swings at pitches passing through that box.  The data consists of 1,932 right handed hitters, swinging at 1,582,581 pitches between 2008 and 2015.}
+  \caption{The superimposed yellow box in the image on the left shows the plane in space the heat map on the right represents. The heat map grids the vertical face of the hitting zone with approximately 3/4 inch by 3/4 inch boxes. The dashed blue line on the right outlines, roughly, the yellow box on the left. Each grid box color represents the empirical success probability ($\hat{p}_{b}$) of hitter swings at pitches passing through that box.  The data consists of 1,932 right handed hitters, swinging at 1,582,581 pitches between 2008 and 2015.}
 	\end{figure} 
 While not sophisticated statistically, the graphic efficiently conveys empirical spatial success probabilities, by mapping the statistic $\hat{p}_{b}$ to the color spectrum. However, note that the statistician---not the data---determines the map's resolution.
 
@@ -47,10 +45,10 @@ This important resolution decision usually depends on the size and nature of the
 
 \subsection{Resolution Selection}
 
-In this section, we use batter 425509, a veteran player named Jhonny Peralta, to explore resolution selection and its implications. Our data set includes 9,177 Peralta swings. Peralta's swing data yields the heat map in Figure 1.2, which divides the hitting zone into 16 equally sized boxes. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers. We will use box sample sizes to reference boxes. For example, we will call the box in the lower-left ``box 22.'' (**NOTE: MAKE LABELS BIGGER)
+In this section, we use batter 425509, a veteran player named Jhonny Peralta, to explore resolution selection and its implications. Our data set includes 9,177 Peralta swings. Peralta's swing data yields the heat map in Figure 1.2, which divides the hitting zone into 16 equally sized boxes. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers. We will use box sample sizes to reference boxes. For example, we will call the box in the lower-left ``box 22.'' 
         \begin{figure}[H]
       	\centering
-      	\includegraphics[scale=.35]{Images/Chapter4x4.pdf} 
+      	\includegraphics[scale=.1]{Images/Chapter4x4.jpg} 
       	\caption{This four by four heat map shows the empirical batting average of Johnny Peralta, for pitches passing through the space represented by each of 16 square regions of the hitting zone. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers.}
       	\end{figure} 
 
@@ -180,7 +178,7 @@ Elsewhere, boxes toward the middle of the strike zone contain more observations;
 
 Why did pitchers not avoid those locations? They probably tried! However, game state pressures frequently compel pitchers to throw a strike, and aiming for the midde of the strike offers the highest probability of a strike; missing the target by up to ten inches in any direction still yields a strike. Even further, when aiming away from the middle of the strike zone, some pitches miss their target and unintentionally pass through the middle of the strike zone. 
 
-Of the four corner locations beyond the strike zone, Peralta enjoyed the most success low and inside, with $\hat{p}_{b} = 0.10$. However, the size of this box indicates a relatively small sample size, indicating this estimate may not be particularly reliable. With regard to the smaller sample sizes, Peralta probably swings at these pitches less often because they are, quite simply, difficult to hit successfully. On the other hand, pitchers may {\it throw} to these spots less often because of their relatively greater associated risk; they are less likely to induce swings, and a non-swing--a ball--is one step closer to a baserunner. 
+Of the four corner locations beyond the strike zone, Peralta enjoyed the most success low and inside, with $\hat{p}_{b} = 0.10$. However, the size of this box indicates a relatively small sample size, indicating this estimate may not be particularly reliable. With regard to the smaller sample sizes, Peralta probably swings at these pitches less often because they are, quite simply, difficult to hit successfully. On the other hand, pitchers may {\it throw} to these spots less often because of their relatively greater associated risk; they are less likely to induce swings, and a non-swing (ball) is one step closer to a baserunner. 
 
 % *Alix: ``I wonder if there's any literature on the physics from a hitter's perspective in terms of how small a difference in location is even detectable.
 
@@ -189,10 +187,20 @@ Of the four corner locations beyond the strike zone, Peralta enjoyed the most su
 The National Weather Service, a division of the National Oceanic and Atmospheric Administration (NOAA), maintains seven National Centers for Environmental Protection. One of these, the Storm Prediction Center, collects tornado data, and provides it to the public at their website \citep{NOAA}. In this section we use spatial tornado data between 1950 and 2017 to show variable-resolution heat maps in another area of application. The data consists of numerous covariates; we use only the longitude, latitude, and F-Scale rating for approximately 30,000 tornados in the last 67 years. The variable-resolution heat map in Figure 1.14 shows the spatially varying intensity and density of tornados.
         \begin{figure}[H]
       	\centering      
-      	\includegraphics[scale=.13]{Images/vr_tornados.jpg}
+      	\includegraphics[scale=.14]{Images/vr_tornados.jpg}
       	\caption{This variable-resolution heat map shows tornado F-Scale intensity and density across the U.S. Each box maps average intensity to a color. In addition, the map conveys data density information; box size corresponds to the observation density, because subdivision persisted until box sample sizes dropped below 50 tornados.}
         \end{figure}
 Notice how the variable-resolution map conveys data density through grid box size. To the East of $-80^{\circ}$ West, tornados are moderately common, and moderately intense. However, between approximately $-80^{\circ}$ West and $-100^{\circ}$ West tornados are more intense and far more common. Moving further West, tornados become less common and less intense than either of the previous two longitudinal ranges.
+
+Some grid boxes remain unnecessarily large, and awkwardly shaped relative to the U.S. borders. This occurs when an early subdivision leaves one protruding quantrant with at least one observation, but fewer than the cutoff. The early iteration box size then remains throughout. For example, a large horizontal rectangle overlaps Maine, in the North-eastern most corner of the U.S. The same is true of boxes that overlap New Jersey, Southern Florida, Southern Texas, and Southern California. Additional subdivision features could eliminate this issue. For example, another algorithmic layer could examine edge boxes for this quality and subdivide them.
+
+A sequence of images showing the variable-resolution algorithm iterations shows how the image evolves to its final state.
+
+        \begin{figure}[H]
+      	\centering      
+      	\includegraphics[scale=.06]{Images/tornado_maps.jpg}
+      	\caption{This sequence of shows iterations of the variable-resolution subdivision algorithm. The maps show tornado F-Scale intensity across the U.S., and the subdivision sequence indicates regional density. Subdivision persisted until box sample sizes dropped below 50 tornados in the final image.}
+        \end{figure}
 
 
 
