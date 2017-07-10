@@ -19,59 +19,50 @@ Define Bernoulli random variable, $S_{i}$, to equal one for swing success and ze
   \begin{figure}[H]
 	\centering
 	\includegraphics[scale=.35]{Images/SZandMothership.jpg} 
-  \caption{The superimposed yellow box in the image on the left shows the plane in space the heat map on the right represents. The heat map grids the vertical face of the hitting zone with approximately 3/4 inch by 3/4 inch boxes. The dashed blue line on the right outlines, roughly, the yellow box on the left. Each grid box color represents the empirical success probability ($\hat{p}_{b}$) of hitter swings at pitches passing through that box.  The data consists of 1,932 right handed hitters, swinging at 1,582,581 pitches between 2008 and 2015.}
+  \caption{The superimposed yellow box in the image on the left shows the plane in space the heat map on the right represents. In particular, the yellow box border approximately coincides with the dashed blue line. The heat map grids the vertical face of the hitting zone with approximately 3/4 inch by 3/4 inch boxes.  Each grid box color represents the empirical success probability ($\hat{p}_{b}$) of hitter swings at pitches passing through that box.  The data consists of 1,932 right handed hitters, swinging at 1,582,581 pitches between 2008 and 2015.}
 	\end{figure} 
-While not sophisticated statistically, the graphic efficiently conveys empirical spatial success probabilities, by mapping the statistic $\hat{p}_{b}$ to the color spectrum. However, note that the statistician---not the data---determines the map's resolution.
+The graphic efficiently conveys spatial empirical success probabilities by mapping $\hat{p}_{b}$ to colors. However, note that the statistician determines the map's resolution.
 
 \section{Traditional Heat Maps}
 
 \subsection{Resolution} % ============== =============
 
-Though often overlooked, a heat map's creator {\it chooses} a resolution. This choice determines a uniform grid box size for the heat map, which influences heat map quality and appearance markedly. This influence is analagous to the impact of bin width selection on histogram appearance. 
+A heat map's creator tacitly chooses a resolution. This determines a uniform grid box size for the entire heat map, which influences heat map quality and appearance markedly. To understand this influence, consider histograms, where bin width selection similarly affects appearance and function. Small box size may yield unreliable estimates at some locations, while larger boxes may fail to convey preferred spatial specificity. 
 
-Also, notice that heat maps fail to convey varying spatial data density, i.e. through the strike zone. With no spatial density information, heat maps conceal estimate sample sizes and variances.  As a rule, heat maps do not communicate this information.
+Along these lines, note that heat maps conceal spatially varying data density; in our case, pitch-swings density through the strike zone. Without this information, heat maps also conceal estimate sample sizes and variances.  
 
-The heat map in Figure 1.2 divides the strike zone into relatively small boxes, because the data supports it.
-  \begin{figure}[H]
-	\centering
-	\includegraphics[scale=.4]{Images/Mothership3.jpg} 
-  \caption{This heat map grids the hitting zone with approximately 3/4 inch by 3/4 inch boxes. The dashed blue line approximately outlines the strike zone. Each grid box color represents the empirical success probability ($\hat{p}_{b}$) of hitter swings at pitches passing through that box.  The data consists of 1,932 right handed hitters, swinging at 1,582,581 pitches between 2008 and 2015.}
-	\end{figure} 
-By ``supports it'' we mean the small, spatially specific boxes retain sample sizes large enough to avoid unacceptable $\hat{p}_{b}$ variance inflation. Defining ``acceptable'' variance depends on context and objectives. For example, a pitching coach might want estimates accurate to within 10 batting average points, 95\% of the time. This margin of error, 0.02, requires a sample size of 32 when $p_{b} = 0.09$.\footnote{Note that the variance depends on the mean for a Bernoulli random variable.} In contrast to the data for all right-handed hitters over seven years used for Figure 1.1, individual hitter data sets vary dramatically in size. Hitter data ranges from a single swing to over 10,000 swings. In data sets for individual hitters, then, the resolution choice becomes more complicated. This complexity owes to non-uniform data density, meaning that different regions may support very different resolutions. 
+With these points in mind, consider again the heat map in Figure 2.1. That heat map divides the hitting zone into relatively small boxes, because the data supports it; approximately 1.5 million swings by almost 2000 hitters. By ``supports it'' we mean that the small, spatially specific boxes at this resolution retain sample sizes large enough to supply reasonable estimates of $p_{b}$. ``Reasonable,'' of course, depends on context and objectives. For example, a pitching coach might request estimates within 0.005 points of the true batting average with probability 0.95. This requires a sample size of at least 36 when $p_{b} = 0.10$.\footnote{$\text{Var}(\hat{p}_{b})$ depends on $p_{b}$ This creates counterintuitive behavior around the margins of the hitting zone, where $\text{Var}(\hat{p}_{b})$ remains very small despite very small box sample sizes. See \cite{Dixon2005} for a discussion of this curious phenomenon.}
 
-As stated before, the choice of resolution sometimes dramatically affects heat map appearance, but also usefulness. For example, for a heat map overly coarse in regions of interest, the parameter estimates lose value. 
+On the other hand, data for individual hitters varies dramatically in size. In our database, individual hitters range from a single swing to over 10,000 swings. At such varying scales, resolution selection becomes more complicated because non-uniform data density implies different regions may support very different resolutions. This is important because, as stated before, the choice of resolution sometimes dramatically affects heat map appearance, but also usefulness. For example, coarse resolution in regions of interest means the parameter estimates lose value. 
 
-This important resolution decision usually depends on the size and nature of the data set in question, and its spatial dispersion through the domain. In the next section we explore this decision in detail, along with its inherent compromises.
+This important resolution decision usually depends on the size and nature of the data set, and its spatial dispersion through the domain. In the next section we explore this decision in detail, along with its inherent compromises.
 
 \subsection{Resolution Selection}
 
-In this section, we use batter 425509, a veteran player named Jhonny Peralta, to explore resolution selection and its implications. Our data set includes 9,177 Peralta swings. Peralta's swing data yields the heat map in Figure 1.2, which divides the hitting zone into 16 equally sized boxes. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers. We will use box sample sizes to reference boxes. For example, we will call the box in the lower-left ``box 22.'' 
+In this section we use batter 425509, a veteran player named Jhonny Peralta, to explore resolution selection and its implications. The data includes 9,177 Peralta swings, which yields the heat map in Figure 1.2. This map resolution divides the hitting zone into 16 equally sized boxes. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers. We will use box sample sizes to reference boxes. For example, we will call the box in the lower-left ``box 22.'' 
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.1]{Images/Chapter4x4.jpg} 
       	\caption{This four by four heat map shows the empirical batting average of Johnny Peralta, for pitches passing through the space represented by each of 16 square regions of the hitting zone. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers.}
       	\end{figure} 
 
-Notice the four by four resolution suffices for box 22; further subdivision might yield trivially small subdivided-box sample sizes. On the other hand, the center boxes, all with sample sizes above 1200, can and should provide more location specific $\hat{p}$ estimates. This motivates finer resolution in that region of space, but at the expense of box 22. With this trade-off in mind, we subdivide all boxes further. 
-
-For simplicity we divide each box into four equally sized sub-boxes. Note, however, that subdivision algorithms could take countless forms. Figure 3 shows the eight by eight result.
+Notice that while the four by four resolution suffices for box 22, further subdivision might yield trivially small sample sizes. On the other hand, the four central boxes, all with sample sizes above 1200, can and should contribute more location-specific estimates. Therefore, the central boxes motivate finer resolution, even though box 22 does not support it. Keeping this trade-off in mind, we increase resolution by dividing each box into four equally sized sub-boxes. Figure 1.3 shows the $8 \times 8$ resolution result.
         \begin{figure}[H]
       	\centering
-      	\includegraphics[scale=.25]{Images/Chapter16x16.pdf} 
+      	\includegraphics[scale=.1]{Images/Chapter8x8.jpg} 
       	\caption{This eight by eight heat map shows the empirical hitting success probability of Johnny Peralta, for pitches passing through the space represented by each of 64 square regions of the hitting zone. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers. A grey box indicates no pitches passed through that box. Notice that this resolution imparts additional information in the center of the hitting zone, some box sample sizes toward the margin have dropped uninformatively low.}
       	\end{figure} 
+The centermost 16 boxes still support low variance $p$ estimates; the minimum of these boxes contains 184 swings. Globally, 24 boxes consist of over 150 swings; and 15 boxes still include more than than 250 swings. These boxes could support higher resolution. On the other hand, many boxes, especially edge boxes, now contain sample sizes generally insufficient to support low variance estimates of $p_{b}$. Twenty-nine boxes contain fewer than 50 swings, and 17 boxes contain fewer than 20 swings. One box recorded zero swings.
 
-The centermost 16 boxes still contain sample sizes sufficient to support low variance $p$ estimates; the minimum of these boxes contains 184 swings. Globally, 24 boxes consist of over 150 swings; and 15 boxes still include more than than 250 swings. These boxes could support further subdivision. On the other hand, many boxes, especially edge boxes, now contain sample sizes generally insufficient to support low variance estimates of $p_{b}$. Twenty-nine boxes contain fewer than 50 swings, and 17 boxes contain fewer than 20 swings. One box recorded zero swings.
-
-With this range of box sample sizes due to the varying spatial density of the data, the heat map at any resolution will contain boxes of exceedingly small sample sizes (high variance), and boxes of unnecessarily large sample size (unnecessarily low variance). Figure 1.4 shows six different resolutions for Peralta's data. We started with one box, and subdivided each box into four at each iteration. This simple resolution increase algorithm plainly illustrates the resolution selection challenge, and provides a foundation for our innovation in the next section. 
+With this range of box sample sizes, the non-extreme resolution choices contain both boxes with exceedingly small sample sizes {\it and} boxes with unnecessarily large sample sizes. Figure 1.4 shows Peralta's data---the same data---at six resolutions. 
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.055]{Images/Chapter_VarRes.jpg} 
       	\caption{These six heat maps show the same data for Johnny Peralta, at increasing resolutions. The maps range from obviously too coarse to perhaps excessively fine. Notice how dramatically the image changes as the resolution increases. Which resolution yields the highest quality heat map?}
       	\end{figure} 
-Which of these five resolutions best balances spatially precise estimates of $p$ with acceptable box sample sizes? The viewer interested in the center of the strike zone might prefer the middle-bottom map, as the box sample sizes support such spatially specific estimates. However, the boxes closer to the edges of the strike zone then contain higher variance, less reliable estimates due to prohibitively small sample sizes. 
+We start with one box, and subdivided each box into four equally-sized, smaller boxes at each iteration. Which of these six resolutions best balances spatially precise estimates of $p$ with acceptable box sample sizes? The user interested in the center of the strike zone might prefer the bottom-middle map, as the box sample sizes support such spatially specific estimates. However, the boxes closer to the edges of the strike zone then contain prohibitively small sample sizes, yielding higher variance estimates. 
 
-All six resolution options include trade-offs. We propose a new heat map approach the eliminates trade-offs. The solution combines multiple resolutions into one map, according to the data's varying spatial density.
+The takeaway from Figure 1.4: all six resolutions involve trade-offs. We propose a new heat map approach that eliminates trade-offs. The solution combines multiple resolutions into one map, according to the data's varying spatial density.
 
 \section{Spatially Varying Resolution} % ==========
 
