@@ -43,14 +43,14 @@ In this section we use batter 425509, a veteran player named Jhonny Peralta, to 
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.1]{Images/Chapter4x4.jpg} 
-      	\caption{This four by four heat map shows the empirical batting average of jhonny Peralta, for pitches passing through the space represented by each of 16 square regions of the hitting zone. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers.}
+      	\caption{This four by four heat map shows the empirical batting average of Jhonny Peralta, for pitches passing through the space represented by each of 16 square regions of the hitting zone. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers.}
       	\end{figure} 
 
 Notice that while the four by four resolution suffices for box 22, further subdivision might yield trivially small sample sizes. On the other hand, the four central boxes, all with sample sizes above 1200, can and should contribute more location-specific estimates. Therefore, the central boxes motivate finer resolution, even though box 22 does not support it. Keeping this trade-off in mind, we increase resolution by dividing each box into four equally sized sub-boxes. Figure 1.3 shows the $8 \times 8$ resolution result.
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.1]{Images/Chapter8x8.jpg} 
-      	\caption{This eight by eight heat map shows the empirical hitting success probability of jhonny Peralta, for pitches passing through the space represented by each of 64 square regions of the hitting zone. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers. A grey box indicates no pitches passed through that box. Notice that this resolution imparts additional information in the center of the hitting zone, some box sample sizes toward the margin have dropped uninformatively low.}
+      	\caption{This eight by eight heat map shows the empirical hitting success probability of Jhonny Peralta, for pitches passing through the space represented by each of 64 square regions of the hitting zone. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers. A grey box indicates no pitches passed through that box. Notice that this resolution imparts additional information in the center of the hitting zone, some box sample sizes toward the margin have dropped uninformatively low.}
       	\end{figure} 
 The centermost 16 boxes still support low variance $p$ estimates; the minimum of these boxes contains 184 swings. Globally, 24 boxes consist of over 150 swings; and 15 boxes still include more than than 250 swings. These boxes could support higher resolution. On the other hand, many boxes, especially edge boxes, now contain sample sizes generally insufficient to support low variance estimates of $p_{b}$. Twenty-nine boxes contain fewer than 50 swings, and 17 boxes contain fewer than 20 swings. One box recorded zero swings.
 
@@ -58,7 +58,7 @@ With this range of box sample sizes, the non-extreme resolution choices contain 
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.055]{Images/Chapter_VarRes.jpg} 
-      	\caption{These six heat maps show the same data for jhonny Peralta, at increasing resolutions. The maps range from obviously too coarse to perhaps excessively fine. Notice how dramatically the image changes as the resolution increases. Which resolution yields the highest quality heat map?}
+      	\caption{These six heat maps show the same data for Jhonny Peralta, at increasing resolutions. The maps range from obviously too coarse to perhaps excessively fine. Notice how dramatically the image changes as the resolution increases. Which resolution yields the highest quality heat map?}
       	\end{figure} 
 We start with one box, and subdivided each box into four equally-sized, smaller boxes at each iteration. Which of these six resolutions best balances spatially precise estimates of $p$ with acceptable box sample sizes? The user interested in the center of the strike zone might prefer the bottom-middle map, as the box sample sizes support such spatially specific estimates. However, the boxes closer to the edges of the strike zone then contain prohibitively small sample sizes, yielding higher variance estimates. 
 
@@ -77,7 +77,7 @@ To demonstrate one iteration in the VR algorithm, let the stopping rule be a max
       	\includegraphics[scale=.08]{Images/Chapter8x8_200.jpg} 
       	\caption{One iteration in the variable-resolution algorithm. The algorithm subdivides all boxes with a sample size (printed on box) greater than 200. The iteration shown here yields the map on the right, from the map on the left. Box 22, and others like it, remain intact because further subdivision yields uninformatively low sample sizes.}
       	\end{figure} 
-The algorithm subdivides all boxes that have more than 200 observations, yielding the heat map on the right. Boxes with less than 200 observations, such as box 22, remain intact because further subdivision yields sample sizes the hypothetical author deems uninformative. Sixteen boxes still contain a sample size greater than 200, and 11 still have a sample size greater than 300. The next algorithmic iteration subdivides all 16 boxes that still contain more than 200 observations. The left and middle heat maps in Figure 1.6 duplicate Figure 1.5. % Notice all four corner boxes remain intact. This indicates Peralta swings less often at pitches in the strike zone corners, and/or less often sees such pitches. We delve into the possible reasons for this pattern, in a baseball context, in Section 1.3.3.
+The algorithm subdivides all boxes that have more than 200 observations, yielding the heat map on the right. Boxes with less than 200 observations, such as box 22, remain intact because further subdivision yields sample sizes the hypothetical author deems uninformative. Sixteen boxes still contain a sample size greater than 200, and 11 still have a sample size greater than 300. The next algorithmic iteration subdivides all 16 boxes that still contain more than 200 observations. The left and middle heat maps in Figure 1.6 duplicate Figure 1.5. 
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.05]{Images/Chapter4x4.jpg}
@@ -87,7 +87,7 @@ The algorithm subdivides all boxes that have more than 200 observations, yieldin
       	\end{figure}
 The new iteration yields the map on the right from the middle map. The new map consists of 97 boxes, with a mean box sample size of 94.57, and median of 94. Box 9 contains the fewest observations, and box 189 contains the most. Box 63 serves as the first quartile, while box 125 serves as the third quartile. 
 
-Figure 8 gives the full iterative VR sequence of heat maps, for stopping rule $n_{b} < 200$.
+Figure 1.8 shows the VR heat map for every iteration, for stopping rule $n_{b} < 200$.
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=0.05]{Images/Chapter1x1.jpg}
@@ -100,18 +100,18 @@ Figure 8 gives the full iterative VR sequence of heat maps, for stopping rule $n
       	
 \subsection{Data Density Information}
 
-Notice how box size corresponds to data density in VR heat maps. Figure 1.7 demonstrates this correspondence by comparing a scatterplot that shows data density, to a VR heat map. 
+In VR heat maps, regions of greater observation density have smaller boxes, and thus more spatially specific estimates. In this way the size of the box conveys density information, which heat maps typically conceal. This new feature derives from the fact that box subdivisions persist until box sample sizes drop below 200 (in this map). Figure 1.7 demonstrates the correspondence between observation density and box size, by comparing a scatterplot to a VR heat map. 
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.07]{Images/density.jpg}
       	\includegraphics[scale=.07]{Images/density_comp.jpg} 
-      	\caption{Variable-resolution heat maps convey data density. Comparing Jhonny Peralta's scatter plot and variable-resolution heat map shows the correspondence between data density and box size. The finer resolution regions in the heat map correspond to greater data density, whereas biggers boxes indicate lower density. Traditional heat maps omit this information.}
+      	\caption{A variable-resolution heat maps convey data density. Comparing Jhonny Peralta's scatter plot and variable-resolution heat map shows the correspondence between data density and box size. The finer resolution regions in the heat map correspond to greater data density, whereas bigger boxes indicate lower density. Traditional heat maps omit this information.}
       	\end{figure}
 Notice how smaller boxes correspond to higher data density, while larger boxes indicate lower density. This contrasts favorably to traditional heat maps, where uniform resolution conceals data density. VR heat maps convey valuable, previously omitted data density information to the viewer. 
       	
 \subsection{Stopping Rule Example} % ===================
       	
-To demonstrate the flexibility, consider a different stopping rule with the same subdivision algorithm. We subdivide boxes with $n_{b} > 100$, and Figure 1.9 gives the resulting sequence of heat maps.
+In this section we apply the VR algorithm to the same data, but with stopping rule $n_{b} < 100$, to show how the procedure and outcome differs. Figure 1.9 shows heat maps for all six VR iterations.
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.05]{Images/Chapter1x1.jpg}
@@ -122,16 +122,14 @@ To demonstrate the flexibility, consider a different stopping rule with the same
       	\includegraphics[scale=.05]{Images/Chapter32x32_100.jpg}
       	\caption{A variable-resolution heat map sequence. Starting from the top left, the algorithm subdivides all boxes with a sample size (printed on box) greater than 100. The maps convey Jhonny Peralta's empirical success probability by mapping $\hat{p}_{b}$ to a color.}
 \end{figure} 	
-Compare this sequence for stopping rule $n_{b} < 100$, to Figure 1.8 for stopping rule $n_{b} < 200$. The the top row of maps in Figure 1.8 matches exactly the top row of maps in Figure 1.9. However, notice in the four by four heat map that $100 < n_{158} < 200, \text{ and } 100 < n_{101} < 200$. This implies diverging paths, where one stopping rule prevents further subdivision, while the other compels further subdivision.
+Compare Figure 1.9 for stopping rule $n_{b} < 100$, to Figure 1.8 for stopping rule $n_{b} < 200$; the top rows match exactly. However, notice Box 158 and Box 102 in the $4 \times 4$ heat map; both boxes have sample sizes {\it between} the two stopping rules. Based on this fact, we see diverging paths, where one stopping rule prevents further subdivision, while the other compels it. Figure 1.10 shows the subsequent map for each stopping rule.
         \begin{figure}[H]
       	\centering      
       	\includegraphics[scale=.05]{Images/Chapter8x8_200.jpg}
       	\includegraphics[scale=.05]{Images/Chapter8x8_100.jpg}
-      	\caption{Variable-resolution heat maps diverge when box totals fall between sample size stopping rules. Boxes 158 and 101 remain for stopping rule $n_{b} < 200$ (left), but further subdivided for stopping rule $n_{b} < 100$ (right). Context should guide stopping rule selection}
+      	\caption{Variable-resolution heat maps diverge when box totals fall between sample size stopping rules. Boxes 158 and 102 remain for stopping rule $n_{b} < 200$ (left), but further subdivide for stopping rule $n_{b} < 100$ (right).}
 \end{figure} 
-We see the bottom left heat maps in Figures 1.8 and 1.9, shown in Figure 1.10, differ in the number of boxes of each size, and the total number of boxes. 
-
-This differences increase at the next iteration, where the stopping rule $n_{b} < 100$ requires 28 box subdivisions, shown in Figure 1.9; and $n_{b} < 200$ gives 16 box subdivisions, shown in Figure 1.8.
+As expected, the heat maps now differ in the number of boxes of each size, and the total number of boxes. The differences increase at the next iteration, where stopping rule $n_{b} < 100$ yields 28 box subdivisions (Figure 1.9); and $n_{b} < 200$ yields 16 box subdivisions (Figure 1.8). Figure 1.11 shows two corresponding iterations for these two stopping rules; $n_{b} < 100$ in the top row, and $n_{b} < 200$ in the bottom row.
         \begin{figure}[H]
       	\centering      
       	\includegraphics[scale=.05]{Images/Chapter4x4.jpg}
@@ -140,59 +138,57 @@ This differences increase at the next iteration, where the stopping rule $n_{b} 
       	\includegraphics[scale=.05]{Images/Chapter4x4.jpg}
       	\includegraphics[scale=.05]{Images/Chapter8x8_100.jpg}
       	\includegraphics[scale=.05]{Images/Chapter16x16_100.jpg}
-      	\caption{Variable-resolution heat maps diverge when box totals fall between sample size stopping rules. The top row of maps subdivides according to stopping rule $n_{b} < 200$; the bottom row further subdivides for stopping rule $n_{b} < 100$. The stopping rules concur through three iterations, the last of which we see first in each row. However, the next two iterations produce different maps. Context should guide stopping rule selection.}
+      	\caption{Variable-resolution heat maps diverge when box totals fall between sample size stopping rules. The top row of maps subdivides according to stopping rule $n_{b} < 200$; the bottom row further subdivides for stopping rule $n_{b} < 100$. The maps match through three iterations, the last of which we see first in each row. However, the next two iterations produce different maps.}
 \end{figure}
+For both stopping rules, notice how corner boxes tend to remain intact. This indicates Peralta swings less often at pitches in the strike zone corners, and/or less often sees such pitches. In the next section we delve into the possible reasons for this pattern, and others, in a baseball context.
 
-\subsection{Hitter vs. Pitcher} % ===================== =======
-In this section, for illustrative purposes, we interpret features of the best--in this author's opinion--jhonny Peralta variable-resolution heat map. Toward this end, we first describe basic strategy considerations in the hitter vs. pitcher matchup. 
+\subsection{Variable-Resolution Interpretation: Hitter vs. Pitcher} % ===================== =======
+In this section we interpret, in a baseball context, features of our preferred Jhonny Peralta VR heat map. First, we describe basic hitter vs pitcher strategy as context for interpretations. 
 
-\subsubsection*{Context}
-At the basic level, the pitcher wants to get outs and avoid baserunners; and hitters want to avoid outs and get on base. We are concerned with pitch location in this study, so we want to understand the pitch-swing location decisions; where the pitcher decides to throw, and which pitches the hitter decides to swing at. 
+\subsubsection{Context}
+At a basic level, the pitcher wants to get outs and avoid baserunners; and the hitter wants to avoid outs and get on base. Our statistical analysis focuses on pitch location, so we also focus on interpreting  pitch locations. Pitch locations necessarily include two perspectives; the pitcher's decision to throw there, and the hitter's decision to swing. We look at two primary factors that influence the location of pitches that a hitter chooses to swing at: game theoretic strategy, and pitch location error. 
 
-Three primary factors influence pitch-swing location: pitcher game theoretic strategy, pitch location margin of error (distance by which a pitch misses its intended target), and game state. Game theoretic strategy concerns the pitcher's knowledge of the hitter's strengths and weaknesses, and the hitter's reciprocal knowledge. Margin of error concerns the pitcher's tendency to miss his intended target by some amount. The game state includes the count (number of balls and strikes), the number of outs, and baserunner presence/absence. Two example game state pressures include the increased penalty for throwing a pitch outside the strike zone on a three ball count (the runner gets on base at four balls); and the increased penalty for a hit with a runner in ``scoring position.'' Our data includes pitches across all game states, so we will not rely on them for interpretation. Instead, we focus on game theory and margin of error rationale. 
+First, game theory. Game theoretic strategy concerns the pitcher's knowledge of the hitter's strengths and weaknesses, and the hitter's reciprocal knowledge. For example, a pitcher prefers to avoid throwing pitches to the locations a hitter succeeds with the highest probability. In turn, the hitter would like to avoid swinging at pitches in locations he succeeds with relatively low probability.
 
-\subsubsection*{Interpretation}
-Figure 1.13 gives, in the opinion of this author, the best heat map for jhonny Peralta.
+Second, pitch location error. Pitchers aim for the catcher's carefully positioned glove, but only rarely hit it perfectly. More commonly the catcher moves his glove some distance to catch the pitch.  Analysis of this distance is impossible, because PITCHf/x\textsuperscript{\textregistered} data does not record the catcher's initial glove location. Therefore, without data to suggest otherwise, based on this author's own experience playing and watching baseball, for this discussion we pragmatically assume Normally distributed pitch location error, with $\mu = 0$ and $\sigma = 5$ inches, independently in the horizontal and vertical directions. 
+
+% Third, game states. The game state includes the count (number of balls and strikes), the number of outs, and baserunner presence/absence on each of the three bases. The level of each variable, sometimes in combination with one another, influences strategy. For example, the penalty for throwing a pitch outside the strike zone---a ``ball''---increases with each additional ball in an at bat; the hitter automatically reaches base (his goal) on the fourth ball. Our data includes pitches from all game states, so we omit game states from our interpretive toolbox. Instead, we focus on game theory and pitch location error rationale. 
+
+\subsubsection{Interpretation}
+In this section we use game theory and pitch location error to interpret four aspects of a Peralta VR heat map. Figure 1.12 shows Peralta's VR heat map for stopping rule $n_{b} < 200$.
         \begin{figure}[H]
       	\centering      
       	\includegraphics[scale=.1]{Images/Peralta_var-res.jpg}
-      	\caption{This variable-resolution heat map for jhonny Peralta gives spatial, empirical success probabilities; each box maps $\hat{b}_{b}$ to a color. In addition, the map conveys data density information; box size corresponds to the observation density, because subdivision persisted until box sample sizes dropped below 200.}
-\end{figure}
-The map gives spatial, empirical success probabilities for jhonny Peralta. In regions of greater data density, and perhaps greater relevance, the map gives more spatially specific estimates. The size of the box conveys this density information, traditionally concealed in heat maps. This new feature derives from the fact that box subdivisions persist until box sample sizes drop below 200 (in this map).
+      	\caption{This variable-resolution heat map for Jhonny Peralta gives spatial, empirical success probabilities; each box maps $\hat{b}_{b}$ to a color. In addition, the map conveys data density information; box size corresponds to the observation density, because subdivision persisted until box sample sizes dropped below 200.}
+        \end{figure}
+First, notice the grid boxes inside the dotted blue strike zone box tend to be smaller; this indicates Peralta generally saw and swung at far more pitches in the strike zone than out. Pitchers throw pitches in the strike zone because each strike moves the at bat one step closer to an out; and each ball moves the at bat one step closer to a walk, where hitter proceeds to first base. The same logic, with reversed incentives, explains why Peralta swings at so many pitches in the strike zone. 
 
-Interpretable features abound. For example, Peralta generally saw and swing at far more pitches in the strike zone than out. Pitchers throw pitches in the strike zone because each strike is one step closer to an out, and each ball is one step closer to a baserunner. The same logic, with opposite goals/incentives, applies for the hitter. Therefore, many pitch-swings occur in the strike zone.
+Second, notice the larger boxes in the lower left, upper left, and upper right of the strike zone. The larger boxes imply Peralta saw and/or swung at fewer pitches in these locations. To explain, consider a pitch aimed for the bottom left of the strike zone. Using the pitch location error distribution we assumed, aiming for this box yields a ball approximately 3/4 of the time, a result in the hitter's favor. From the hitter's perspective, these corner pitches are relatively difficult to hit, so Peralta presumably avoids swinging at them when possible. These two strategic considerations combined help explain low observation density in these locations.
 
-Notice the larger boxes in the lower left, upper left, and upper right of the strike zone. This implies Peralta saw and/or swung at fewer pitches in these locations. To explain, consider a pitch aimed for the bottom left of the strike zone. Missing the box below or to the left yields a ball, a result unambiguously in the hitter's favor; one step closer to the fourth ball of an at bat, when the rules award the hitter first base. In contrast, any swing, even those at the most hitter-favoring locations, yield an out with non-zero probability.
+Third, Peralta seems to have more success in the vertical the center of the strike zone, than at the top or bottom. This indicates Peralta deals with horizontal variation better than vertical variation---an actionable insight! Peralta will therefore swing at pitches in the middle of the strike zone almost every chance he gets, so why did pitchers not avoid those locations? They probably tried! However, aiming for the middle of the strike offers the highest probability of a strike; missing the target by two standard deviations in any direction still yields a strike. In addition, some pitches aimed toward the margins of the strike miss their target and unintentionally pass through the middle of the strike zone. 
 
-Elsewhere, boxes toward the middle of the strike zone contain more observations; finer resolution implies Peralta sees and/or swings at more pitches there. This region also seems to have greater success probabilities $\hat{p}_{b}$ (warmer colors), indicating Peralta indeed hits pitches in the center of the hitting zone better than pitches toward the edges of the hitting zone. In particular, the warmest boxes seem to be quite vertically centered. This indicates Peralta deals with horizontal variation better than vertical variation--an actionable insight! Peralta will swing at pitches in the middle of the strike zone almost every chance he gets.
-
-Why did pitchers not avoid those locations? They probably tried! However, game state pressures frequently compel pitchers to throw a strike, and aiming for the middle of the strike offers the highest probability of a strike; missing the target by up to ten inches in any direction still yields a strike. Even further, when aiming away from the middle of the strike zone, some pitches miss their target and unintentionally pass through the middle of the strike zone. 
-
-Of the four corner locations beyond the strike zone, Peralta enjoyed the most success low and inside, with $\hat{p}_{b} = 0.10$. However, the size of this box indicates a relatively small sample size, indicating this estimate may not be particularly reliable. With regard to the smaller sample sizes, Peralta probably swings at these pitches less often because they are, quite simply, difficult to hit successfully. On the other hand, pitchers may {\it throw} to these spots less often because of their relatively greater associated risk; they are less likely to induce swings, and a non-swing (ball) is one step closer to a baserunner. 
-
-% *Alix: ``I wonder if there's any literature on the physics from a hitter's perspective in terms of how small a difference in location is even detectable.
+Finally, of the four corner locations just outside the strike zone, Peralta enjoyed the most success low and inside, with $\hat{p}_{b} = 0.10$. However, the size of this box indicates a relatively small sample size; Peralta astutely swings at these challenging pitches infrequently. On the other hand, pitchers may throw there infrequently because of the relatively greater risk: they are less likely to induce swings, and a non-swing moves the at bat one step closer to a baserunner. 
 
 \section{Tornado Example}
 
-The National Weather Service, a division of the National Oceanic and Atmospheric Administration (NOAA), maintains seven National Centers for Environmental Protection. One of these, the Storm Prediction Center, collects tornado data, and provides it to the public at their website \citep{NOAA}. In this section we use spatial tornado data between 1950 and 2017 to show variable-resolution heat maps in another area of application. The data consists of numerous covariates; we use only the longitude, latitude, and F-Scale rating for approximately 30,000 tornadoes in the last 67 years. The variable-resolution heat map in Figure 1.14 shows the spatially varying intensity and density of tornadoes.
+The National Weather Service, a division of the National Oceanic and Atmospheric Administration (NOAA), maintains seven National Centers for Environmental Protection. One of these, the Storm Prediction Center (SPC), collects tornado data, and provides it to the public at their website \citep{NOAA}. In this section we use some of SPC's spatial tornado data, collected between 1950 and 2017, to show VR heat maps in another area of application. 
+
+The data set we use includes the longitude, latitude, and F-Scale rating for approximately 30,000 tornadoes in the last 67 years. The VR heat map in Figure 2.14, created with stopping rule $n_{b} < 50$, shows the spatial average intensity and density of tornadoes.
         \begin{figure}[H]
       	\centering      
       	\includegraphics[scale=.14]{Images/vr_tornados.jpg}
-      	\caption{This variable-resolution heat map shows tornado F-Scale intensity and density across the U.S. Each box maps average intensity to a color. In addition, the map conveys data density information; box size corresponds to the observation density, because subdivision persisted until box sample sizes dropped below 50 tornadoes.}
+      	\caption{This variable-resolution heat map shows tornado F-Scale intensity and density across the U.S. Each box maps average intensity to a color. Smaller (larger) boxes corresponds to higher (lower) observation density, because subdivision persisted until box sample sizes dropped below 50 tornadoes.}
         \end{figure}
-Notice how the variable-resolution map conveys data density through grid box size. To the East of $-80^{\circ}$ West, tornadoes are moderately common, and moderately intense. However, between approximately $-80^{\circ}$ West and $-100^{\circ}$ West tornadoes are more intense and far more common. Moving further West, tornadoes become less common and less intense than either of the previous two longitudinal ranges.
+Notice how the variable-resolution map conveys data density through grid box size, and seems to divide the country into three vertical regions. To the East of $-80^{\circ}$ West, medium-sized, largely green boxes indicate moderate tornado frequency and intensity. Between approximately $-80^{\circ}$ West and $-100^{\circ}$ West, tornado intensity and frequency increases, revealed by smaller, largely yellow boxes. Finally, moving further West, bigger, predominantly blue boxes indicate less common and less intense tornados than either of the previous two longitudinal ranges.
 
-Some grid boxes remain unnecessarily large, and awkwardly shaped relative to the U.S. borders. This occurs when an early subdivision leaves one protruding quadrant with at least one observation, but fewer than the cutoff. The early iteration box size then remains throughout. For example, a large horizontal rectangle overlaps Maine, in the North-eastern most corner of the U.S. The same is true of boxes that overlap New Jersey, Southern Florida, Southern Texas, and Southern California. Additional subdivision features could eliminate this issue. For example, another algorithmic layer could examine edge boxes for this quality and subdivide them.
+Notice how some grid boxes remain unnecessarily large, and awkwardly shaped relative to the U.S. borders. For example, a large horizontal rectangle overlaps Maine, in the North-eastern most corner of the U.S. This phenomenon occurs when an early subdivision leaves a protruding quadrant with at least one observation, but fewer than the cutoff; and the early iteration box size endures. This pattern occurred with boxes that protrude from, and partially overlap New Jersey, Southern Florida, Southern Texas, and Southern California. However, the size of these odd boxes does still indicate very low observation density, alerting the audience of the circumstance. Modifications to the algorithm---subdividing edge boxes with this quality---would eliminate this quirk.
 
-A sequence of images showing the variable-resolution algorithm iterations shows how the image evolves to its final state.
-
+The VR algorithm iterations, shown in Figure 2.14, shows how the VR map evolves to its final form.
         \begin{figure}[H]
       	\centering      
       	\includegraphics[scale=.06]{Images/tornado_maps.jpg}
-      	\caption{This sequence of shows iterations of the variable-resolution subdivision algorithm. The maps show tornado F-Scale intensity across the U.S., and the subdivision sequence indicates regional density. Subdivision persisted until box sample sizes dropped below 50 tornadoes in the final image.}
+      	\caption{Variable-resolution (VR) algorithm iterations. The box colors represent average tornado F-Scale intensity, and the sequence shows the VR heat map evolution. Subdivision persists until box sample sizes drop below 50 (in this case) tornadoes in each box.}
         \end{figure}
-
-
 
 % \subsection{Appendix: VarResHM, An R Package}
 
