@@ -63,20 +63,24 @@ ggsave("Chapter_VarRes.jpg", g,
 
 # Increasing resolution on `batter == 425509' =======
 
-# load("~/Desktop/ResearchRepo/varyres/data/hitter.rda")
-# source('~/Desktop/ResearchRepo/varyres/R/var_res.R')
-# source('~/Desktop/ResearchRepo/varyres/R/mapit.R')
-dat <- varyres(hitter, cutoff = 0)
+load("~/Desktop/ResearchRepo/varyres/data/hitter.rda")
+source('~/Desktop/ResearchRepo/varyres/R/var_res.R')
+source('~/Desktop/ResearchRepo/varyres/R/mapit.R')
+dat <- varyres(hitter, cutoff = 200)
 
+# Scatter plot
+# ggplot(data = hitter, aes(x, y)) + geom_point(alpha = 0.3, size = 0.3) + coord_equal() + labs(title = "Scatter Plot", x = "", y = "") + theme(plot.title = element_text(hjust = 0.5, size = 35)) 
 
-A <- mapit(dat[[1]]) + spec_fcn() + text_fcn(12)
+mapit(dat[[5]]) + spec_fcn() + labs(title = "Variable-Resolution Heat Map", x = "", y = "") + theme(plot.title = element_text(hjust = 0.5, size = 35))
+# ggsave("/Users/ABC/Desktop/ResearchRepo/Images/density.jpg", height = 8.5, width = 8.5)
+
 B <- mapit(dat[[2]]) + spec_fcn() + text_fcn(10)
 C <- mapit(dat[[3]]) + spec_fcn() + text_fcn(10)
 D <- mapit(dat[[4]]) + spec_fcn() + text_fcn(8)
 E <- mapit(dat[[5]]) + spec_fcn() + text_fcn(6)
 F_<- mapit(dat[[6]]) + spec_fcn() + text_fcn(4)
 
-# ggsave("/Users/ABC/Desktop/ResearchRepo/Images/Chapter16x16.jpg", height = 8.5, width = 8.5)
+
 
 g <- grid.arrange(A, B, C, D, E, F_, ncol = 3)
 ggsave("/Users/ABC/Desktop/ResearchRepo/Images/Chapter_VarRes.jpg", g, height = 2*8.5, width = 3*8.5)
