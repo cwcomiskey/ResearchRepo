@@ -103,13 +103,13 @@ In VR heat maps, regions of greater observation density have smaller boxes, and 
       	\centering
       	\includegraphics[scale=.07]{Images/density.jpg}
       	\includegraphics[scale=.07]{Images/density_comp.jpg} 
-      	\caption{A variable-resolution heat maps convey data density. Comparing Jhonny Peralta's scatter plot and variable-resolution heat map shows the correspondence between data density and box size. The finer resolution regions in the heat map correspond to greater data density, whereas bigger boxes indicate lower density. Traditional heat maps omit this information.}
+      	\caption{Variable-resolution (VR) heat maps convey data density. Comparing Jhonny Peralta's scatter plot and VR heat map shows the correspondence between data density and box size. The finer resolution regions in the heat map correspond to greater data density, whereas bigger boxes indicate lower density. Traditional heat maps omit this information.}
       	\end{figure}
-Notice how smaller boxes correspond to higher data density, while larger boxes indicate lower density. This contrasts favorably to traditional heat maps, where uniform resolution conceals data density. VR heat maps convey valuable, previously omitted data density information to the viewer. 
+Notice how smaller boxes correspond to higher data density, while larger boxes indicate lower density. This contrasts favorably to traditional heat maps, where uniform resolution conceals data density. VR heat maps convey valuable, previously omitted, data density information to the viewer. 
       	
-\subsection{Stopping Rule Example} % ===================
+\subsection{Example: Alternate Stopping Rule} % ===================
       	
-In this section we apply the VR algorithm to the same data, but with stopping rule $n_{b} < 100$, to show how the procedure and outcome differs. Figure 1.9 shows heat maps for all six VR iterations.
+In this section we apply the VR algorithm to the same data, but with stopping rule $n_{b} < 100$ instead of $n_{b} < 200$. A comparison with the previous VR maps shows how the algorithm's iterations and outcome change with a different stopping rule. Figure 1.9 shows heat maps for all six VR iterations.
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.05]{Images/Chapter1x1.jpg}
@@ -118,16 +118,17 @@ In this section we apply the VR algorithm to the same data, but with stopping ru
       	\includegraphics[scale=.05]{Images/Chapter8x8_100.jpg}
       	\includegraphics[scale=.05]{Images/Chapter16x16_100.jpg}
       	\includegraphics[scale=.05]{Images/Chapter32x32_100.jpg}
-      	\caption{A variable-resolution heat map sequence. Starting from the top left, the algorithm subdivides all boxes with a sample size (printed on box) greater than 100. The maps convey Jhonny Peralta's empirical success probability by mapping $\hat{p}_{b}$ to a color.}
+      	\caption{A variable-resolution heat map sequence. Starting from the top left and moving across, the algorithm subdivides all boxes with a sample size (printed on box) greater than 100. The maps convey Jhonny Peralta's empirical success probability by mapping $\hat{p}_{b}$ to a color.}
 \end{figure} 	
-Compare Figure 1.9 for stopping rule $n_{b} < 100$, to Figure 1.8 for stopping rule $n_{b} < 200$; the top rows match exactly. However, notice Box 158 and Box 102 in the $4 \times 4$ heat map; both boxes have sample sizes {\it between} the two stopping rules. Based on this fact, we see diverging paths, where one stopping rule prevents further subdivision, while the other compels it. Figure 1.10 shows the subsequent map for each stopping rule.
+
+Compare Figure 1.9 for stopping rule $n_{b} < 100$, to Figure 1.7 for stopping rule $n_{b} < 200$; the first three maps in each sequence match exactly. However, notice the resolution toward the center of the last heat map increased beyond what we saw before with $n_{b} < 200$ maps. For baseball data this resolution increase may lack justification, but the cutoff component of the algorithm offers the flexibility to make that assessment and choose accordingly. Also, notice Box 158 and Box 102 in the $4 \times 4$ heat map; both boxes have sample sizes {\it between} the two stopping rules. Because of this fact, we see diverging paths, where one stopping rule prevents further subdivision of those boxes, while the other compels it. Figure 1.10 shows the subsequent map for each stopping rule, with $n_{b} < 200$ on the left, and $n_{b} < 100$ on the right.
         \begin{figure}[H]
       	\centering      
       	\includegraphics[scale=.05]{Images/Chapter8x8_200.jpg}
       	\includegraphics[scale=.05]{Images/Chapter8x8_100.jpg}
       	\caption{Variable-resolution heat maps diverge when box totals fall between sample size stopping rules. Boxes 158 and 102 remain for stopping rule $n_{b} < 200$ (left), but further subdivide for stopping rule $n_{b} < 100$ (right).}
 \end{figure} 
-As expected, the heat maps now differ in the number of boxes of each size, and the total number of boxes. The differences increase at the next iteration, where stopping rule $n_{b} < 100$ yields 28 box subdivisions (Figure 1.9); and $n_{b} < 200$ yields 16 box subdivisions (Figure 1.8). Figure 1.11 shows two corresponding iterations for these two stopping rules; $n_{b} < 100$ in the top row, and $n_{b} < 200$ in the bottom row.
+The ``$n_{b} < 100$'' map now offers more spatial specificity at the former locations of Box 102 and Box 152. The heat maps also now differ in the number of boxes of each size, and the total number of boxes.  The differences increase at the next iteration, where stopping rule $n_{b} < 100$ produces 28 box subdivisions (Figure 1.9); and $n_{b} < 200$ produces 16 box subdivisions (Figure 1.8). Figure 1.11 shows two corresponding iterations for these two stopping rules with $n_{b} < 100$ in the top row, and $n_{b} < 200$ in the bottom row.
         \begin{figure}[H]
       	\centering      
       	\includegraphics[scale=.05]{Images/Chapter4x4.jpg}
@@ -136,38 +137,38 @@ As expected, the heat maps now differ in the number of boxes of each size, and t
       	\includegraphics[scale=.05]{Images/Chapter4x4.jpg}
       	\includegraphics[scale=.05]{Images/Chapter8x8_100.jpg}
       	\includegraphics[scale=.05]{Images/Chapter16x16_100.jpg}
-      	\caption{Variable-resolution heat maps diverge when box totals fall between sample size stopping rules. The top row of maps subdivides according to stopping rule $n_{b} < 200$; the bottom row further subdivides for stopping rule $n_{b} < 100$. The maps match through three iterations, the last of which we see first in each row. However, the next two iterations produce different maps.}
+      	\caption{Variable-resolution heat maps diverge when box totals fall between sample size stopping rules. The top row of maps subdivides according to stopping rule $n_{b} < 200$; the bottom row further subdivides for stopping rule $n_{b} < 100$. The first three iterations produce identical maps, but then the sequences diverge as shown here.}
 \end{figure}
 For both stopping rules, notice how corner boxes tend to remain intact. This indicates Peralta swings less often at pitches in the strike zone corners, and/or less often sees such pitches. In the next section we delve into the possible reasons for this pattern, and others, in a baseball context.
 
-\subsection{Variable-Resolution Interpretation: Hitter vs. Pitcher} % ===================== =======
-In this section we interpret, in a baseball context, features of our preferred Jhonny Peralta VR heat map. First, we describe basic hitter vs pitcher strategy as context for interpretations. 
+\subsection{Interpretation: Hitter vs. Pitcher} % ==================
 
-\subsubsection{Context}
-At a basic level, the pitcher wants to get outs and avoid baserunners; and the hitter wants to avoid outs and get on base. Our statistical analysis focuses on pitch location, so we also focus on interpreting  pitch locations. Pitch locations necessarily include two perspectives; the pitcher's decision to throw there, and the hitter's decision to swing. We look at two primary factors that influence the location of pitches that a hitter chooses to swing at: game theoretic strategy, and pitch location error. 
+All-Star first basebman Keith Hernandez said the ``battle of wits... between the pitcher and hitter is baseball. Everything else is secondary.'' At the most basic level, the pitcher wants to get outs and avoid baserunners; and the hitter wants to avoid outs and get on base. There are two sides to every pitch's location: the pitcher's decision to throw there, and the hitter's decision to swing. In this section we look at two primary factors that influence these decisions in the battle of wits: game theoretic strategy, and pitch location execution error; and then use them to interpret a Peralta VR heat map.
 
-First, game theory. Game theoretic strategy concerns the pitcher's knowledge of the hitter's strengths and weaknesses, and the hitter's reciprocal knowledge. For example, a pitcher prefers to avoid throwing pitches to the locations a hitter succeeds with the highest probability. In turn, the hitter would like to avoid swinging at pitches in locations he succeeds with relatively low probability.
+\subsubsection*{Background}
 
-Second, pitch location error. Pitchers aim for the catcher's carefully positioned glove, but only rarely hit it perfectly. More commonly the catcher moves his glove some distance to catch the pitch.  Analysis of this distance is impossible, because PITCHf/x\textsuperscript{\textregistered} data does not record the catcher's initial glove location. Therefore, without data to suggest otherwise, based on this author's own experience playing and watching baseball, for this discussion we pragmatically assume Normally distributed pitch location error, with $\mu = 0$ and $\sigma = 5$ inches, independently in the horizontal and vertical directions. 
+Game theoretic strategy concerns the pitcher's knowledge of the hitter's strengths and weaknesses, and the hitter's reciprocal knowledge. For example, a pitcher prefers to avoid throwing pitches to the locations a hitter succeeds with the highest probability. In turn, the hitter would like to avoid swinging at pitches in locations he succeeds with relatively low probability.
 
-% Third, game states. The game state includes the count (number of balls and strikes), the number of outs, and baserunner presence/absence on each of the three bases. The level of each variable, sometimes in combination with one another, influences strategy. For example, the penalty for throwing a pitch outside the strike zone---a ``ball''---increases with each additional ball in an at bat; the hitter automatically reaches base (his goal) on the fourth ball. Our data includes pitches from all game states, so we omit game states from our interpretive toolbox. Instead, we focus on game theory and pitch location error rationale. 
+Pitch location execution error refers to the fact that pitchers aim for the catcher's carefully positioned glove, but only rarely hit it exactly. More commonly the catcher moves his glove some distance to catch the pitch.  Analysis of this distance is impossible, because PITCHf/x\textsuperscript{\textregistered} data does not record the catcher's initial glove location. Therefore, without data to suggest otherwise, based on this author's own experience playing and watching baseball, for this discussion we pragmatically assume Normally distributed pitch location error, with $\mu = 0$ and $\sigma = 5$ inches, independently in the horizontal and vertical directions. 
+\subsubsection*{Interpretation}
 
-\subsubsection{Interpretation}
-In this section we use game theory and pitch location error to interpret four aspects of a Peralta VR heat map. Figure 1.12 shows Peralta's VR heat map for stopping rule $n_{b} < 200$.
+Now we use game theory and pitch location error to interpret aspects of a Peralta VR heat map. Figure 1.12 shows Peralta's VR heat map for stopping rule $n_{b} < 200$.
         \begin{figure}[H]
       	\centering      
       	\includegraphics[scale=.1]{Images/Peralta_var-res.jpg}
       	\caption{This variable-resolution heat map for Jhonny Peralta gives spatial, empirical success probabilities; each box maps $\hat{b}_{b}$ to a color. In addition, the map conveys data density information; box size corresponds to the observation density, because subdivision persisted until box sample sizes dropped below 200.}
         \end{figure}
-First, notice the grid boxes inside the dotted blue strike zone box tend to be smaller; this indicates Peralta generally saw and swung at far more pitches in the strike zone than out. Pitchers throw pitches in the strike zone because each strike moves the at bat one step closer to an out; and each ball moves the at bat one step closer to a walk, where hitter proceeds to first base. The same logic, with reversed incentives, explains why Peralta swings at so many pitches in the strike zone. 
+First, notice the grid boxes inside the dotted blue strike zone box tend to be smaller; this indicates Peralta generally saw and swung at far more pitches in the strike zone than out.\footnote{Please see the Appendix for the details and defintions of ball, strike, count, etc.} Pitchers throw pitches in the strike zone because each strike moves the at bat one step closer to an out; and each ball moves the at bat one step closer to a walk, where hitter proceeds to first base. The same logic, with reversed incentives, explains why Peralta swings at so many pitches in the strike zone. 
 
 Second, notice the larger boxes in the lower left, upper left, and upper right of the strike zone. The larger boxes imply Peralta saw and/or swung at fewer pitches in these locations. To explain, consider a pitch aimed for the bottom left of the strike zone. Using the pitch location error distribution we assumed, aiming for this box yields a ball approximately 3/4 of the time, a result in the hitter's favor. From the hitter's perspective, these corner pitches are relatively difficult to hit, so Peralta presumably avoids swinging at them when possible. These two strategic considerations combined help explain low observation density in these locations.
 
-Third, Peralta seems to have more success in the vertical the center of the strike zone, than at the top or bottom. This indicates Peralta deals with horizontal variation better than vertical variation---an actionable insight! Peralta will therefore swing at pitches in the middle of the strike zone almost every chance he gets, so why did pitchers not avoid those locations? They probably tried! However, aiming for the middle of the strike offers the highest probability of a strike; missing the target by two standard deviations in any direction still yields a strike. In addition, some pitches aimed toward the margins of the strike miss their target and unintentionally pass through the middle of the strike zone. 
+Third, Peralta seems to have more success in the horizontal center of the strike zone, than at the top or bottom. This indicates Peralta deals with horizontal variation better than vertical variation---an actionable insight. Since Peralta swings at pitches in the middle of the strike zone almost every chance he gets, why do pitchers not avoid those locations? They probably tried. However, aiming for the middle of the strike offers the highest probability of a strike; missing the target by two standard deviations in any direction still yields a strike. In addition, some pitches aimed toward the margins of the strike miss their target and unintentionally pass through the middle of the strike zone. 
 
-Finally, of the four corner locations just outside the strike zone, Peralta enjoyed the most success low and inside, with $\hat{p}_{b} = 0.10$. However, the size of this box indicates a relatively small sample size; Peralta astutely swings at these challenging pitches infrequently. On the other hand, pitchers may throw there infrequently because of the relatively greater risk: they are less likely to induce swings, and a non-swing moves the at bat one step closer to a baserunner. 
+Finally, of the four corner locations just outside the strike zone, Peralta enjoyed the most success in the lower-left (yellow) box, with $\hat{p}_{b} = 0.10$. However, the size of this box indicates a relatively small sample size; either Peralta astutely swings at these challenging pitches infrequently, or pitchers may throw there infrequently because of the relatively greater risk: they less commonly induce swings, and non-swings move the at bat one step closer to a baserunner. 
 
-\section{Tornado Example}
+VR heat maps also work well in other areas of application. In the next section we give an example of VR maps for spatial tornado data.
+
+\section{Example: Tornado Intensity}
 
 The National Weather Service, a division of the National Oceanic and Atmospheric Administration (NOAA), maintains seven National Centers for Environmental Protection. One of these, the Storm Prediction Center (SPC), collects tornado data, and provides it to the public at their website \citep{NOAA}. In this section we use some of SPC's spatial tornado data, collected between 1950 and 2017, to show VR heat maps in another area of application. 
 
@@ -187,3 +188,5 @@ The VR algorithm iterations, shown in Figure 2.14, show how the VR map evolves t
       	\includegraphics[scale=.06]{Images/tornado_maps.jpg}
       	\caption{Variable-resolution (VR) algorithm iterations. The box colors represent average tornado F-Scale intensity, and the sequence shows the VR heat map evolution. Subdivision persists until box sample sizes drop below 50 (in this case) tornadoes in each box.}
         \end{figure}
+        
+        % Third, game states. The game state includes the count (number of balls and strikes), the number of outs, and baserunner presence/absence on each of the three bases. The level of each variable, sometimes in combination with one another, influences strategy. For example, the penalty for throwing a pitch outside the strike zone---a ``ball''---increases with each additional ball in an at bat; the hitter automatically reaches base (his goal) on the fourth ball. Our data includes pitches from all game states, so we omit game states from our interpretive toolbox. Instead, we focus on game theory and pitch location error rationale.
