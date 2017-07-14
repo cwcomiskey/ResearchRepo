@@ -28,7 +28,7 @@ The graphic efficiently conveys spatial empirical success probabilities by mappi
 
 By the time a viewer sees an empirical heat map, the analyst behind the graphic already chose a resolution. This important choice determines a uniform grid box size for the entire heat map, which influences its quality and appearance considerably. To understand this influence, consider histograms, where bin width selection similarly affects histogram appearance and function considerably. Small boxes may yield unreliable estimates at some locations, while larger boxes may fail to convey desired spatial specificity. 
 
-Along these lines, note that heat maps conceal spatially varying data density. For example, the map in Figure 1.1 gives no indication of the density of observations in different regions of the hitting zone. In this way, empirical heat maps also conceal sample sizes and estimate variances.  
+Along these lines, note that heat maps conceal spatially varying data density. For example, the map in Figure 2.1 gives no indication of the density of observations in different regions of the hitting zone. In this way, empirical heat maps also conceal sample sizes and estimate variances.  
 
 With these points in mind, consider again the heat map in Figure 2.1. That heat map divides the hitting zone into relatively small boxes, because the data supports it; approximately 1.5 million swings by almost 2000 hitters. By ``supports it'' we mean that the small, spatially specific boxes at this resolution retain sample sizes large enough to supply reasonable estimates of $p_{b}$. ``Reasonable,'' of course, depends on context and objectives. For example, a pitching coach might request estimates within 0.005 points of the true batting average with probability 0.95. This requires a sample size of at least 36 when $p_{b} = 0.10$.\footnote{$\text{Var}(\hat{p}_{b})$ depends on $p_{b}$ This creates counterintuitive behavior around the margins of the hitting zone, where $\text{Var}(\hat{p}_{b})$ remains very small despite very small box sample sizes. See \cite{Dixon2005} for a discussion of this curious phenomenon.}
 
@@ -38,14 +38,14 @@ This important resolution decision usually depends on the size and nature of the
 
 \subsection{Resolution Selection}
 
-In this section we use batter 425509, a veteran player named Jhonny Peralta, to explore resolution selection and its implications. The data includes 9,177 Peralta swings, which yields the heat map in Figure 1.2. This map resolution divides the hitting zone into 16 equally sized boxes. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers. We will use box sample sizes to reference boxes. For example, we will call the box in the lower-left ``box 22.'' 
+In this section we use batter 425509, a veteran player named Jhonny Peralta, to explore resolution selection and its implications. The data includes 9,177 Peralta swings, which yields the heat map in Figure 2.2. This map resolution divides the hitting zone into 16 equally sized boxes. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers. We will use box sample sizes to reference boxes. For example, we will call the box in the lower-left ``box 22.'' 
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.1]{Images/Chapter4x4.jpg} 
       	\caption{This four by four heat map shows the empirical batting average of Jhonny Peralta, for pitches passing through the space represented by each of 16 square regions of the hitting zone. Each box maps $\hat{p}_{b}$ to a color, with box sample sizes, $n_{b}$, printed on box centers.}
       	\end{figure} 
 
-Notice that while the four by four resolution suffices for box 22, further subdivision might yield trivially small sample sizes. On the other hand, the four central boxes, all with sample sizes above 1200, can and should contribute more location-specific estimates. Therefore, the central boxes motivate finer resolution, even though box 22 does not support it. Keeping this trade-off in mind, we increase resolution by dividing each box into four equally sized sub-boxes. Figure 1.3 shows the $8 \times 8$ resolution result.
+Notice that while the four by four resolution suffices for box 22, further subdivision might yield trivially small sample sizes. On the other hand, the four central boxes, all with sample sizes above 1200, can and should contribute more location-specific estimates. Therefore, the central boxes motivate finer resolution, even though box 22 does not support it. Keeping this trade-off in mind, we increase resolution by dividing each box into four equally sized sub-boxes. Figure 2.3 shows the $8 \times 8$ resolution result.
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.1]{Images/Chapter8x8.jpg} 
@@ -53,7 +53,7 @@ Notice that while the four by four resolution suffices for box 22, further subdi
       	\end{figure} 
 The centermost 16 boxes still support low variance $p$ estimates; the minimum of these boxes contains 184 swings. Globally, 24 boxes consist of over 150 swings; and 15 boxes still include more than than 250 swings. These boxes could support higher resolution. On the other hand, many boxes, especially edge boxes, now contain sample sizes generally insufficient to support low variance estimates of $p_{b}$. Twenty-nine boxes contain fewer than 50 swings, and 17 boxes contain fewer than 20 swings. One box recorded zero swings.
 
-With this range of box sample sizes, the non-extreme resolution choices contain both boxes with exceedingly small sample sizes {\it and} boxes with unnecessarily large sample sizes. Figure 1.4 shows Peralta's data---the same data---at six resolutions. 
+With this range of box sample sizes, the non-extreme resolution choices contain both boxes with exceedingly small sample sizes {\it and} boxes with unnecessarily large sample sizes. Figure 2.4 shows Peralta's data---the same data---at six resolutions. 
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.055]{Images/Chapter_VarRes.jpg} 
@@ -61,15 +61,15 @@ With this range of box sample sizes, the non-extreme resolution choices contain 
       	\end{figure} 
 We started with one box, and then subdivided each box into four equally-sized, smaller boxes at each iteration. Which of these six resolutions best balances spatially precise estimates of $p$ with acceptable box sample sizes? The user interested in the center of the strike zone might prefer the bottom-middle map, as the box sample sizes support such spatially specific estimates. However, the boxes closer to the edges of the strike zone then contain prohibitively small sample sizes, yielding higher variance estimates. 
 
-The takeaway from Figure 1.4: all six resolutions involve trade-offs. We propose a new heat map approach that eliminates trade-offs. The solution combines multiple resolutions into one map, according to the data's varying spatial density.
+The takeaway from Figure 2.4: all six resolutions involve trade-offs. We propose a new heat map approach that eliminates trade-offs. The solution combines multiple resolutions into one map, according to the data's varying spatial density.
 
 \section{Variable-Resolution Heat Maps} 
 
 \subsection{The Varying Resolution Solution}
 
-Consider again the Peralta $4 \times 4$ heat map in Figure 1.2. Recall box 22 contains 22 swings, a sample size where subdividing further yields uninformatively small sample sizes. In contrast, box 1694 would support estimates that are more spatially accurate without $\text{Var}(\hat{p}_{b})$ increasing beyond acceptable levels. To resolve this problem, we propose deciding resolution increases algorithmically, box by box, with a stopping rule; we christen it the variable-resolution (VR) algorithm. The map's author chooses a stopping rule, giving him/her the flexibility to create the heat map that suits the data. 
+Consider again the Peralta $4 \times 4$ heat map in Figure 2.2. Recall box 22 contains 22 swings, a sample size where subdividing further yields uninformatively small sample sizes. In contrast, box 1694 would support estimates that are more spatially accurate without $\text{Var}(\hat{p}_{b})$ increasing beyond acceptable levels. To resolve this problem, we propose deciding resolution increases algorithmically, box by box, with a stopping rule; we christen it the variable-resolution (VR) algorithm. The map's author chooses a stopping rule, giving him/her the flexibility to create the heat map that suits the data. 
 
-To demonstrate one iteration in the VR algorithm, let the stopping rule be a maximum box sample size of 200, and recall the $4 \times 4$ map in Figure 1.2 (Figure 2.6, left). On this map we divide all boxes where $n_{b} > 200$, into four smaller, equally sized boxes. Figure 1.5 shows the map before and after. Moving through all boxes of the map to the left, subdividing when $n_{b} > 200$, yields the heat map to the right.
+To demonstrate one iteration in the VR algorithm, let the stopping rule be a maximum box sample size of 200, and recall the $4 \times 4$ map in Figure 2.2 (Figure 2.6, left). On this map we divide all boxes where $n_{b} > 200$, into four smaller, equally sized boxes. Figure 2.5 shows the map before and after. Moving through all boxes of the map to the left, subdividing when $n_{b} > 200$, yields the heat map to the right.
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.08]{Images/Chapter4x4.jpg} 
@@ -85,7 +85,7 @@ The algorithm subdivides all boxes that have more than 200 observations, yieldin
       	\end{figure}
 The new iteration yields the map on the right from the middle map. The new map consists of 97 boxes, with a mean box sample size of 94.57, and median of 94. Box 9 contains the fewest observations, and box 189 contains the most. Box 63 serves as the first quartile, while box 125 serves as the third quartile. 
 
-Figure 1.7 shows the VR heat map for every iteration, for stopping rule $n_{b} < 200$.
+Figure 2.7 shows the VR heat map for every iteration, for stopping rule $n_{b} < 200$.
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=0.05]{Images/Chapter1x1.jpg}
@@ -98,7 +98,7 @@ Figure 1.7 shows the VR heat map for every iteration, for stopping rule $n_{b} <
       	
 \subsection{Data Density Information}
 
-In VR heat maps, regions of greater observation density have smaller boxes, and thus more spatially specific estimates. In this way the size of the box conveys density information, which heat maps typically conceal. This new feature derives from the fact that box subdivisions persist until box sample sizes drop below 200 (in this map). Figure 1.8 demonstrates the correspondence between observation density and box size, by comparing a scatterplot to a VR heat map. 
+In VR heat maps, regions of greater observation density have smaller boxes, and thus more spatially specific estimates. In this way the size of the box conveys density information, which heat maps typically conceal. This new feature derives from the fact that box subdivisions persist until box sample sizes drop below 200 (in this map). Figure 2.8 demonstrates the correspondence between observation density and box size, by comparing a scatterplot to a VR heat map. 
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.07]{Images/density.jpg}
@@ -109,7 +109,7 @@ Notice how smaller boxes correspond to higher data density, while larger boxes i
       	
 \subsection{Example: Alternate Stopping Rule} % ===================
       	
-In this section we apply the VR algorithm to the same data, but with stopping rule $n_{b} < 100$ instead of $n_{b} < 200$. A comparison with the previous VR maps shows how the algorithm's iterations and outcome change with a different stopping rule. Figure 1.9 shows heat maps for all six VR iterations.
+In this section we apply the VR algorithm to the same data, but with stopping rule $n_{b} < 100$ instead of $n_{b} < 200$. A comparison with the previous VR maps shows how the algorithm's iterations and outcome change with a different stopping rule. Figure 2.9 shows heat maps for all six VR iterations.
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.05]{Images/Chapter1x1.jpg}
@@ -121,14 +121,14 @@ In this section we apply the VR algorithm to the same data, but with stopping ru
       	\caption{A variable-resolution heat map sequence. Starting from the top left and moving across, the algorithm subdivides all boxes with a sample size (printed on box) greater than 100. The maps convey Jhonny Peralta's empirical success probability by mapping $\hat{p}_{b}$ to a color.}
 \end{figure} 	
 
-Compare Figure 1.9 for stopping rule $n_{b} < 100$, to Figure 1.7 for stopping rule $n_{b} < 200$; the first three maps in each sequence match exactly. However, notice the resolution toward the center of the last heat map increased beyond what we saw before with $n_{b} < 200$ maps. For baseball data this resolution increase may lack justification, but the cutoff component of the algorithm offers the flexibility to make that assessment and choose accordingly. Also, notice Box 158 and Box 102 in the $4 \times 4$ heat map; both boxes have sample sizes {\it between} the two stopping rules. Because of this fact, we see diverging paths, where one stopping rule prevents further subdivision of those boxes, while the other compels it. Figure 1.10 shows the subsequent map for each stopping rule, with $n_{b} < 200$ on the left, and $n_{b} < 100$ on the right.
+Compare Figure 2.9 for stopping rule $n_{b} < 100$, to Figure 2.7 for stopping rule $n_{b} < 200$; the first three maps in each sequence match exactly. However, notice the resolution toward the center of the last heat map increased beyond what we saw before with $n_{b} < 200$ maps. For baseball data this resolution increase may lack justification, but the cutoff component of the algorithm offers the flexibility to make that assessment and choose accordingly. Also, notice Box 158 and Box 102 in the $4 \times 4$ heat map; both boxes have sample sizes {\it between} the two stopping rules. Because of this fact, we see diverging paths, where one stopping rule prevents further subdivision of those boxes, while the other compels it. Figure 2.10 shows the subsequent map for each stopping rule, with $n_{b} < 200$ on the left, and $n_{b} < 100$ on the right.
         \begin{figure}[H]
       	\centering      
       	\includegraphics[scale=.05]{Images/Chapter8x8_200.jpg}
       	\includegraphics[scale=.05]{Images/Chapter8x8_100.jpg}
       	\caption{Variable-resolution heat maps diverge when box totals fall between sample size stopping rules. Boxes 158 and 102 remain for stopping rule $n_{b} < 200$ (left), but further subdivide for stopping rule $n_{b} < 100$ (right).}
 \end{figure} 
-The ``$n_{b} < 100$'' map now offers more spatial specificity at the former locations of Box 102 and Box 152. The heat maps also now differ in the number of boxes of each size, and the total number of boxes.  The differences increase at the next iteration, where stopping rule $n_{b} < 100$ produces 28 box subdivisions (Figure 1.9); and $n_{b} < 200$ produces 16 box subdivisions (Figure 1.8). Figure 1.11 shows two corresponding iterations for these two stopping rules with $n_{b} < 100$ in the top row, and $n_{b} < 200$ in the bottom row.
+The ``$n_{b} < 100$'' map now offers more spatial specificity at the former locations of Box 102 and Box 152. The heat maps also now differ in the number of boxes of each size, and the total number of boxes.  The differences increase at the next iteration, where stopping rule $n_{b} < 100$ produces 28 box subdivisions (Figure 2.9); and $n_{b} < 200$ produces 16 box subdivisions (Figure 2.8). Figure 2.11 shows two corresponding iterations for these two stopping rules with $n_{b} < 100$ in the top row, and $n_{b} < 200$ in the bottom row.
         \begin{figure}[H]
       	\centering      
       	\includegraphics[scale=.05]{Images/Chapter4x4.jpg}
@@ -152,7 +152,7 @@ Game theoretic strategy concerns the pitcher's knowledge of the hitter's strengt
 Pitch location execution error refers to the fact that pitchers aim for the catcher's carefully positioned glove, but only rarely hit it exactly. More commonly the catcher moves his glove some distance to catch the pitch.  Analysis of this distance is impossible, because PITCHf/x\textsuperscript{\textregistered} data does not record the catcher's initial glove location. Therefore, without data to suggest otherwise, based on this author's own experience playing and watching baseball, for this discussion we pragmatically assume Normally distributed pitch location error, with $\mu = 0$ and $\sigma = 5$ inches, independently in the horizontal and vertical directions. 
 \subsubsection*{Interpretation}
 
-Now we use game theory and pitch location error to interpret aspects of a Peralta VR heat map. Figure 1.12 shows Peralta's VR heat map for stopping rule $n_{b} < 200$.
+Now we use game theory and pitch location error to interpret aspects of a Peralta VR heat map. Figure 2.12 shows Peralta's VR heat map for stopping rule $n_{b} < 200$.
         \begin{figure}[H]
       	\centering      
       	\includegraphics[scale=.1]{Images/Peralta_var-res.jpg}
@@ -166,27 +166,32 @@ Third, Peralta seems to have more success in the horizontal center of the strike
 
 Finally, of the four corner locations just outside the strike zone, Peralta enjoyed the most success in the lower-left (yellow) box, with $\hat{p}_{b} = 0.10$. However, the size of this box indicates a relatively small sample size; either Peralta astutely swings at these challenging pitches infrequently, or pitchers may throw there infrequently because of the relatively greater risk: they less commonly induce swings, and non-swings move the at bat one step closer to a baserunner. 
 
-VR heat maps also work well in other areas of application. In the next section we give an example of VR maps for spatial tornado data.
+VR heat maps also work well with other geostatistical data. In the next section we give an example of VR maps with marked point pattern data \citep{Schabenberger2004}.
 
 \section{Example: Tornado Intensity}
 
-The National Weather Service, a division of the National Oceanic and Atmospheric Administration (NOAA), maintains seven National Centers for Environmental Protection. One of these, the Storm Prediction Center (SPC), collects tornado data, and provides it to the public at their website \citep{NOAA}. In this section we use some of SPC's spatial tornado data, collected between 1950 and 2017, to show VR heat maps in another area of application. 
+\subsection{Background}
 
-The data set we use includes the longitude, latitude, and F-Scale rating for approximately 30,000 tornadoes in the last 67 years. The VR heat map in Figure 2.14, created with stopping rule $n_{b} < 50$, shows the spatial average intensity and density of tornadoes.
+The National Weather Service, a division of the National Oceanic and Atmospheric Administration (NOAA), maintains seven National Centers for Environmental Protection. One of these, the Storm Prediction Center (SPC), collects tornado data, and provides it to the public at their website \citep{NOAA}. In this section we use SPC spatial tornado data, collected between 1950 and 2017, to show VR heat maps in another area of application. 
+
+Meteorologists rate tornado intensity on the Fujita-scale (F-Scale), based primarily on tornado damage. The marked point pattern data set we use includes the longitude, latitude, and F-Scale rating for approximately 30,000 tornadoes in the last 67 years. Ordinarily this data would make resolution selection difficult, because tornado frequency varies greatly across the U.S. Low resolution appropriate for the Western U.S. would fail to convey available detail in the Midwest and West South Central division of the Southern U.S. \citep{regions}. High resolution appropriate for the latter regions would lead to sparsely populated grid boxes in the Western U.S. A VR heat map circumvents this challenge, and at the same time conveys the varying tornado frequency. 
+
+\subsection{Variable-Resolution Map}
+
+The VR heat map in Figure 2.14, created with stopping rule $n_{b} < 50$, shows the spatial average intensity, and relative frequency, of tornadoes.
         \begin{figure}[H]
       	\centering      
       	\includegraphics[scale=.14]{Images/vr_tornados.jpg}
-      	\caption{This variable-resolution heat map shows tornado F-Scale intensity and density across the U.S. Each box maps average intensity to a color. Smaller (larger) boxes corresponds to higher (lower) observation density, because subdivision persisted until box sample sizes dropped below 50 tornadoes.}
+      	\caption{This variable-resolution heat map shows tornado F-Scale intensity and frequency across the U.S. Each box maps average intensity to a color. Smaller (larger) boxes corresponds to higher (lower) observation density, because subdivision persisted until box sample sizes dropped below 50 tornadoes.}
         \end{figure}
-Notice how the variable-resolution map conveys data density through grid box size, and seems to divide the country into three vertical regions. To the East of $-80^{\circ}$ West, medium-sized, largely green boxes indicate moderate tornado frequency and intensity. Between approximately $-80^{\circ}$ West and $-100^{\circ}$ West, tornado intensity and frequency increases, revealed by smaller, largely yellow boxes. Finally, moving further West, bigger, predominantly blue boxes indicate less common and less intense tornados than either of the previous two longitudinal ranges.
+Notice how the variable-resolution map conveys tornado frequency through grid box size, and seems to divide the country into three vertical regions. To the East of $-80^{\circ}$ West, medium-sized, largely green boxes indicate moderate tornado frequency and intensity. Between approximately $-80^{\circ}$ West and $-100^{\circ}$ West, tornado intensity and frequency increases, indicated by smaller, largely yellow boxes. Finally, moving further West, bigger, predominantly blue boxes indicate less frequent and less intense tornados than either of the previous two longitudinal ranges. The map performs well in these ways, but produces at least one peculiarity.
 
-Notice how some grid boxes remain unnecessarily large, and awkwardly shaped relative to the U.S. borders. For example, a large horizontal rectangle overlaps Maine, in the North-eastern most corner of the U.S. This phenomenon occurs when an early subdivision leaves a protruding quadrant with at least one observation, but fewer than the cutoff; and the early iteration box size endures. This pattern occurred with boxes that protrude from, and partially overlap New Jersey, Southern Florida, Southern Texas, and Southern California. However, the size of these odd boxes does still indicate very low observation density, alerting the audience of the circumstance. Modifications to the algorithm---subdividing edge boxes with this quality---would eliminate this quirk.
+\subsection{Room for Improvement}
 
-The VR algorithm iterations, shown in Figure 2.14, show how the VR map evolves to its final form.
+Notice how some grid boxes remain unnecessarily large, and awkwardly shaped relative to the U.S. borders. For example, a large horizontal rectangle overlaps Maine, in the North-eastern most corner of the U.S. This phenomenon occurs when an early iteration subdivision leaves a protruding quadrant with at least one observation, but fewer than the cutoff. The VR algorithm iterations in Figure 2.14 show how the VR map evolves to its final form, but retains protruding boxes.
         \begin{figure}[H]
       	\centering      
       	\includegraphics[scale=.06]{Images/tornado_maps.jpg}
       	\caption{Variable-resolution (VR) algorithm iterations. The box colors represent average tornado F-Scale intensity, and the sequence shows the VR heat map evolution. Subdivision persists until box sample sizes drop below 50 (in this case) tornadoes in each box.}
         \end{figure}
-        
-        % Third, game states. The game state includes the count (number of balls and strikes), the number of outs, and baserunner presence/absence on each of the three bases. The level of each variable, sometimes in combination with one another, influences strategy. For example, the penalty for throwing a pitch outside the strike zone---a ``ball''---increases with each additional ball in an at bat; the hitter automatically reaches base (his goal) on the fourth ball. Our data includes pitches from all game states, so we omit game states from our interpretive toolbox. Instead, we focus on game theory and pitch location error rationale.
+The protruding box pattern occurred with boxes that protrude from, and partially overlap New Jersey, Southern Florida, Southern Texas, and Southern California. However, the size of these odd boxes does still indicate very low observation density, alerting the audience of the circumstance. Modifications to the algorithm---subdividing edge boxes with this quality---would eliminate this quirk.
