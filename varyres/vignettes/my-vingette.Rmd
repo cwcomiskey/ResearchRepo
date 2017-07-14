@@ -1,5 +1,5 @@
 ---
-title: "Variable-resolution Heat Maps"
+title: "Variable-Resolution Heat Maps"
 author: "Chris Comiskey"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -15,29 +15,29 @@ vignette: >
   data(hitter)
 ```
 
-Imagine you have a great spatial dataset with observations on some response across a continuous domain, and you want to make a heat map. However, the density of these observations varies, sometimes dramatically, across this domain. As a result, you're having trouble choosing a resolution. Not only that, you wish you could convey this varying density in the same heat map Variable-resolution heat maps are just what the doctor ordered! They allow you to integrate region appropriate resolutions, and simultaneously convey the relative data densities in those regions. 
+Imagine you have a great spatial dataset with observations of some response across a continuous domain, and you want to make a heat map. However, some regions of the domain have way more observations than others. As a result, you're having trouble choosing a resolution. Not only that, you wish you could somehow convey this varying data density in your heat map. Variable-resolution (VR) heat maps to the rescue! 
 
-The `varyres(...)` function in this package automates variable-resolution map creation. This vignette will introduce a motivating dataset, then walk you through how to use `varyres(...)` to create the variable-resolution heat map of your dreams.
+VR maps allow you to integrate region appropriate resolutions, and simultaneously convey the relative data densities in those regions. The `varyres(...)` function in this package transforms your data into the data frame necessary to make a VR heat map. This vignette will introduce a motivating dataset, then walk you through how to use `varyres(...)` to create the VR heat map of your dreams.
 
 ## Data: `hitter`
 
-To motivate and demonstrate `varyres(...)`, we use `hitter`. The dataset contains `r dim(hitter)[1]` swings that baseball player Johny Peralta took between approximately 2008 and 2015. The PITCHf/x data, as it is known, comes from [Sportvision, Inc](http://www.sportvision.com/) in conjunction with [Major League Baseball Advanced Media](http://www.mlbam.com/).
+We use the dataset `hitter` to motivate and demonstrate `varyres(...)`. The `hitter` dataset contains `r dim(hitter)[1]` observations, one for each swing baseball player Jhonny Peralta took between 2008 and 2015. Each observation consists of a pitch location and a swing outcome. The PITCHf/x data, as it is known, comes from [Sportvision, Inc](http://www.sportvision.com/) in conjunction with [Major League Baseball Advanced Media](http://www.mlbam.com/).
 
 ```{r}
 dim(hitter)
 head(hitter)
 ```
 
-`hitter` contains four columns, or variables, for each swing.
+`hitter` has four columns, or four variables, for each swing.
 
 * `x` gives the horizontal location of the pitch as it passes through the strike zone, in feet from the middle of home plate.
 * `y` gives the vertical location of the pitch as it passes through the strike zone, in feet from the ground.
-* `res` is a Bernoulli random variable that equals 1 if the swing resulted in a hit, and 0 otherwise.
+* `res` is a Bernoulli random variable that equals 1 if the swing was successful, and 0 if not.
 * `des` gives a short description of the play.
 
 ## Motivation
 
-A statistician must choose a resolution for his/her heat map. Let's look at a scatterplot of the data to explore resolution selection.
+A statistician chooses a resolution for his/her heat map, just like he/she does for a histogram. As you probably know, this can have a large impact on how your plot looks. How do you choose? What if you have far more data in one region of the domain than another? Let's look at a scatterplot of the `hitter` data to explore resolution selection.
 
 ```{r, echo = FALSE, fig.show = "hold", fig.align = "center"}
   library(ggplot2)
@@ -51,30 +51,37 @@ A statistician must choose a resolution for his/her heat map. Let's look at a sc
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-We see the data density peaks in the center of the domain, but diminishes moving out toward the margins. Should we choose a resolution that highlights variation in the middle of the strike zone? Or one that accomodates the sparse data around the edges? In other words, which region should primarily inform our choice? These maps give a few possibilities.
+If the whole domain looked as dense as the center we would choose one resolution; but if it looked as sparse as the edges we would choose another. Which region should primarily inform our choice? These maps give a few possibilities.
 
 ```{r, echo=FALSE, fig.height=2, fig.width=2, message=FALSE, warning=FALSE}
 vr <- varyres(data = hitter, cutoff = 1, max = 4)
 
-mapit_simple(vr[[3]])
-mapit_simple(vr[[4]])
-mapit_simple(vr[[5]])
+mapit(vr[[3]]) + spec_fcn(g = FALSE) + theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+
+mapit(vr[[4]]) + spec_fcn(g = FALSE) +  theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+
+mapit(vr[[5]]) + spec_fcn(g = FALSE) +  theme(axis.title.x=element_blank(), axis.title.y=element_blank())
 ```
 
-In map one the margins look great, but the middle boxes contain too many swings; in the thousands! The map conceals the abundance of central observations, but more on that in a minute. The middle of the strike zone looks great in map three, but we lose entire (empty) boxes toward the margins. With variable-resolution heat maps we don't have to choose; we can have both!
+In map one the margins look great, but the middle boxes contain thousands of swings each; and the map conceals this fact, but more on that in a minute. The middle of the strike zone looks great in map three, but some boxes toward the margins now have zero observations. With VR heat maps we don't have to choose which region to base our decision on---we can have both!
 
-Also, would it not be great if somehow our heat map conveyed the density variation. Ask and you shall receive!
+Also, would it not be great if somehow our heat map conveyed the varying density? Ask and you shall receive!
 
-## Variable-resolution Heat Map
+## A Variable-Resolution Heat Map
 
-The function `varyres(...)` creates variable-resolution heat maps, with the outstanding `ggplot2`. With Peralta's hitter data from above, we get this heat map.
-```{r, fig.align = "center"}
+VR heat maps choose resolution for a particular area based on the data density in that particular area. The function `varyres(...)` creates, from your data set, a VR-ready data frame. From there we can easily use `ggplot2` to create the VR heat map. 
+
+The main choice when creating a VR heat map is the "cutoff." The VR algorithm works by subdividing individual grid boxes until their sample size drops below a user-specified threshold---the `cutoff` argument in `varyres`. We use `cutoff = 200` with Peralta's `hitter` data to get this VR heat map.
+
+```{r, eval = FALSE}
+varyres(data = hitter, cutoff = 200, max = 4)
+```
+
+```{r, fig.align = "center", echo = FALSE}
 vr <- varyres(data = hitter, cutoff = 200, max = 4)
-mapit_simple(vr[[5]])
+mapit(vr[[5]]) + spec_fcn()
 ```
-
-Notice how the resolution is quite fine in the center, more coarse around the edges, and somewhere inbetween as needed. The function achieves this by assessing boxes one at a time, subdividing when the box contains more than observations than the argument `cutoff` specifies. This map used `cutoff = 200`, and thus all boxes contain less than 200 observations.
-
+Here we see quite fine resolution in the center, more coarse resolution around the edges, and somewhere in-between as needed. Also, notice how the box sizes implicitly convey the varying density: bigger boxes correspond to less data, smaller boxes to more data. The sample sizes printed on the grid boxes here explicitly show this correspondence.
 ```{r, echo = FALSE, fig.align = "center"}
 ggplot(vr[[5]], aes(x = x, y = y)) +
   with(vr[[5]], geom_tile(aes(fill = statistic), width = width, height = height)) +
@@ -83,28 +90,26 @@ ggplot(vr[[5]], aes(x = x, y = y)) +
   geom_text(aes(label = count), size = 2)
 ```
 
-Also, notice how the box sizes implicitly convey the varying relative data density through the domain; bigger boxes imply relatively less data, smaller boxes imply relatively more data.
+The `cutoff` argument mentioned above gives you control over how populated you want the boxes to be. For example, `cutoff = 100` gives this map.
 
-The `cutoff` argument gives you control over how populated you want the boxes to be. For example, `cutoff = 100` gives this map.
-
-```{r, fig.align = "center"}
+```{r, fig.align = "center", echo = FALSE}
 vr <- varyres(data = hitter, cutoff = 100, max = 5)
-mapit_simple(vr[[6]])
+mapit(vr[[6]]) + spec_fcn()
 ```
 
 ## Enjoy the Show
 
-If you want to see how your v-r map took shape, you're in luck; `varyres(...)` stores the map at each iterative sweep through the remaining boxes.
+If you want to see how your VR map took evolved, you're in luck; `varyres(...)` stores the map at each iteration.
 
 ```{r, fig.width = 1.5, fig.height = 1.5, echo = FALSE}
-mapit_simple(vr[[1]])
-mapit_simple(vr[[2]])
-mapit_simple(vr[[3]])
-mapit_simple(vr[[4]])
-mapit_simple(vr[[5]])
-mapit_simple(vr[[6]])
+mapit(vr[[1]]) + spec_fcn(g = FALSE) + nal_fcn()
+mapit(vr[[2]]) + spec_fcn(g = FALSE) + nal_fcn()
+mapit(vr[[3]]) + spec_fcn(g = FALSE) + nal_fcn()
+mapit(vr[[4]]) + spec_fcn(g = FALSE) + nal_fcn()
+mapit(vr[[5]]) + spec_fcn(g = FALSE) + nal_fcn()
+mapit(vr[[6]]) + spec_fcn(g = FALSE) + nal_fcn()
 ```
 
 ## Summary
 
-So there you have it. Variable-resolution heat maps have arrived. No longer do analysts and PhD students have to wrestle with which resolution to choose for their heat maps.
+So there you have it. VR heat maps have arrived. No longer do analysts and PhD students have to wrestle with which resolution to choose for their heat maps.
