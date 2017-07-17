@@ -7,6 +7,7 @@ library("gridExtra")
 library("dplyr")
 
 # hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
+load("~/Desktop/ResearchRepo/varyres/data/hitter.rda")
 
 # Empirical Mothership plot ==============================
 
@@ -35,6 +36,7 @@ ggplot(ABC.R, aes(Horizontal, Vertical)) +
 # ggsave("/Users/ABC/Desktop/ResearchRepo/Images/Rudimentary.jpg", height = 8.5, width = 8.5) # righties empirical
 
 
+
 # Empirical Mothership plot ==============================
 
 hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
@@ -53,12 +55,14 @@ ggplot(ABC.R, aes(Horizontal, Vertical)) +
 
 # ggsave("Mothership.pdf", height = 8.5, width = 8.5) # righties empirical
 
+
 # grid.arrange(...) - Plot increasing resolution, Peralta =======
 
 g <- gridExtra::grid.arrange(G1, G4, G16, G64, G256, G1024, ncol = 3)
 dev.off()
 ggsave("Chapter_VarRes.jpg", g,
        width = 8.5*3, height = 8.5*2)
+
 
 
 # Increasing resolution on `batter == 425509' =======
@@ -68,11 +72,12 @@ source('~/Desktop/ResearchRepo/varyres/R/var_res.R')
 source('~/Desktop/ResearchRepo/varyres/R/mapit.R')
 dat <- varyres(hitter, cutoff = 200)
 
-# Scatter plot
+# Scatter plot ============== #
 # ggplot(data = hitter, aes(x, y)) + geom_point(alpha = 0.3, size = 0.3) + coord_equal() + labs(title = "Scatter Plot", x = "", y = "") + theme(plot.title = element_text(hjust = 0.5, size = 35)) 
 
-mapit(dat[[5]]) + spec_fcn() + labs(title = "Variable-Resolution Heat Map", x = "", y = "") + theme(plot.title = element_text(hjust = 0.5, size = 35))
-# ggsave("/Users/ABC/Desktop/ResearchRepo/Images/density.jpg", height = 8.5, width = 8.5)
+mapit(dat[[5]]) + spec_fcn() + lab_fcn() + sz_fcn()
+
+# ggsave("/Users/ABC/Desktop/ResearchRepo/Images/Peralta_var-res.jpg", height = 8.5, width = 8.5)
 
 B <- mapit(dat[[2]]) + spec_fcn() + text_fcn(10)
 C <- mapit(dat[[3]]) + spec_fcn() + text_fcn(10)
@@ -89,9 +94,8 @@ dev.off()
 
 
 
-# POLAR GLM =======================================
-hitter <- read.csv("~/Desktop/Research/Data/hitter.csv")
 
+# POLAR Coords =======================================
 #    r  <- sqrt( (px+a)^2 + (pz - b)^2)
 # theta <- atan2( (pz - b), (px+a) )
 
@@ -104,15 +108,47 @@ hitter <- read.csv("~/Desktop/Research/Data/hitter.csv")
 
 # Convert to polar, tranlate origin
 hitter <- mutate(hitter,
-                 r = sqrt( (px + 2)^2 + (pz - 3.5)^2),
-                 theta = atan2(pz - 3.5, px + 2))
+                 r = sqrt((x + 2)^2 + (y - 3.5)^2),
+                 theta = atan2(y - 3.5, x + 2))
+
 
 # glm() fit ==========================
 # doh <- glm(hit ~ px*pz + I(px^2)*I(pz^2),
 #            family = binomial, data = hitter )
 
-mod.polar <- glm(hit ~ r*theta + I(r^2)*I(theta^2),
+mod.polar <- glm(res ~ r*theta + I(r^2)*I(theta^2),
                  family = binomial, data = hitter)
+
+
+# Plot ===================
+
+# Points for plotting through the hitting zone
+hitzone <- with(hitter, cbind(expand.grid(x = seq(min(x), max(x), length = 50),
+                             y = seq(min(y), max(y), length = 70)))) %>%
+  mutate(r = sqrt( (x + 2)^2 + (y - 3.5)^2),
+         theta = atan2(y - 3.5, x + 2) )
+
+preds <- predict(mod.polar, newdata = hitzone, se.fit = TRUE)
+
+# source('~/Desktop/ResearchRepo/varyres/R/mapit.R')
+
+inv_logit <- function(x){exp(x)/(1+exp(x))}
+hitzone <- with(preds, 
+                mutate(hitzone, 
+                       logit = fit, 
+                       SE_logit = se.fit, 
+                       phat = inv_logit(logit)
+                )
+)
+
+ggplot(aes(x, y), data = hitzone) +
+  geom_tile(data = hitzone, aes(fill = phat)) + 
+  sz_fcn() +
+  coord_equal() + # xlim(-1.5, 1.5) + ylim(1, 4) +
+  spec_fcn() + lab_fcn() + 
+  ggtitle("Polar Covariate GLM \n Success Probability")
+
+# ggsave("Peralta_fit.jpg", height = 8.5, width = 8.5, path = "/Users/ABC/Desktop/ResearchRepo/Images")
 
 # H-L GoF test ===============
 # (pg 133 Myers)
@@ -125,33 +161,7 @@ hoslem.test(doh$y, fitted(doh))
 
 hitter <- mutate(hitter, p.hat = predict(mod.polar, newdata = righties, type = "response"))
 
-# Plot ===================
 
-# Points for plotting through the hitting zone
-hitzone <- cbind(expand.grid(seq(-1.5, 1.5, length = 50),
-                             seq(0, 4, length = 70)))
-names(hitzone) <- c("px", "pz")
-
-# Corresponding polar coords
-hitzone <- mutate(hitzone,
-                  r = sqrt( (px + 2)^2 + (pz - 3.5)^2),
-                  theta = atan2(pz - 3.5, px + 2) )
-
-hitzone <- mutate(hitzone, # type = "response" for `p' instead of `logit'
-                  p = predict(mod.polar,
-                              newdata = hitzone,
-                              type = "response"))
-
-# source('~/Desktop/ResearchRepo/varyres/R/mapit.R')
-
-ggplot(aes(px, pz), data = hitzone) +
-  geom_tile(data = hitzone, aes(fill = p)) + 
-  sz_fcn() +
-  coord_equal() + xlim(-1.5, 1.5) + ylim(1, 4) +
-  spec_fcn() + lab_fcn() + 
-  ggtitle("Polar Covariate GLM \n Success Probability")
-
-# ggsave("Peralta_polar.pdf", height = 8.5, width = 8.5, path = "/Users/ABC/Desktop/Research/Images")
 
 # Line and Bands =====================
 
