@@ -61,24 +61,33 @@ Further biomechanical research extends beyond the scope of this study. Therefore
 
 Note that given a hitter $j$, and pitch location $\pmb{s}_{ij}$, the elements of $\pmb{X}_{ij}$ are simply a trigonemtric function of $\pmb{s}_{ij}$ and the translated origin.
 
-As a first step in exploring the effectiveness of the approach developed above, we fit the model to Johnny Peralta data (see Chapter 1). Let $j = P$, denoting player (P)eralta. We use Peralta's $n_{\text{P}} = 9177$ observed swings, and find maximum likelihood estimates of $\pmb{\beta}_{\text{P}}$ using an iteratively reweighted least squares algorithm \citep{Myers2012}. To delineate the estimation procedure, first recall the likelihood function for Bernoulli random variables,
+As a first step in exploring the effectiveness of the approach developed above, we fit the model to Johnny Peralta data (see Chapter 1). Let $j = P$, denoting player (P)eralta. We use Peralta's $n_{\text{P}} = 9177$ observed swings, and find maximum likelihood estimates of $\pmb{\beta}_{\text{P}}$ using an iteratively reweighted least squares algorithm (IRLS) \citep{Myers2012}. To delineate the estimation procedure, first recall the likelihood function for Bernoulli random variables,
 \begin{equation}
 \mathcal{L}(\beta|\pmb{y}) = \prod_{i=1}^{n} f(y_{i}) =  \prod_{i=1}^{n} p_{i}^{y_{i}}(1-p_{i})^{1-y_{i}},
 \end{equation}
 which gives log-likelihood, 
 \begin{align}
-\text{ln} \mathcal{L}(\beta|\pmb{y}) &= \sum_{i=1}^{n} \left[ y_{i} \text{ln}\left(\frac{p_{i}}{1-p_{i}}\right) \right] + \sum_{i=1}^{n} \text{ ln }(1-p_{i}) \\
+\text{ln} \mathcal{L}(\beta|\pmb{y}) &= \sum_{i=1}^{n} \left[ y_{i} \text{ ln}\left(\frac{p_{i}}{1-p_{i}}\right) \right] + \sum_{i=1}^{n} \text{ ln }(1-p_{i}) \\
 &= \pmb{\beta}'\pmb{X}'\pmb{y} - \sum_{i=1}^{n} \text{ln}[1 + \text{exp}(\pmb{x}_{i}'\pmb{\beta})].
 \end{align}
-To maximize the likelihood, take the derivative with respect to $\pmb{\beta}$.
+To maximize the likelihood with respect to $\pmb{\beta}$, first take the derivative with respect to $\pmb{\beta}$,
 \begin{align}
-\frac{\partial \text{ln} \mathcal{L}(\beta|\pmb{y})}{\partial \pmb{\beta}} &= \pmb{X}'\pmb{y} - \sum_{i=1}^{n}  \left[ \frac{1}{1 + \text{exp}(\pmb{x}_{i}'\pmb{\beta})} \right] \text{exp}  (\pmb{x}_{i}' \pmb{\beta}) \pmb{x}_{i} \\
+\frac{\partial \text{ ln} \mathcal{L}(\beta|\pmb{y})}{\partial \pmb{\beta}} &= \pmb{X}'\pmb{y} - \sum_{i=1}^{n}  \left[ \frac{1}{1 + \text{exp}(\pmb{x}_{i}'\pmb{\beta})} \right] \text{exp}  (\pmb{x}_{i}' \pmb{\beta}) \pmb{x}_{i} \\
 &= \pmb{X}'\pmb{y} - \sum_{i=1}^{n} p_{i} \pmb{x}_{i} \\
-&= \pmb{X}_{i}(\pmb{y} - \pmb{p})
+&= \pmb{X}(\pmb{y} - \pmb{p}),
 \end{align}
-
-
-
+set it equal to zero,
+\begin{equation}
+\pmb{X}(\pmb{y} - \pmb{p}) = 0,
+\end{equation}
+and solve for $\pmb{\beta}$. The nonlinear relationship between $\pmb{p}$ and $\pmb{\beta}$ accounts for the challenge of solving the score equation above for $\pmb{\beta}$.
+\begin{equation}
+p_{i} = \frac{1}{1 + \text{exp}(-\pmb{x}_{i}'\pmb{\beta})}
+\end{equation}
+In such nonlinear systems, we turn to iterative methods in lieu of closed form solutions. Parameter estimation with IRLS depends on the correspondence between minimizing the least squares function and maximizing the likelihood, hence ``iteratively reweighted {\it least squares}.'' To see this, define weighted sum of squares
+\begin{equation}
+\text{S} = \sum_{i = 1}^{n}\left[ \frac{(y_{i} - p_{i})^{2}}{\sigma_{i}^{2}} \right]
+\end{equation}
 
 
 
