@@ -19,7 +19,7 @@ with scale parameter $\sigma^{2}$, range parameter $\phi$, and where $||s_{i} - 
 
 \subsection{Spatial Generalized Linear Mixed Model}
 Adding $\pmb{w}(\pmb{s})$ to the linear predictor in equation \ref{eq:glm} gives the following spatial generalized linear mixed model (SGLMM):
-\begin{equation}
+\begin{equation} \label{eq:SGLMM}
 \text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + w(\pmb{s}_{ij}).
 \end{equation}
 
@@ -106,7 +106,7 @@ This fascinating HMC method originates in physics, which we describe in the next
 
 Trying to understand molecular states, \cite{Metropolis1953} created MCMC for ``fast machines.'' Later, modeling molecular motion as a deterministic process, \cite{Alder1959} introduced {\it Hamiltonian dynamics} as an alternate representation of Newtonian mechanics. Almost 30 years later, \cite{Duane1987} combined the two to create ``hybrid Monte Carlo,'' using it to simulate quantum mechanical processes. Over time, the name morphed into {\it Hamilton} Monte Carlo (HMC). Eventually HMC made its way into statistics, when \cite{Neal1996} used HMC to study neural networks.
 
-HMC works by reframing the variables and distribution of interest as position variables in a physical system, and artificially introducing momentum variables to perturb the position. To better understand, imagine a puck with known position and momentum on a frictionless surface, and then randomly changing the momentum of the puck to alter its course. HMC treats the variables of interest as position variables, and uses randomly generated auxiliary Gaussian variables to change the momenturm. Then, the new position, calculated with a set of differential equations, provides proposals for Metropolis updates. The differential equation solutions estimate trajectories of the hypothetical physical object (the puck), which then occupies a new position after a time step of some chosen duration. This crafty formulation provides distant (well mixed), yet high probability (high acceptance rate) proposals. This contrasts favorably with the random walk proposal generation process commonly used.\footnote{I dedicate this section to my high school physics teacher, the late William T. Meyers. He helped instill in me a love of learning and physics. He taught ``his students to use critical thinking skills which would serve them throughout their lives long after subject matter was forgotten.''}
+HMC works by reframing the variables and distribution of interest as position variables in a physical system, and artificially introducing momentum variables to perturb the position. To better understand, imagine a puck with known position and momentum on a frictionless surface, and then randomly changing the momentum of the puck to alter its course. HMC treats the variables of interest as position variables, and uses randomly generated auxiliary Gaussian variables to change the momenturm. Then, the new position, calculated with a set of differential equations, provides proposals for Metropolis updates. The differential equation solutions estimate trajectories of the hypothetical physical object (the puck), which then occupies a new position after a time step of some chosen duration. This crafty formulation provides distant (well mixed), yet high probability (high acceptance rate) proposals. This contrasts favorably with the random walk proposal generation process commonly used.\footnote{I dedicate this section to my high school physics teacher, the late William T. Meyers. He helped instill in me a love of physics, and emphasized that in his class we would learn critical thinking skills that we could use in our life.}
 
 \subsection{The Hamilton Equations} % =================
 
@@ -205,46 +205,60 @@ Optimization in Stan proved inadequate for addressing the ``big N'' problem. Nex
 
 \subsection{Introduction}
 
-Predictive process models (PPMs) provide a method to circumvent the ``big N problem'' in the case of Bayesian hierarchical models with latent Gaussian random effects. At least a few general approaches exist for this task, with at several methods for each approach. For example, for data on a regular lattice \cite{Fuentes2007} and \citep{Paciorek2007} use a spectral representation of the covariance function and Fourier transforms. A second approach, ``covariance tapering,'' sets the small values in the covariance matrix to zero \citep{Furrer2006}, \citep{Kaufman2008}. We explore one computational approximations approach in Section 2.5 \citep{Rue2009}, but others exist \citep{Stein2004}, \citep{Eidsvik2014}, \citep{Aune2014}. Still more apply exact methods to a simplified, lower rank version of the original model \citep{Cressie2008}, \citep{Higdon2002}, \citep{Eidsvik2012}. Our next strategy belongs to the latter category. 
+Predictive process models (PPMs) reduce the dimension of our SGLMM's covariance matrix to circumvent the big N problem. Several general strategies exist for this task, with often several methods to implement each strategy. \cite{Fuentes2007} and \cite{Paciorek2007} use a spectral representation of the covariance function, and Fourier transforms, to reduce the dimensionality of data on a regular lattice. ``Covariance tapering'' involves setting small values in the covariance matrix to zero, and achieving computational gains that come with a sparse matrix \citep{Furrer2006}, \citep{Kaufman2008}. We explore one computational approximation approach in Section \ref{INLA} \citep{Rue2009}, but others exist \citep{Stein2004}, \citep{Eidsvik2014}, \citep{Aune2014}. Still more apply exact methods to a simplified, lower rank version of the original model \citep{Cressie2008}, \citep{Higdon2002}, \citep{Eidsvik2012}. The next strategy we use, PPMs, belongs to this latter category.
 
-PPMs provide a competitive modeling approach, but one with computational advantages specific to hierarchical models with a GRF at the second level of specification \citep{Banerjee2008}. We only implicitly observe latent GRFs, through a binomial response in our case, and this accounts for at least part of the modeling challenge. This means the GRF parameters--model ``hyperparameters''--and their prior distributions comprise the third level of the hierarchical model. Gaussian PPMs project the original spatial process onto a lower dimensioned subspace, at a set of locations called knots, to achieve dimension reduction \citep{Banerjee2008}. In the next section we describe this procedure in detail, defining additional notation as necessary.
+PPMs provide a competitive modeling approach, but one with computational advantages specific to hierarchical models with a GRF at the second level of specification---such as our SGLMM \citep{Banerjee2008}. Gaussian PPMs project the original spatial process onto a lower dimensioned subspace, at a set of locations called knots, to achieve dimension reduction \citep{Banerjee2008}. In the next section we describe this procedure in detail, defining additional notation as necessary.
 
 \subsection{PPM Procedure}
-
-Consider again the SGLMM (5), and Gaussian random field $\pmb{w}(\pmb{s})$.
+Consider again the SGLMM from equation \ref{eq:SGLMM}, defined as it was there, and Gaussian random field $\pmb{w}(\pmb{s})$.
 \begin{align}
-\text{logit}(p_{ij}|\pmb{s}_{ij}) &= \pmb{X}_{ij}(s_{ij}) \pmb{\beta}_{j} + w(\pmb{s}_{ij}) \\
-\pmb{w}(\pmb{s}) | \pmb{\theta} &\sim \text{GRF}(\pmb{0}, \pmb{C}(\pmb{\theta}))
+\text{logit}(p_{ij}|\pmb{s}_{ij}) &= \pmb{X}_{ij}(s_{ij}) \pmb{\beta}_{j} + w(\pmb{s}_{ij}) \label{eq:ppm} \\
+\pmb{w}(\pmb{s}) | \pmb{\theta} &\sim \text{GRF}(\pmb{0}, \pmb{C}(\pmb{\theta})) \label{eq:GRF}
 \end{align}
+Equation \ref{eq:GRF} defines a stationary GRF for n $\times$ 1 vector of random effects $\pmb{w}$, at locations $\pmb{s}$, conditioned on covariance parameters $\pmb{\theta}$; with mean  n $\times$ 1 zero vector $\pmb{0}$; and a symmetric, positive-definite, n $\times$ n covariance matrix $\pmb{C}(\pmb{\theta})$.
 
-Define equation 1.17 as in equation ?.??. Equation 1.18 shows the GRF with $n \times 1$ vector of random effects $\pmb{w}$ at locations $\pmb{s}$, conditioned on covariance parameters $\pmb{\theta}$; the stationary GRF mean, $n \times 1$ zero vector $\pmb{0}$; and a symmetric, positive-definite covariance matrix, $n \times n$,  $\pmb{C}(\pmb{\theta})$. Let $C(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})$ denote the covariance of random effects at locations $\pmb{s}_{i}$ and $\pmb{s}_{j}$, so that $C(\pmb{\theta}) = [C(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})]_{i,j=1}^{n}$.
-
-To define the PPM, we start with knot notation. Let $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ give a set of $m < n$ chosen knot locations, not necessarily a subset of observed locations. Knot selection, a non-trivial decision, mirrors the area of study known as spatial sampling design \citep{Finley2009}.\footnote{Numerous studies focus on this topic; see \citep{Zhu2005} for an example, or \citep{Xia2006} for a summary of approaches.} We denote knot location random effects with $m \times 1$ vector $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m}$, and the $m \times m$ knot covariance matrix and its elements as $\pmb{C}^{*}(\pmb{\theta}) = \left[C(\pmb{s}_{i}^{*}, \pmb{s}_{j}^{*})\right]_{i,j = 1}^{m}$. The knot random effects form a distinct $m$-dimensional GRF.
+To begin to define the PPM procedure, let $C(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})$ denote the covariance of random effects at locations $\pmb{s}_{i}$ and $\pmb{s}_{j}$, so that $C(\pmb{\theta}) = [C(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})]_{i,j=1}^{n}$. Next, let $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ give a set of $m << n$ chosen knot locations, not necessarily a subset of observed locations. \footnote{Knot selection, a non-trivial decision, is equal to the area of study known as spatial sampling design \citep{Finley2009}. See \citep{Xia2006} for a summary of spatial sampling approaches.} We denote knot location random effects with m $\times$ 1 vector $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m}$, and the m $\times$ m knot covariance matrix and its elements as $\pmb{C}^{*}(\pmb{\theta}) = \left[C(\pmb{s}_{i}^{*}, \pmb{s}_{j}^{*})\right]_{i,j = 1}^{m}$. The knot random effects constitute a distinct m-dimensional GRF:
 \begin{equation}
-\pmb{w}^{*}|\pmb{\theta} \sim \text{GRF}\{\pmb{0}, \pmb{C}^{*}(\pmb{\theta})\}
+\pmb{w}^{*}|\pmb{\theta} \sim \text{GRF}\{\pmb{0}, \pmb{C}^{*}(\pmb{\theta})\}.
 \end{equation}
-The PPM procedure uses the $m$ selected knots, the covariance structure of the parent process, and kriging to interpolate $w$ at site $\pmb{s}_{0}$ \citep{Schabenberger2004}; See Appendix ?? for kriging details. Let $\tilde{w}(\pmb{s}_{0})$ represent this interpolated random effect, and let $\pmb{c}(\pmb{s}_{0};\pmb{\theta}) = \left[C(\pmb{s}_{0}, \pmb{s}_{j}^{*}; \pmb{\theta})\right]_{j = 1}^{m}$ be an $m \times 1$  covariance vector giving the covariance of the $\pmb{s}_{0}$ random effect with the knot random effects.
+
+Consider a new loction $\pmb{s}_{0}$. The PPM procedure uses the m knots, the covariance structure of the parent process, and kriging to interpolate $w$ at $\pmb{s}_{0}$ \citep{Schabenberger2004}. To see this, let $\tilde{w}(\pmb{s}_{0})$ represent this interpolated random effect, and let $\pmb{c}(\pmb{s}_{0};\pmb{\theta}) = \left[C(\pmb{s}_{0}, \pmb{s}_{j}^{*}; \pmb{\theta})\right]_{j = 1}^{m}$ be an m $\times$ 1 covariance vector giving the covariance of the $\pmb{s}_{0}$ random effect with the knot random effects. Then,  kriging estimator
 \begin{align}
 \tilde{w}(\pmb{s}_{0}) &= E[w(\pmb{s}_{0})|\pmb{w}^{*}] \\ 
-&= \pmb{c}^{T}(\pmb{s}_{0};\pmb{\theta}) \cdot \pmb{C}^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*}
+&= \pmb{c}^{T}(\pmb{s}_{0};\pmb{\theta}) \cdot \pmb{C}^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*} \label{eq:krig}
 \end{align}
-For a GRF, the weights of the linear combination in 1.21 minimize the squared error loss function among all linear predictors \citep{Schabenberger2004}; and notice that the linear combination varies spatially. Accordingly, predictive process $\tilde{w}(\pmb{s})$ defines another GRF and covariance matrix.
+minimizes the squared error loss function among all linear predictors \citep{Schabenberger2004}. Notice that the linear combination (\ref{eq:krig}) varies spatially. Accordingly, predictive process $\tilde{w}(\pmb{s})$ defines the following GRF and covariance matrix.
 \begin{align}
 \tilde{\pmb{w}}(\pmb{s}) &\sim \text{GRF}\{0, \tilde{C}(\cdot)\} \\
 \tilde{C}(\pmb{s}, \pmb{s}'; \pmb{\theta}) &= \pmb{c}^{T}(\pmb{s};\pmb{\theta}) \cdot \pmb{C}^{*-1}(\pmb{\theta}) \cdot \pmb{c}(\pmb{s}';\pmb{\theta})
 \end{align}
-To reiterate, $m \times 1$ vector $\pmb{c}(\pmb{s};\pmb{\theta}) = \left[C(\pmb{s}, \pmb{s}_{j}^{*})\right]_{j = 1}^{m}$ gives the covariance of the random effect at $\pmb{s}$ with knot random effects. Finally, the predictive process model:
+Recall m $\times$ 1 vector $\pmb{c}(\pmb{s};\pmb{\theta}) = \left[C(\pmb{s}, \pmb{s}_{j}^{*})\right]_{j = 1}^{m}$ gives the covariance of the random effect at $\pmb{s}$ with knot random effects. This last GRF replaces the full GRF in the parent process, to give the following PPM.
 \begin{equation}
 \text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + \tilde{w}(\pmb{s})
 \end{equation}
-
-% \subsection{Improved Predictive Process Models}
+We used the R package  to implement the PPM approach to dimension reduction. We present the results in the next section.
 
 \subsection{Results and Discussion}
 
-We used \verb|spBayes| for implementation \citep{Finley2013}; see appendix for details. Using \verb|spGLM(...)|, as we did, takes knot selection arguments. Recall we choose $m < < n$ knots, and not surprisingly the magnitude of m affects computing time. However, using various values of m, the computation time decreased dramatically from Stan optimization efforts. For knots in this preliminary experimentation, we used variable resolution heat map box centers, from Chapter 2.
+R package \verb|spBayes| provides function \verb|spGLM(...)|, which we used to fit our SGLMM \citep{Finley2013}. Using PPMs requires  knot selection, and the number of knots, some $m < < n$, directly imacts the computational costs. Using a range of values for $m$, PPMs drastically outperformed Stan optimization big N model fitting. 
 
-For example, in the first set of experiments we used 97 knots; box centers from variable-resolution heat map where subdivision continued until all box sample sizes were below 200. Using these 97 knots, for n = 300 observations, the PPM model fit generated 10,000 samples in three minutes. For n = 500 observation, 10,000 posterior draws required 4 minutes. For the same number of knots, but n = 1000 observations, 10,000 posterior draws required less than seven minutes. Changing the number of knots to 49, but still using n = 1000 observations, the fit generated 30,000 posterior draws in seven minutes. Finally, for n = 3000 observations, still with 49 knots, the fit generated 80,000 posterior draws in 54 minutes.
+In our model fits with PPMs, we used VR heat map box centers for knots. In our first set of model fits, we used 97 VR heat map box centers as knots. 
+  \begin{figure}[H]
+	\centering 
+	\includegraphics[scale=.1]{Images/knots.jpg}
+	\caption{This map shows 97 PPM knots as variable-resolution heat map box centers. This Jhonny Peralta map used stopping rule $n_{b} < 200$.}
+	\end{figure}
+
+
+Using these 97 knots, for n = 300 observations, the PPM model fit generated 10,000 samples in three minutes. For n = 500 observation, 10,000 posterior draws required 4 minutes. For the same number of knots, but n = 1000 observations, 10,000 posterior draws required less than seven minutes; and 37,500 draws required 23 minutes. The follow graphic shows VR empirical, GLM, and PPM fits for the same random n = 1000 subsample.
+
+  \begin{figure}[H]
+	\centering 
+	\includegraphics[scale=.05]{Images/VR_GLM_PPM.jpg}
+	\caption{Empirical, generalized linear model, and predictive process model fits for a random subset of 1000 Jhonny Peralta observations. }
+	\end{figure}
+
+Changing the number of knots to 49, but still using n = 1000 observations, the fit generated 30,000 posterior draws in seven minutes. Finally, for n = 3000 observations, still with 49 knots, the fit generated 80,000 posterior draws in 54 minutes.
 
 % 97 KNOTS ==================
 % – Using 97 knots resulting from an nb < 200 cutoff, and n = 300 observations, spGLM(), about 3 mins. The trace plots did not suggest convergence.
@@ -259,7 +273,7 @@ For example, in the first set of experiments we used 97 knots; box centers from 
 These results show tremendous promise in terms of speed. However, the sacrifice in dimensionality seems to have negatively impacted posterior convergence. Even with drastically more posterior draws, PPM trace plots showed less stability than Stan
 fit posterior trace plots. Also, recall the Peralta data set contained 9,172 observations, and the final PPM fit described used only n = 3000 observations. Ideally we could fit a SPGLMM with all 9,172 observations to provide a point of comparison with the GLM fit; to answer the question---does a spatial random effect enhance the model sufficiently to justify its inclusion, given the increased computational demands? This question matters because in the long run we target a real-time evolving model, including more covariates and categories; recall the numerous aspects of the hitter vs. pitcher contest we omitted. With these goals in mind, next we explore a sophisticated approximation technique that promises to  reduce computation time further.
 
-\section{Integrated Nested Laplace Approximations} % =================
+\section{Integrated Nested Laplace Approximations} \label{INLA} % =================
 Integrated Nested Laplace Approximation (INLA), an approximation  based on advanced mathematical and computational techniques, works well for Bayesian hierarchical models with latent Gaussian {\bf Markov} random fields (GMRFs) \citep{Rue2007}. INLA works for GMRFs, but not for GRFs; INLA's speedy computations rely on sparse precision matrices. Therefore, in our setting, we must represent a GRF as a GMRF to use INLA; stochastic calculus supplies a link. A particular stochastic partial derivative of a Matern GRF equals a Gaussian random field white noise process. This identity provides a way to approximate a {\it Matern} GRF with a GMRF, in the form of a piecewise linear basis representation. The approach, known as Finite Element Method (FEM), essentially projects the SPDE onto a basis representation. The discrete representation consists of deterministic basis functions, defined by a triangulation of the domain, and GMRF weights. The basis representation, with a sparse precision matrix, qualifies for INLA. Scientists use FEM extensively in other fields.
 
 \subsection{Gaussian Markov Random Fields}
