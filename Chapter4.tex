@@ -238,7 +238,7 @@ Recall m $\times$ 1 vector $\pmb{c}(\pmb{s};\pmb{\theta}) = \left[C(\pmb{s}, \pm
 \end{equation}
 We used the R package  to implement the PPM approach to dimension reduction. We present the results in the next section.
 
-\subsection{Results and Discussion}
+\subsection{Results}
 
 R package \verb|spBayes| provides function \verb|spGLM(...)|, which we used to fit our SGLMM \citep{Finley2013}. Using PPMs requires  knot selection, and the number of knots, some $m < < n$, directly imacts the computational costs. Using a range of values for $m$, PPMs drastically outperformed Stan optimization big N model fitting. 
 
@@ -248,30 +248,28 @@ In our model fits with PPMs, we used VR heat map box centers for knots. In our f
 	\includegraphics[scale=.1]{Images/knots.jpg}
 	\caption{This map shows 97 PPM knots as variable-resolution heat map box centers. This Jhonny Peralta map used stopping rule $n_{b} < 200$.}
 	\end{figure}
-
-
 Using these 97 knots, for n = 300 observations, the PPM model fit generated 10,000 samples in three minutes. For n = 500 observation, 10,000 posterior draws required 4 minutes. For the same number of knots, but n = 1000 observations, 10,000 posterior draws required less than seven minutes; and 37,500 draws required 23 minutes. The follow graphic shows VR empirical, GLM, and PPM fits for the same random n = 1000 subsample.
-
   \begin{figure}[H]
 	\centering 
 	\includegraphics[scale=.05]{Images/VR_GLM_PPM.jpg}
-	\caption{Empirical, generalized linear model, and predictive process model fits for a random subset of 1000 Jhonny Peralta observations. }
+	\caption{Empirical, generalized linear model, and predictive process model (97 knots) fits for a random subset of 1000 Jhonny Peralta observations. The predictive process model fit took approximately 23 minutes, while the GLM fit took under 10 seconds.}
+	\label{fig:comps1}
 	\end{figure}
+Each fit tells its own story, with some overlap. All three maps appear to agree on Peralta's region of maximum success probabilities, but differ on the maximum. In particular, the GLM fit predicts much lower success probabilities than the PPM fit; even though they both assign similar shapes to the so called hot zone. The range of $\hat{p}$ on the empirical map more closely matches the GLM fit than the PPM fit. However, these observations only hold value as an interpretable example; the subset of n = 1000 observations falls far short of the available Peralta data.
 
-Changing the number of knots to 49, but still using n = 1000 observations, the fit generated 30,000 posterior draws in seven minutes. Finally, for n = 3000 observations, still with 49 knots, the fit generated 80,000 posterior draws in 54 minutes.
+Changing the number of knots to 49, but still using n = 1000 observations, the fit generated 30,000 posterior draws in seven minutes. Finally, for n = 3000 observations, still with 49 knots, the fit generated 37,500 posterior draws in 27 minutes. Notice that the elapsed time increased by only four minutes, despite going from n = 1000 to n = 3000 observations. This small increase results from reducing the number of knots from 97 to 49. These two factors---the number of observations and the number of knots---interactively influence the computational costs. Figure \ref{fig:comps2} below shows heap maps for the n = 3000 observation subset model fits. 
+  \begin{figure}[H]
+	\centering 
+	\includegraphics[scale=.05]{Images/VR_GLM_PPM_3000.jpg}
+	\caption{Empirical, generalized linear model, and predictive process model (49 knots) fits for a random subset of 3000 Jhonny Peralta observations. The predictive process model fit took approximately 27 minutes, while the GLM fit took under 10 seconds.}
+	\label{fig:comps2}
+	\end{figure}
+These maps show less variation than those in Figure \ref{fig:comps1}, probably owing to a larger set of observations. However, as before, this example serves only to demonsrate the tremendous increase in computational cost over the GLM model fit; and the tremendous increase in speed over model fitting in Stan, where we were unable to fit a model to an n = 3000 observation data set. 
 
-% 97 KNOTS ==================
-% – Using 97 knots resulting from an nb < 200 cutoff, and n = 300 observations, spGLM(), about 3 mins. The trace plots did not suggest convergence.
-% – Same, but n = 500, about 4 mins. does not look convergent. (10,000 itrtns)
-% – n = 1000, 6.7 mins. Cnvrgnc *maybe* smidge better. time good!! (10,000 itrtns)
-% – n=1000; 30,000 iterations; looks better. Not exactly convergent, but closer.
-% 49 KNOTS ==================
-% – 7 mins, n = 1000, knots = 49, 30K samples
-% – X mins, n = 9172, knots = 49, “80,000 samples completed” but the dreaded rainbow pinwheel never went away when computer tried to resuscitate in morning. We’ll never know...
-% – 54 mins, n = 3000, kn = 49, 80K samples
+\subsection{Discussion}
+These results show promise in terms of speed. However, recall the Peralta data set contained 9,172 observations, and the final PPM fit described used only n = 3000 observations. We need a SGLMM fit to all 9,172 observations for comparison to the GLM fit, in order to answer: does a spatial random effect enhance the model sufficiently to justify its inclusion, given the increased computational demands?  
 
-These results show tremendous promise in terms of speed. However, the sacrifice in dimensionality seems to have negatively impacted posterior convergence. Even with drastically more posterior draws, PPM trace plots showed less stability than Stan
-fit posterior trace plots. Also, recall the Peralta data set contained 9,172 observations, and the final PPM fit described used only n = 3000 observations. Ideally we could fit a SPGLMM with all 9,172 observations to provide a point of comparison with the GLM fit; to answer the question---does a spatial random effect enhance the model sufficiently to justify its inclusion, given the increased computational demands? This question matters because in the long run we target a real-time evolving model, including more covariates and categories; recall the numerous aspects of the hitter vs. pitcher contest we omitted. With these goals in mind, next we explore a sophisticated approximation technique that promises to  reduce computation time further.
+In the long run we seek a practical model, efficient enough to quickly re-fit with new data in real-time, on a personal computer. Ideally, such a model includes more covariates and categories; recall the numerous aspects of the hitter vs. pitcher contest we omitted. With these goals in mind, next we explore a sophisticated approximation technique that should reduce computation time further.
 
 \section{Integrated Nested Laplace Approximations} \label{INLA} % =================
 Integrated Nested Laplace Approximation (INLA), an approximation  based on advanced mathematical and computational techniques, works well for Bayesian hierarchical models with latent Gaussian {\bf Markov} random fields (GMRFs) \citep{Rue2007}. INLA works for GMRFs, but not for GRFs; INLA's speedy computations rely on sparse precision matrices. Therefore, in our setting, we must represent a GRF as a GMRF to use INLA; stochastic calculus supplies a link. A particular stochastic partial derivative of a Matern GRF equals a Gaussian random field white noise process. This identity provides a way to approximate a {\it Matern} GRF with a GMRF, in the form of a piecewise linear basis representation. The approach, known as Finite Element Method (FEM), essentially projects the SPDE onto a basis representation. The discrete representation consists of deterministic basis functions, defined by a triangulation of the domain, and GMRF weights. The basis representation, with a sparse precision matrix, qualifies for INLA. Scientists use FEM extensively in other fields.
@@ -377,4 +375,4 @@ Numerical Integration over $\pmb{\theta}$, or elements of $\pmb{\theta}$, gives 
 
 In summary, from a continuous domain the SPDE-INLA approximation procedure provides, with improved speed, posterior estimates for $p(\pmb{\theta}|\pmb{y})$, $p(\theta_{i}|\pmb{y})$, and $p(x_{i}|\pmb{y})$. The R package \verb|INLA| implements this procedure, with flexible SPDE arguments for domain triangulation.
 
-\subsection{Bayesian Inference in R-INLA}
+\subsection{Results}
