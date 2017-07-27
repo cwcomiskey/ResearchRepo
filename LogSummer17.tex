@@ -1,0 +1,191 @@
+\documentclass{article}
+
+\title{Baseball Research Log}
+\author{Chris Comiskey}
+\date{Summer 2017}
+
+\usepackage{natbib}
+\bibliographystyle{unsrtnat}
+
+\usepackage{fullpage}
+\usepackage{ulem}
+
+\usepackage{amsmath, amsthm, amssymb, amsfonts}
+\usepackage{mathtools}
+\usepackage{float}
+\usepackage{bbm}
+\usepackage{mathrsfs}
+
+\usepackage{listings}
+
+
+\begin{document}
+
+\maketitle{}
+
+\section*{June 21, 2017 - Summer Solstice!!}
+\begin{itemize}
+\item Houston, we have a problem. For some reason, my package as I have it written now is eating a few observations each iteration. I don't know why. I am focusing on the first iteration, from one box to four, where I lost one observation. I think I need to record that puppy, and see which observation I am losing, see what its key attribute is, figure out how to fix it. I am using \verb|as.image(...)|, which I think I have isolated as the step that loses the observation. Sigh.
+\item Oh yeah, I got a 0.6 FTE job offer from Reed. : )
+\end{itemize}
+
+\section*{Thursday, 29 June 2017}
+\begin{itemize}
+\item Confidence intervals for $\hat{p}$ for Shiny app...
+  \begin{enumerate}
+  \item $\widehat{ \text{log} \left(\frac{p}{1-p} \right) }
+  \pm \text{m * SE}
+  \left[ \widehat{ \text{log}\left(\frac{p}{1-p}\right)} \right]$
+  \item Back transform
+  \item $\hat{p} \pm \text{M * SE}(\hat{p})$
+  \end{enumerate}
+\item This is important b/c otherwise there can be CIs for $\hat{p}$ that include negative numbers, and thus incorrectly calibrated CI coverage.
+\item To check if $\widehat{ \text{log}\left(\frac{p}{1-p}\right)}$ is actually Normally distributed, a simulation study would proceed as follows.
+  \begin{enumerate}
+  \item Fix $X\beta \rightarrow$ fix $p$.
+  \item Generate Bernoulli($p$) spatial data.
+  \item Estimate everything; $\beta$s, thus logit(p), and thus p
+  \item Iterate (2) and (3)
+  \item Histograms: $\widehat{\text{logit}(p)}$ vs. $\hat{p}$
+  \end{enumerate}
+\end{itemize}
+
+\section*{July 14, 2017}
+\begin{itemize}
+\item My second package: \verb|mapapp|
+\item {\bf TO DO}: make add-on slides regarding IRLS and thus SE($\beta$), SE($\hat{p}$), SE(logit($\hat{p}$)). The Shiny app is a big part of what I'm doing, so likely question. See ``supplementary slides'' below.
+\end{itemize}
+
+\subsection*{Supplementary Slides}
+% IRLS for Maximum Likelihood Estimation ===========================
+% To delineate the estimation procedure, first recall the likelihood function for Bernoulli random variables,
+% \begin{equation}
+% \mathcal{L}(\beta|\pmb{y}) = \prod_{i=1}^{n} f(y_{i}) =  \prod_{i=1}^{n} p_{i}^{y_{i}}(1-p_{i})^{1-y_{i}},
+% \end{equation}
+% which gives log-likelihood, 
+% \begin{align}
+% \text{ln} \mathcal{L}(\beta|\pmb{y}) &= \sum_{i=1}^{n} \left[ y_{i} \text{ ln}\left(\frac{p_{i}}{1-p_{i}}\right) \right] + \sum_{i=1}^{n} \text{ ln }(1-p_{i}) \\
+% &= \pmb{\beta}'\pmb{X}'\pmb{y} - \sum_{i=1}^{n} \text{ln}[1 + \text{exp}(\pmb{x}_{i}'\pmb{\beta})].
+% \end{align}
+% To maximize the likelihood with respect to $\pmb{\beta}$, first take the derivative with respect to $\pmb{\beta}$,
+% \begin{align}
+% \frac{\partial \text{ ln} \mathcal{L}(\beta|\pmb{y})}{\partial \pmb{\beta}} &= \pmb{X}'\pmb{y} - \sum_{i=1}^{n}  \left[ \frac{1}{1 + \text{exp}(\pmb{x}_{i}'\pmb{\beta})} \right] \text{exp}  (\pmb{x}_{i}' \pmb{\beta}) \pmb{x}_{i} \\
+% &= \pmb{X}'\pmb{y} - \sum_{i=1}^{n} p_{i} \pmb{x}_{i} \\
+% &= \pmb{X}(\pmb{y} - \pmb{p}),
+% \end{align}
+% set it equal to zero,
+% \begin{equation}
+% \pmb{X}(\pmb{y} - \pmb{p}) = 0,
+% \end{equation}
+% and solve for $\pmb{\beta}$. The nonlinear relationship between $\pmb{p}$ and $\pmb{\beta}$ accounts for the challenge of solving the score equation above for $\pmb{\beta}$.
+% \begin{equation}
+% p_{i} = \frac{1}{1 + \text{exp}(-\pmb{x}_{i}'\pmb{\beta})}
+% \end{equation}
+% In such nonlinear systems, we turn to iterative methods in lieu of closed form solutions. Parameter estimation with IRLS depends on the correspondence between minimizing the least squares function and maximizing the likelihood, hence ``iteratively reweighted {\it least squares}.'' To see this, define weighted sum of squares
+% \begin{equation}
+% \text{S} = \sum_{i = 1}^{n}\left[ \frac{(y_{i} - p_{i})^{2}}{\sigma_{i}^{2}} \right]
+% \end{equation}
+
+% {\bf Evaluate Inverse? Yes.} =====================================
+% \begin{itemize}
+% \item logit\{EY(s)\} = $\pmb{X}(s)\pmb{\beta} + Z(s)$, with $Z(s) \sim MVN\{\pmb{0}, \Sigma_{s}\}$
+% \item $f(\pmb{\beta}, \phi, \sigma^{2}, \pmb{Z}|\pmb{Y}) \propto f(\pmb{Y}|\pmb{\beta}, \phi, \sigma^{2}, \pmb{Z})f(\pmb{\beta})f(\pmb{Z}|\phi, \sigma^{2})f(\phi)f(\sigma^{2})$
+% \item M-H proposal, iteration i: $Z_{10,i}$
+% $$ r = \frac{ f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \pmb{\beta}_{i-1}, \phi_{i}, \sigma^{2}_{i})}{f(Z_{10,i-1}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \pmb{\beta}_{i-1}, \phi_{i}, \sigma^{2}_{i})} $$
+%  
+% \item Note: $f(z_{1}, z_{2}, z_{3}|\pmb{Y}) = f(z_{1}|z_{2},z_{3},\pmb{Y})f(z_{2},z_{3}|\pmb{Y})$. So... $$r \propto \frac{f(\pmb{Y}|\pmb{\theta}_{i})f(\pmb{\beta})f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})f(\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}|\phi_{i}, \sigma^{2}_{i})f(\phi)f(\sigma^{2})} {f(\pmb{Y}|\pmb{\theta}_{i-1})f(\pmb{\beta})f(Z_{10,i-1}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})f(\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}|\phi_{i}, \sigma^{2}_{i})f(\phi)f(\sigma^{2})}$$
+% 
+% $$ r \propto \frac{f(\pmb{Y}|\pmb{\theta}_{i})f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})}
+% {f(\pmb{Y}|\pmb{\theta}_{i-1})f(Z_{10,i-1}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})} $$
+% 
+% \item And $f(\pmb{Z})$, $f(Z_{i}|\pmb{Z}_{-i})$, etc. are $MVN\{\cdot,\Sigma^{*}\}$, where $\Sigma^{*}$ either is, or is some function of, $\Sigma_{\pmb{s}}$; with PDF kernal containing $\Sigma_{\pmb{s}}^{*-1}$, (containing $\phi_{i}, \sigma^{2}_{i})$.
+% \end{itemize}
+
+
+% \subsubsection{MCMC Using Hamiltonian Dynamics } % ======
+%   \begin{itemize}
+%   \item Postion (q) (or momentum (p)) at $t_{0}$ plus time step times rate of change of position (q) (momentum (p)) variable at $t_{0}$ \citep{Neal2011}
+%   \item Leapfrom Method does half step for momentum (p), full step for postion (q), other half step for momentum (p). Damn good.
+%   \end{itemize}
+
+\section*{Package Questions}
+\begin{itemize}
+\item How can I delete \verb|/ResearchRepo/varyres| since I have my \verb|varyres| repository now? Also, delete \verb|/ResearchRepo/images|?
+\item How do I load my package when {\bf not} working in package project?
+\item My packages seem to consist of one function each. This okay? A \& C: YES. 
+\item Plus, see Hilary Parker below!!
+\end{itemize}
+
+\subsection*{Hilary Parker}
+``...the best products are built in small steps, not by waiting for a perfect final product to be created. This concept is called the minimum viable product (link to Wikipedia page) — it’s best to get a project started and improve it through iteration. R packages can seem like a big, intimidating feat, and they really shouldn’t be. {\bf The minimum viable R package is a package with just one function!}''
+
+\subsection*{Meeting - 20 July 2017}
+\begin{itemize}
+\item Use label and ref to so that figures and references to them line up
+\item {\bf TO DO}: go back through Ch1 and Ch2 and add label and ref to prevent errors.
+\item Need to add (3 page) conclusion: what did/said, next steps
+\item Each chapter needs its own conclusion.
+\item Need to add packages
+\item Need to add language about packages in intro, roadmap, etc.
+\item Include ``plan to add .gif to package'' to Ch 3
+\item Don't worry about Shiny app spacing; fudge it
+\item {\bf TO DO}: PITCHf/x, tornado data okay to use? (PITCHf/x - basically (one more email)) (Tornado - YES)
+\item Defense presentation - basically my seminar talk; add \verb|varyres(...)| with the picture I show, a slide here and there
+\item The previous item allows more time to sharpen package
+\item The package docs: (i) Show A \& C pre-diss, and (ii) Include in diss.
+\item Modify vignette, to cater to people using their own data.
+\item Need to get on \verb|mapapp|. Need to have something to iterate with.
+\end{itemize}
+
+\subsection*{PPM Fit specs}
+\begin{itemize}
+\item 97 KNOTS ==================
+% – Using 97 knots resulting from an nb < 200 cutoff, and n = 300 observations, spGLM(), about 3 mins. The trace plots did not suggest convergence.
+% – Same, but n = 500, about 4 mins. does not look convergent. (10,000 itrtns)
+% – n = 1000, 6.7 mins. Cnvrgnc *maybe* smidge better. time good!! (10,000 itrtns)
+% – n=1000; 30,000 iterations; looks better. Not exactly convergent, but closer.
+\item 49 KNOTS ==================
+% – 7 mins, n = 1000, knots = 49, 30K samples
+% – X mins, n = 9172, knots = 49, “80,000 samples completed” but the dreaded rainbow pinwheel never went away when computer tried to resuscitate in morning. We’ll never know...
+% – 54 mins, n = 3000, kn = 49, 80K samples
+\end{itemize}
+
+\section{Meeting, 27 July 2017}
+\begin{itemize}
+\item TO DO: email {\bf Ch.4} to them both; hard copy also to Alix (Charlotte away this week)
+\item Always send Alix .pdf, b/c she wants color version always
+\item Should mention who invented heat maps, when they started, etc. 
+\item Heat map history: Try Michael Friendly, "Milestones in... Statistical Graphics.''
+\item Use ``{\bf box area}'' instead of ``box size'' (b/c confusing with sample *size*)
+\item Data density is bad; data ---?---- instead (??)
+\item ``Box 22'' has got to go; Instead, show picture of labeled map, then use those labels.
+\item Add (A), (B), (C) to six map figures
+\item Remove numbering from equation unless referencing them later (like acronyms)
+\item Include some cool picture to supplement, help sell the Hosmer-Lemeshow test. Perhaps p vs. $\hat{p}$
+\item Need to cite R packages, at least the first time in each chapter
+\item Consult (an article in) ``R Journal...'' (??)  for guidelines on referencing packages, or even referring to them by name.
+\item Ch.2 needs an introduction
+\item {\bf Include pseudo-algorithm} Fun! Include: stopping rule, and subdivision method
+\item Include alternate stopping rules, subdivision methods in ``Future VR work'' section
+\item Add oceans to tornado example, to kill the huge overlap boxes eyesore.
+\item INDEPENDENCE ASSUMPTION. Need to emphasize it is an assumption, b/c correlated within pitcher, correlated within year, day, etc. Need to talk more about it when I declare it, because it's a BIG ONE. Express caution.
+\item
+\end{itemize}
+
+\section*{As of Now}
+\begin{itemize}
+\item Jobs: ODG, Simple, Charlie!
+\item My edits, Betsy edits, A \& C Friday deadlines
+\item Make packages
+\item Webpage
+  \begin{itemize}
+  \item Talks (JSM, seminar)
+  \item RMarkdown, ST516 \& ST517 handouts
+  \item Consulting reports/summaries
+  \end{itemize}
+\end{itemize}
+
+% \bibliographystyle{plainnat}
+\bibliography{Baseball}
+
+\end{document}
