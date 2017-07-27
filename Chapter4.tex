@@ -245,7 +245,7 @@ R package \verb|spBayes| provides function \verb|spGLM(...)|, which we used to f
 In our model fits with PPMs, we used VR heat map box centers for knots. In our first set of model fits, we used 97 VR heat map box centers as knots. 
   \begin{figure}[H]
 	\centering 
-	\includegraphics[scale=.1]{Images/knots.jpg}
+	\includegraphics[scale=.08]{Images/knots.jpg}
 	\caption{This map shows 97 PPM knots as variable-resolution heat map box centers. This Jhonny Peralta map used stopping rule $n_{b} < 200$.}
 	\end{figure}
 Using these 97 knots, for n = 300 observations, the PPM model fit generated 10,000 samples in three minutes. For n = 500 observation, 10,000 posterior draws required 4 minutes. For the same number of knots, but n = 1000 observations, 10,000 posterior draws required less than seven minutes; and 37,500 draws required 23 minutes. The follow graphic shows VR empirical, GLM, and PPM fits for the same random n = 1000 subsample.
@@ -272,107 +272,130 @@ These results show promise in terms of speed. However, recall the Peralta data s
 In the long run we seek a practical model, efficient enough to quickly re-fit with new data in real-time, on a personal computer. Ideally, such a model includes more covariates and categories; recall the numerous aspects of the hitter vs. pitcher contest we omitted. With these goals in mind, next we explore a sophisticated approximation technique that should reduce computation time further.
 
 \section{Integrated Nested Laplace Approximations} \label{INLA} % =================
-Integrated Nested Laplace Approximation (INLA), an approximation  based on advanced mathematical and computational techniques, works well for Bayesian hierarchical models with latent Gaussian {\bf Markov} random fields (GMRFs) \citep{Rue2007}. INLA works for GMRFs, but not for GRFs; INLA's speedy computations rely on sparse precision matrices. Therefore, in our setting, we must represent a GRF as a GMRF to use INLA; stochastic calculus supplies a link. A particular stochastic partial derivative of a Matern GRF equals a Gaussian random field white noise process. This identity provides a way to approximate a {\it Matern} GRF with a GMRF, in the form of a piecewise linear basis representation. The approach, known as Finite Element Method (FEM), essentially projects the SPDE onto a basis representation. The discrete representation consists of deterministic basis functions, defined by a triangulation of the domain, and GMRF weights. The basis representation, with a sparse precision matrix, qualifies for INLA. Scientists use FEM extensively in other fields.
+Integrated Nested Laplace Approximation (INLA) works well for parameter estimation in Bayesian hierarchical models with latent Gaussian {\it Markov} random fields (GMRFs), but not directly with GRFs \citep{Rue2007}. The importance of this distinction lies in the sparse GMRF precision matrix, in contrast to the non-sparse GRF precision matrix; INLA's speedy computations rely on sparse precision matrices. Therefore, we need to represent our continuous GRF as a discrete GMRF in order to use INLA; stochastic calculus provides a link. Namely, the stochastic partial derivative of a Matern GRF equals a Gaussian random field white noise process \citep{Lindgren2011}. This stochastic partial differential equation (SPDE) buttresses a method to approximate a {\it Matern} GRF with a GMRF, in the form of a piecewise linear basis representation. The approach, known as Finite Element Method (FEM), projects the SPDE onto a basis representation \citep{Dhatt2012}. The discrete representation consists of deterministic basis functions, defined by a triangulation of the domain, and GMRF weights. The discrete basis representation, with a sparse precision matrix, qualifies for INLA. In the next section we define a GMRF.
+
 
 \subsection{Gaussian Markov Random Fields}
 
-In this section we formally define a GMRF, as in \citep{Rue2007}. Let $\pmb{x} = \{ x_{i}:i \in \mathscr{V} \}$, where $\mathscr{V} = \{1,\dots,n\}$, with $n = |\mathscr{V}|$-dimensional Gaussian random vector $\pmb{x}$. Now define graph $\mathscr{G} = \{ \mathscr{V}, \mathscr{E} \}$, containing vertices $\mathscr{V}$ and edges $\mathscr{E}$. Vertices $x_{i}$ and $x_{j}$ are conditionally independent given all other elements of $\pmb{x}$, if and only if $\{i, j\} \notin \mathscr{E}$. The neighborhood structure defined by this graph yields GMRF $\pmb{x}$ with respect to $\mathscr{G}$, where $i \sim j$ denotes $i$ neighbors $j$. The edges in $\mathscr{E}$ correspond exactly to the non-zero elements of the GMRF precision matrix $\pmb{Q}$; $\{ i, j \} \in \mathscr{E}$ if and only if $Q_{ij} \neq 0 \text{ for } i \neq j$. Non-zero elements of $Q_{ij}$ correspond to neighbors.
+Adding a specific neighborhood structure to a GRF yields a GMRF \citep{Rue2007}. A neighborhood structure explicitly defines when random effects at two locations are neighbors, and the Markov structure stipulates that the correlation of two random effects is non-zero if an only if the two effects are neighbors. Now we formally define a GMRF.
 
+To formally define a GMRF \citep{Rue2007}, let $\pmb{x} = \{ x_{i}:i \in \mathscr{V} \}$, where $\mathscr{V} = \{1,\dots,n\}$, for $n = |\mathscr{V}|$-dimensional Gaussian random vector $\pmb{x}$. Now define graph $\mathscr{G} = \{ \mathscr{V}, \mathscr{E} \}$, containing vertices $\mathscr{V}$ and edges $\mathscr{E}$. Vertices $x_{i}$ and $x_{j}$ are conditionally independent given all other elements of $\pmb{x}$, if and only if $\{i, j\} \notin \mathscr{E}$. The neighborhood structure defined by this graph yields GMRF $\pmb{x}$ with respect to $\mathscr{G}$, where $i \sim j$ denotes $i$ neighbors $j$. The edges in $\mathscr{E}$ correspond exactly to the non-zero elements of the GMRF precision matrix $\pmb{Q}$; $\{ i, j \} \in \mathscr{E}$ if and only if $Q_{ij} \neq 0 \text{ for } i \neq j$. Non-zero elements of $Q_{ij}$ correspond to neighbors.
 
-% To define a GMRF, first define multivariate Normal random vector $\pmb{w}(\pmb{s})$, for vector of locations $\pmb{s} \in \pmb{D} \subseteq \pmb{R}^{2}$. Define the GMRF mean as $\pmb{0}$. Now define a neighborhood structure whereby each random effect and its location, $w(\pmb{s}_{i})$, is a neighbor of $w(\pmb{s}_{j})$ according to a rule. It is required that $w(\pmb{s}_{i})$ is a neighbor of $w(\pmb{s}_{j})$ if an only if $w(\pmb{s}_{j})$ is a neighbor of $w(\pmb{s}_{i})$. This neighbor relationship is reflected in the covariance matrix of thte GMRF such that $\Sigma_{ij} \neq 0$ if an only if $w(\pmb{s}_{i})$ and $w(\pmb{s}_{j})$ are neighbors.
+Integrated nested Laplace approximations (INLAs) require a GMRF structure for the latent random effect. However, our original model contains a GRF. Therefore, we use a stochastic partial differential equations (SPDEs) as an explicit link between GRFs and GMRFs. Section \ref{SPDE} describes the SPDE link. 
 
-% $$ \pmb{w}(\pmb{s}) | \pmb{\theta} \sim MVN(\pmb{0}, \Sigma(\pmb{\theta})) $$
+\subsection{Stochastic Partial Differential Equation (SPDE)} \label{SPDE}
 
-Integrated nested Laplace approximations (INLAs) require this GMRF structure. However, the model in this chapter contains a GRF. Therefore, we use stochastic partial differential equations (SPDEs), which provide an explicit link between GRFs and GMRFs. Section 1.5.2 describes the SPDE-based link. 
-
-\subsection{Stochastic Partial Differential Equation (SPDE)} 
-
-\cite{Whittle1954} declared Matern($\nu = 1$), not the exponential given by Matern($\nu = 1/2$), the ``elementary correlation'' function in two dimensions. The following defines the Matern family of covariance functions.
+\cite{Whittle1954} declared $\text{Matern}_{\nu = 1}$ spatial correlation structure---not the exponential ($\text{Matern}_{\nu = 1/2}$)---the ``elementary correlation'' function in two dimensions. The following defines the Matern family of covariance functions.
 $$\text{C}(h) = \frac{\sigma^{2}}{2^{\nu - 1}\Gamma(\nu)}(\kappa h)^{\nu}K_{\nu}(\kappa h)$$
-This parameterization includes range parameter $\kappa > 0$, smoothness parameter $\nu > 0$, scale parameter $\sigma^{2}$, and modified Bessel function $K_{\nu}(\cdot)$ \citep{Schabenberger2004}. Matern random fields solve the following SPDE \citep{Whittle1954}.
-$$(\kappa^{2} - \Delta)^{\alpha/2}x(\pmb{s}) = \mathcal{W}(\pmb{s}),$$ 
-This includes $\Delta = \sum_{i=1}^{d} \frac{\partial^{2}}{\partial x_{i}^{2}}$, the Laplace operator; spatial scale parameter $\kappa$, as in the Matern; smoothness parameter $\alpha$; and Gaussian spatial white noise process $\mathcal{W}(\pmb{s})$. The particular SPDE and Matern coupling dictates $\alpha = \nu + d/2$, where d = 2 for $\mathbb{R}^{2}$; and $$\sigma^{2} = \frac{\Gamma(\nu)}{\Gamma(\alpha)(4\pi)^{d/2}\kappa^{2\nu}}.$$
+This parameterization includes range parameter $\kappa > 0$, smoothness parameter $\nu > 0$, scale parameter $\sigma^{2}$, and modified Bessel function $K_{\nu}(\cdot)$ \citep{Schabenberger2004}. Matern random fields solve the following SPDE \citep{Whittle1954},
+\begin{equation} \label{eq:spde1}
+(\kappa^{2} - \Delta)^{\alpha/2}x(\pmb{s}) = \mathcal{W}(\pmb{s}),
+\end{equation}
+which includes the Laplace operator $\Delta = \sum_{i=1}^{d} \frac{\partial^{2}}{\partial x_{i}^{2}}$; spatial scale (range) parameter $\kappa$; smoothness parameter $\alpha$; and Gaussian spatial white noise process $\mathcal{W}(\pmb{s})$. The SPDE and Matern coupling dictates $\alpha = \nu + d/2$, where d = 2 for $\mathbb{R}^{2}$; and $$\sigma^{2} = \frac{\Gamma(\nu)}{\Gamma(\alpha)(4\pi)^{d/2}\kappa^{2\nu}}.$$
 Based on \citep{Whittle1954}, \citep{Mondal2017}, and \citep{Lindgren2015}, we use $\nu = 1$, which implies $\alpha = 2$. This specification simplifies the SPDE to 
-$$ (\kappa^{2} - \Delta)x(\pmb{s}) = \mathcal{W}(\pmb{s});$$ 
+\begin{equation} \label{eq:spde}
+(\kappa^{2} - \Delta)x(\pmb{s}) = \mathcal{W}(\pmb{s});
+\end{equation}
 the Matern covariance to 
-$$\text{C}(h) = \sigma^{2}(\kappa h)K_{1}(\kappa h);$$
+\begin{equation} \label{eq:matern}
+\text{C}(h) = \sigma^{2}(\kappa h)K_{1}(\kappa h);
+\end{equation}
 and the variance to $\sigma^{2} = \frac{1}{4 \pi \kappa}$.
 
-\subsubsection{Piecewise Linear Basis Representation}
+Recall equation \ref{eq:SGLMM}; until now we assumed an exponential covariance structure for $w(\pmb{s}_{ij})$. This section marks a shift: based on \citep{Whittle1954}, \citep{Mondal2017}, and \citep{Lindgren2015}, now we assume a $\text{Matern}_{\nu = 1}$ covariance structure for random effect $w(\pmb{s}_{ij})$. 
 
-The next step, known as the Finite Element Method, projects the SPDE onto a piecewise linear basis representation \citep{Simpson2012}. The basis representation,
-$$ x(\pmb{s}) = \sum_{k=1}^{n} \psi_{k}(\pmb{s})x_{k},$$
-contains deterministic basis functions, $\psi_{k}(\cdot)$; and weights $\pmb{x} = \{x_{1},\dots,x_{n}\}$, which constitute a GMRF. The two combine so that the distribution of $x(\pmb{s})$ approximates the Matern GRF that solves the SPDE, but retains a sparse precision matrix and its accordant computational advantages.
+The next three subsections organize and delineate the steps to use the SPDE in equation \ref{eq:spde} to map a $\text{Matern}_{\nu = 1}$ GRF to a GMRF, and thus allow us to use the INLA procedure.
+
+\subsubsection{Piecewise Linear Basis Representation}
+The Finite Element Method, projects the SPDE onto a piecewise linear basis representation \citep{Simpson2012}. The basis representation
+\begin{equation} \label{eq:basisrep}
+x(\pmb{s}) = \sum_{k=1}^{n} \psi_{k}(\pmb{s})x_{k},
+\end{equation}
+contains deterministic basis functions, $\psi_{k}(\cdot)$; and GMRF weights $\pmb{x} = \{x_{1},\dots,x_{n}\}$. The two combine in \ref{eq:basisrep} so that the distribution of $x(\pmb{s})$ approximates the Matern GRF that solves the SPDE, but retains a sparse precision matrix and its accordant computational advantages. 
+
+The next section describes how the SPDE link produces the the deterministic basis functions in equation \ref{eq:basisrep}.
 
 \subsubsection{Deterministic Basis Function}
 
-A triangulation of the domain defines the deterministic component, $\psi_{k}(\pmb{s})$, of the basis representation. Figure 12 \citep{Simpson2012} illustrates how domain triangulation and determines a basis function.
-
+A triangulation of the domain defines the deterministic component, $\psi_{k}(\pmb{s})$, of the basis representation in equation \ref{eq:basisrep}. Figure \ref{fig:basis} illustrates how domain triangulation determines a basis function \citep{Simpson2012}.
   \begin{figure}[H]
 	\centering 
 	\includegraphics[scale=.4]{Images/PLBF.jpg}
 	\caption{A Gaussian Markov random field, defined as the piecewise linear basis function $  x(\pmb{s}) = \sum_{k=1}^{n} \protect\psi_{k}(\pmb{s})x_{k}$, approximates a Matern GRF. This image illustrates how a triangular mesh over the domain determines basis functions $\protect\psi_{k}(\pmb{s})$ 
 	\citep{Simpson2012}.}
+	\label{fig:basis}
 	\end{figure}
-	
-Keep in mind that a realization of a GRF essentially constitutes a function, and Figure 12 shows how a discrete piecewise linear basis function approximates a continuous function \citep{Simpson2012}. Then, $\psi_{k}(\pmb{s}) = 1$ at the $k\text{th}$ vertex, $0$ at all other vertices, and surface function values for triangle interior points are linear combinations of the three home triangle vertices.
+Keep in mind that a realization of a GRF essentially constitutes a function, and Figure \ref{fig:basis} shows how a discrete piecewise linear basis function approximates a continuous function \citep{Simpson2012}. Notice, $\psi_{k}(\pmb{s}) = 1$ at the $k\text{th}$ vertex, $0$ at all other vertices, and surface function values for triangle interior points are linear combinations of the three home triangle vertices.
+ 
+The next section describes how the SPDE link produces the GMRF weights in the basis function (equation \ref{eq:basisrep}).
 
 \subsubsection{GMRF Weights}
 
-Stochastic calculus identities provide a way to calculate the weights in the basis representation. Define $\langle f, g \rangle = \int f(\pmb{u}) g(\pmb{u}) d\pmb{u}$, and find weights $\pmb{x}$ such that
-$$ \left[ \left< \phi_{k}, (\kappa^{2} - \Delta)^{\alpha/2} \pmb{x} \right> \right]_{k = 1, \hdots, n} \overset{D}{=} \Big[ \langle \phi_{k}, \mathcal{W} \rangle \Big]_{k = 1, \hdots, n},$$
-for a set of test functions $\phi_{k}$ \citep{Lindgren2011}. The appropriate weight vector $\pmb{x}$ gives the stochastic weak solution solution to the SPDE \citep{Mao2007}, \cite{Lindstrom2014}; we use the Galerkin solution, with $\alpha = 2$ and $\phi_{i} = \psi_{i}$ \citep{Lindgren2011}. Replace $\pmb{x}$ with basis function representation $\Sigma_{k}\psi_{k}w_{k}$,
-$$ \left[ \left< \phi_{i}, (\kappa^{2} - \Delta)^{\alpha/2} \psi_{j} \right> \right]_{i,j}\pmb{w} \overset{D}{=} \Big[ \langle \phi_{k}, \mathcal{W} \rangle \Big]_{k}, $$
-and let $\alpha = 2$ and $\phi_{i} = \psi_{i}$ as in the Galerkin solution:
+Stochastic calculus identities provide a way to calculate the weights in the basis representation of \ref{eq:basisrep}. To start, let $$\langle f, g \rangle = \int f(\pmb{u}) g(\pmb{u}) d\pmb{u}.$$ 
+Then we find weights $\pmb{x}$ such that, for a set of test functions $\phi_{k}$, the following equality holds \citep{Lindgren2011}:
+\begin{equation} \label{eq:stoch}
+\left[ \left< \phi_{k}, (\kappa^{2} - \Delta)^{\alpha/2} \pmb{x} \right> \right]_{k = 1, \hdots, n} \overset{D}{=} \Big[ \langle \phi_{k}, \mathcal{W} \rangle \Big]_{k = 1, \hdots, n}.
+\end{equation}
+
+The solution, weight vector $\pmb{x}$, gives the stochastic weak solution solution to the SPDE in equations \ref{eq:spde1} and \ref{eq:spde}. \citep{Mao2007}, \cite{Lindstrom2014}. Following \cite{Lindgren2011}, we use the Galerkin solution where $\alpha = 2$ and $\phi_{i} = \psi_{i}$. Therefore, replace $\pmb{x}$ in equation \ref{eq:stoch} with basis function representation $\Sigma_{k}\psi_{k}w_{k}$:
+$$ \left[ \left< \phi_{i}, (\kappa^{2} - \Delta)^{\alpha/2} \psi_{j} \right> \right]_{i,j}\pmb{w} \overset{D}{=} \Big[ \langle \phi_{k}, \mathcal{W} \rangle \Big]_{k}.$$
+Next, let $\alpha = 2$ and $\phi_{i} = \psi_{i}$ as in the Galerkin solution, and simplify to get:
 $$ \Big(
 \kappa^{2} [ \langle \psi_{i}, \psi_{j} \rangle ] + [ \langle \psi_{i}, -\Delta \psi_{j} \rangle ]
 \Big) \pmb{w} \overset{D}{=} \Big[ \langle \psi_{k}, \mathcal{W} \rangle \Big]. $$
-Let $\pmb{C}_{i,j} = \langle \psi_{i}, \psi_{j} \rangle$, and $ \pmb{G}_{i,j} = \langle \psi_{i}, - \Delta \psi_{j} \rangle$, so that
+
+Simplify notation by letting $\pmb{C}_{i,j} = \langle \psi_{i}, \psi_{j} \rangle$, and $ \pmb{G}_{i,j} = \langle \psi_{i}, - \Delta \psi_{j} \rangle$, so that
 $$ \left(
-\kappa^{2} \pmb{C} + \pmb{G} \right) \pmb{w} \overset{D}{=} N(\pmb{0},\pmb{C}).$$
-For $\pmb{w} \sim N(\pmb{0}, \pmb{Q}^{-1})$, we have then
-$$\pmb{Q}_{\kappa} = \left( \kappa^{2} \pmb{C} + \pmb{G} \right)^{T} \pmb{C}^{-1} \left( \kappa^{2} \pmb{C} + \pmb{G} \right).$$ 
-However, $\pmb{C}_{ij}^{-1}$ has a sparse precision matrix, so replace $\pmb{C}$ with diagonal matrix $\widetilde{\pmb{C}}$,
-$$ \widetilde{\pmb{C}}_{i,i} = \langle \psi_{i}, \pmb{1} \rangle = \int \psi_{i}(\pmb{s}) d\pmb{s}.$$ 
-Note that this solution provides the distribution of the weights $x_{k}$, not $x(\pmb{s})$ itself, in the basis representation
-$$ x(\pmb{s}) = \sum_{k=1}^{n} \psi_{k}(\pmb{s})x_{k}.$$
-With this representation achieved, via the SPDE link, we move on to INLA.
+\kappa^{2} \pmb{C} + \pmb{G} \right) \pmb{w} \overset{D}{=} \text{N}(\pmb{0},\pmb{C}).$$
+Thus, $\pmb{w} \sim \text{N}(\pmb{0}, \pmb{Q}^{-1})$, where:
+\begin{equation} \label{eq:Q}
+\pmb{Q}_{\kappa} = \left( \kappa^{2} \pmb{C} + \pmb{G} \right)^{T} \pmb{C}^{-1} \left( \kappa^{2} \pmb{C} + \pmb{G} \right).
+\end{equation}
+% However, $\pmb{C}^{-1}$ has a sparse precision matrix, so replace $\pmb{C}$ in equation \ref{eq:Q} with diagonal matrix $\widetilde{\pmb{C}}$:
+% $$ \widetilde{\pmb{C}}_{i,i} = \langle \psi_{i}, \pmb{1} \rangle = \int \psi_{i}(\pmb{s}) d\pmb{s}.$$ 
+% \begin{equation} \label{eq:Q2}
+% \pmb{Q}_{\kappa} = \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right)^{T} \pmb{C}^{-1} \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right).
+% \end{equation}
+Note that this solution specifies the distribution of the weights $x_{k}$ in the basis representation of equation \ref{eq:basisrep}, not $x(\pmb{s})$ itself.
+
+With this representation achieved, via the SPDE link, we move on to INLA, which approximates the model parameters.
 
 \subsection{Integrated Nested Laplace Approximations (INLA)}
 
-INLA consists of a series of calculations and approximations, to achieve estimates of key quantities. These quantities include the marginal posterior distributions for latent field parameters, $p(x_{i}|\pmb{y})$; and covariance hyperparameter posterior $p(\theta|\pmb{y})$. This means we never obtain posteriors $p(\pmb{x}|\pmb{y})$ and $p(\pmb{x},\pmb{\theta}|\pmb{y})$. We break the procedure into three steps to facilitate explanation, and details of them comprise the next three subsections.
+INLA estimates key quantities with a series of calculations and approximations. These quantities include the marginal posterior distributions for latent field parameters, $p(x_{i}|\pmb{y})$; and covariance hyperparameter posterior $p(\theta|\pmb{y})$. This means INLA does not estimate posteriors $p(\pmb{x}|\pmb{y})$ and $p(\pmb{x},\pmb{\theta}|\pmb{y})$. We break the procedure into three steps to facilitate explanation, and details of them comprise the next three subsections.
 
 \subsubsection{Step 1, Gaussian Approximation} % ======= ======
 
-INLA begins by ``matching the mode and curvature at the mode'' of estimator $p_{G}(\pmb{x}|\pmb{\theta}, \pmb{y})$ to that of $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ \citep{Rue2005}. INLA requires Gaussian priors for all parameters, excluding covariance hyperparameters. INLA also requires conditional independence, whereby $p(\pmb{y}|\pmb{x}, \pmb{\theta}) = \prod_{i} p(y_{i}|\pmb{x}_{i},\pmb{\theta})$. Our analysis satisfies this necessity, and therefore $$p(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp}\left(-\frac{1}{2}\pmb{x}^{T}\pmb{Q x} + \sum_{i} \text{log }p(y_{i}|\pmb{x}_{i},\pmb{\theta}) \right).$$ With Gaussian priors and conditional independence satisfied, the INLA Gaussian approximation for $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ takes the form
-$$p_{G}(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp} \left( -\frac{1}{2}(\pmb{x-\mu})^{T} (\pmb{Q} + \text{diag}(\pmb{c}) ) (\pmb{x - \mu}) \right),$$
-where vectors $\pmb{c}$ and $\pmb{\mu}$ depend on second order Taylor expansions of $f(\pmb{x}) = \sum_{i} \text{log }p(y_{i}|\pmb{x}_{i},\pmb{\theta})$ about the mode \citep{Lindstrom2014}. A Newton-Raphson algorithm iteratively computes the mode and precision matrix until convergence \citep{Rue2009}. Step 2 uses this Gaussian approximation, $p_{G}(\pmb{x}|\pmb{\theta},\pmb{y})$, to approximate $p(\pmb{\theta}|\pmb{y})$.
+INLA begins by ``matching the mode and curvature at the mode'' of Gaussian estimator $p_{G}(\pmb{x}|\pmb{\theta}, \pmb{y})$ to that of $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ \citep{Rue2005}. Note that INLA requires Gaussian priors for all parameters, excluding covariance hyperparameters. INLA also requires conditional independence: $p(\pmb{y}|\pmb{x}, \pmb{\theta}) = \prod_{i} p(y_{i}|\pmb{x}_{i},\pmb{\theta})$. Our analysis satisfies this requirement, and therefore $$p(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp}\left(-\frac{1}{2}\pmb{x}^{T}\pmb{Q x} + \sum_{i} \text{log }p(y_{i}|\pmb{x}_{i},\pmb{\theta}) \right).$$ Assuming Gaussian priors and conditional independence, the INLA Gaussian approximation for $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ takes the form
+\begin{equation} \label{eq:ga}
+p_{G}(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp} \left( -\frac{1}{2}(\pmb{x-\mu})^{T} (\pmb{Q} + \text{diag}(\pmb{c}) ) (\pmb{x - \mu}) \right),
+\end{equation}
+where vectors $\pmb{c}$ and $\pmb{\mu}$ depend on second order Taylor expansions of $f(\pmb{x}) = \sum_{i} \text{log }p(y_{i}|\pmb{x}_{i},\pmb{\theta})$ about the mode \citep{Lindstrom2014}. A Newton-Raphson algorithm iteratively computes the mode and precision matrix until convergence \citep{Rue2009}. Step 2 uses the approximation in \ref{eq:ga} to approximate $p(\pmb{\theta}|\pmb{y})$.
 
 \subsubsection{Step 2, Laplace Approximation}  % ====== ======
 
 This step begins with two sides of a familiar identity, and its subsequent rearrangement.
 \begin{align}
 p(\pmb{y} , \pmb{x} | \pmb{\theta}) = p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta})  &= p(\pmb{x} | \pmb{y}, \pmb{\theta}) p(\pmb{y} | \pmb{\theta}) \\
-p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta}) &= p(\pmb{x} | \pmb{y}, \pmb{\theta}) p(\pmb{y} | \pmb{\theta}) \\
 \frac{p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta})} {p(\pmb{x} | \pmb{y}, \pmb{\theta})} &= p(\pmb{y} | \pmb{\theta})  
 \end{align}
-We use this formulation of $p(\pmb{y} | \pmb{\theta})$ next, in the fundamental Bayesian proportionality.
+Next, substitute this last formulation of $p(\pmb{y}|\pmb{\theta})$ into the foundational Bayesian proportionality.
 \begin{align}
 p(\theta|\pmb{y}) & \propto p(\pmb{y}|\pmb{\theta})p(\pmb{\theta}) \\
 & \propto \frac{p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta})}{p(\pmb{x} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta})
 \end{align}
-
 For a given $\pmb{\theta}$, let $\pmb{x}_{0} = \text{argmax}_{x}p(\pmb{x}|\pmb{y},\pmb{\theta})$. Then,
 $$ p(\pmb{\theta}|\pmb{y}) \approx \tilde{p}(\pmb{\theta}|\pmb{y}) \propto  \frac{p(\pmb{y} | \pmb{x}_{0}, \pmb{\theta}) p(\pmb{x}_{0} | \pmb{\theta})}{p_{G}(\pmb{x}_{0} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta}),$$
-where the Taylor approximation of $f(\pmb{x}) = \sum_{i} \text{log }p(y_{i}|x_{i})$, in $p_{G}(\pmb{x} | \pmb{y}, \pmb{\theta})$, expands about $\pmb{x}_{0}$. \cite{Tierney1986} showed this approximation matches Laplace approximation.  Then, we have approximate maximum likelihood estimate $\hat{\pmb{\theta}}_{\text{ML}} \approx \text{argmax}_{\theta} \tilde{p}(\pmb{\theta}|\pmb{y})$.
+with the Taylor approximation of $f(\pmb{x}) = \sum_{i} \text{log }p(y_{i}|x_{i})$ in $p_{G}(\pmb{x} | \pmb{y}, \pmb{\theta})$ expanded about $\pmb{x}_{0}$. Then, we have approximate maximum likelihood estimate $\hat{\pmb{\theta}}_{\text{ML}} \approx \text{argmax}_{\theta} \tilde{p}(\pmb{\theta}|\pmb{y})$. \cite{Tierney1986} showed this approximation matches the Laplace approximation. 
 
-The results of Step 1 and Step 2 set the table for nesting and numerically integrating the Laplace approximations to obtain approximate marginal posteriors.
+In Step 3 next, we use the results of Step 1 and Step 2 to nest and numerically integrate the Laplace approximations to approximate marginal posteriors.
 
 \subsubsection{Step 3, Numerical Integration} % === === === === ===
-Numerical Integration over $\pmb{\theta}$, or elements of $\pmb{\theta}$, gives $p(x_{i}|\pmb{y})$ and $p(\theta_{i}|\pmb{y})$.
+Numerical integration over $\pmb{\theta}$, or elements of $\pmb{\theta}$, gives $p(x_{i}|\pmb{y})$ and $p(\theta_{i}|\pmb{y})$.
         $$ p(x_{j} | \pmb{y}) \approx \int p_{\text{G}}(x_{j}|\pmb{\theta, y})\tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta} $$
         $$ p(\theta_{k} | \pmb{y}) \approx \int \tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta}_{-k} $$
+        
 
-In summary, from a continuous domain the SPDE-INLA approximation procedure provides, with improved speed, posterior estimates for $p(\pmb{\theta}|\pmb{y})$, $p(\theta_{i}|\pmb{y})$, and $p(x_{i}|\pmb{y})$. The R package \verb|INLA| implements this procedure, with flexible SPDE arguments for domain triangulation.
 
 \subsection{Results}
+In summary, from a continuous domain the SPDE-INLA approximation procedure provides, with improved speed, posterior estimates for $p(\pmb{\theta}|\pmb{y})$, $p(\theta_{i}|\pmb{y})$, and $p(x_{i}|\pmb{y})$. The R package \verb|INLA| implements this procedure, with flexible SPDE arguments for domain triangulation.
