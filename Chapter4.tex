@@ -3,7 +3,9 @@
 
 Tobler's First Law of Geography says that things close together in space tend to behave more similarly than things further apart \citep{Tobler1970}. The model fit in Chapter 3 performs well, but we there remains unexplained spatial variation in the mean, and we expect missing covariate information. To account for the unexplained variation and missing covariates, we augment the model with a spatially correlated random effect, giving a Spatial Generalized Linear Mixed Model (SGLMM) \citep{Banerjee2008}.
 
-This chapter consists of four sections. The first section covers four topics central to the remaining sections: Gaussian Random Fields, SGLMMs, the ``big N'' computational burden, and Markov Chain Monte Carlo. The remaining three sections detail three approaches to dealing with the computational burdens of fitting our SGLMM: optimization, dimension reduction, and approximation.
+Broadly speaking, we want to add a spatial random effect to improve our model, and then compare the effectiveness of the SGLMM fit to the GLM fit. More narrowly, as a first step in that process, the research in this chapter examines three procedures and their ability to fit big data SGLMMs on a personal computer (PC). Facilitating access to, and experimentation with, more complex models will encourage research at the amateur, academic, and industrial levels.
+
+This chapter consists of four sections. The first section covers four background topics for the remaining sections: Gaussian Random Fields, SGLMMs, big spatial data computational burdens, and Markov Chain Monte Carlo. The remaining three sections detail three approaches to dealing with the computational burdens of fitting our SGLMM: optimization, dimension reduction, and approximation.
 
 \subsection{Gaussian Random Field} % ================== 
 
@@ -41,7 +43,7 @@ In less technical terms, this means the upper bound on the amount of time requir
 
 To address these computational challenges, we tried three model-fitting approaches.
 \begin{enumerate}
-\item Computational optimization in Bayesian computing software Stan \citep{RSTAN}.
+\item Computational optimization in Bayesian computing software Stan \citep{rstan}.
 \item Dimension reduction with Predictive process models, implemented in R with the R package \verb|spBayes| \citep{Eidsvik2012}, \citep{Finley2013}.
 \item Integrated Nested Laplace Approximations with Stochastic Partial Differential Equations, implemented in the R with the package \verb|INLA-R| \citep{Lindgren2015}.
 \end{enumerate}
@@ -237,7 +239,7 @@ Recall m $\times$ 1 vector $\pmb{c}(\pmb{s};\pmb{\theta}) = \left[C(\pmb{s}, \pm
 \end{equation}
 We used the R package \verb|spBayes| to implement the PPM approach to dimension reduction \citep{Finley2013}. We present the results in the next section.
 
-\subsection{Results}
+\subsection{Results} \label{PPMresults}
 
 R package \verb|spBayes| provides function \verb|spGLM(...)|, which we used to fit our SGLMM \citep{Finley2013}. Using PPMs requires knot selection, and the number of knots, some $m < < n$, directly impacts the computational costs. Using a range of values for $m$, PPMs drastically outperformed Stan optimization big N model fitting. 
 
@@ -271,6 +273,9 @@ These results show promise in terms of speed. However, recall the Peralta data s
 In the long run we seek a practical model, efficient enough to quickly re-fit with new data in real-time, on a personal computer. Ideally, such a model includes more covariates and categories; recall the numerous aspects of the hitter vs. pitcher contest we omitted. With these goals in mind, next we explore a sophisticated approximation technique that should reduce computation time even further.
 
 \section{Integrated Nested Laplace Approximations} \label{INLA} % =================
+
+Rue2009
+
 Integrated Nested Laplace Approximation (INLA) works well for parameter estimation in Bayesian hierarchical models with latent Gaussian {\it Markov} random fields (GMRFs), but not directly with GRFs \citep{Rue2007}.
 
 Adding a specific neighborhood structure to a GRF yields a GMRF \citep{Rue2007}. The neighborhood structure explicitly defines when random effects at two locations are neighbors, and the Markov structure assigns non-zero correlation to two random effects if and only if the two effects are neighbors. 
@@ -305,7 +310,7 @@ and the variance to $\sigma^{2} = \frac{1}{4 \pi \kappa}$.
 
 Recall equation \ref{eq:SGLMM}; until now we assumed an exponential covariance structure for $w(\pmb{s}_{ij})$. This section marks a shift: based on \citep{Whittle1954}, \citep{Mondal2017}, and \citep{Lindgren2015}, now we assume a $\text{Matern}_{\nu = 1}$ covariance structure for random effect $w(\pmb{s}_{ij})$. 
 
-The next three subsections organize and delineate the steps to use the SPDE in equation \ref{eq:spde} to map a $\text{Matern}_{\nu = 1}$ GRF to a GMRF, and thus allow us to use the INLA procedure.
+The next three subsections organize and delineate the steps to use the SPDE in equation \ref{eq:spde} to map a $\text{Matern}_{\nu = 1}$ GRF to a GMRF, and thus allow us to use the INLA procedure \citep{Lindgren2011}.
 
 \subsubsection{Piecewise Linear Basis Representation}
 The Finite Element Method, projects the SPDE onto a piecewise linear basis representation \citep{Simpson2012}. The basis representation,
@@ -398,21 +403,32 @@ Using the Gaussian approximation, $p_{\text{G}}(x_{j}|\pmb{\theta, y})$, from eq
         $$ p(x_{j} | \pmb{y}) \approx \int p_{\text{G}}(x_{j}|\pmb{\theta, y})\tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta} $$
         $$ p(\theta_{k} | \pmb{y}) \approx \int \tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta}_{-k} $$
         
+For additional details of the procedure, see \cite{Rue2009}. We implement the SPDE-INLA procedure of the previous two subsections with the R package \verb|INLA| \citep{INLA}, \citep{Lindgren2015}.
+        
 \subsection{Results}
-An INLA model fit with n = 1000 observations required approximately 5 seconds; and the the n = 3000 fit required approximately 9 seconds. Figure \ref{fig:INLA} shows the INLA model fit of the same data used in Figure \ref{fig:comps1} model fit heat maps.
+We fit our SGLMM with the same n = 1000 and n = 3000 observations used for the PPM fits in Section \ref{PPMresults}, and shown in Figures \ref{fig:comps1} and \ref{fig:comps2}. The INLA model fit with n = 1000 observations required approximately 5 seconds; and the n = 3000 fit required approximately 9 seconds. Most impressively, the INLA fit to all 9172 Peralta observations required approximately 34 seconds. This marks the first complete fit of our SGLMM to all Peralta observations, in our research. Figure \ref{fig:INLA} shows all three INLA model fits.
   \begin{figure}[H]
 	\centering 
 	\includegraphics[scale=.05]{Images/INLA1000.jpg}	
 	\includegraphics[scale=.05]{Images/INLA3000.jpg}
 	\includegraphics[scale=.05]{Images/INLA9172.jpg}
-	\caption{Integrated nested Laplace approximation model fit. The model fit, for the same n = 1000 observations used in Figure \ref{fig:comps1}, required approximately five seconds. The n = 3000 model fit, with the same data from Figure \ref{fig:comps2}, required approximately nine seconds. Finally, the INLA fit with all n = 9172 Peralta observations required approximately 34 seconds.}
+	\caption{Integrated nested Laplace approximation model fits. The model fit for n = 1000 observations required approximately five seconds; compare this fit to Figure \ref{fig:comps1}. The n = 3000 model fit required approximately nine seconds; compare this map to Figure \ref{fig:comps2}. Finally, the INLA fit with all n = 9172 Peralta observations required approximately 34 seconds; compare this map to the variable-resolution empirical heat map in Figure \ref{fig:interp}.}
 	\label{fig:INLA}
 	\end{figure}
-The fit more closely resembles the Figure \ref{fig:comps1} GLM fit.	
-	
-(NOT FINISHED WITH THIS YET) ========
-	
-% In summary, from a continuous domain the SPDE-INLA approximation procedure provides, with improved speed, posterior estimates for $p(\pmb{\theta}|\pmb{y})$, $p(\theta_{i}|\pmb{y})$, and $p(x_{i}|\pmb{y})$. The R package \verb|INLA| implements this procedure, with flexible SPDE arguments for domain triangulation.
+The n = 1000 INLA fit clearly resembles the n = 1000 GLM fit more closely than the PPM fit. The contours of all three match closely, but the maximum success probability regions of the PPM fit exceed the maximum regions of the INLA and GLM fits. This interesting result suggests the PPM fit infers greater impact from the random effect than the INLA fit infers. 
+
+All three n = 3000 fits look more simmilar than the n = 1000 fits. However, the PPM fit contours differ from the INLA and GLM fits. Namely, the teardrop shape appears slightly flattened, with regions of higher probability extending further outside the strike zone up and to the left.  
+
+For the n = 9172 INLA fit, we use only the VR empirical heat map as a point of comparison. The fit resembles the empirical map with approximately the same degree of similarity as the GLM and PPM fits resemble their respective VR maps. Most noteworthy, the INLA fit succeeded. The model fits required quantities of time sufficiently small to allow amateur and professional experimentation on personal computers, achieving one of our goals.
+
 
 \section{Conclusion}
-In this chapter we saw that optimized Stan code inadequately addresses the coputational burden of fitting big data SGLMMs. PPMs, on the other hand, achieve efficiency sufficient to fit SGLMMs to a few thousand of observations. However, PPMs also proved inadequate as observation totals approached 9000. Finally, INLA approximates parameters, thereby avoiding the $\mathcal{O}(n^{3})$ computational burden of using MCMC to fit SGLMMs. INLA easily fit the SGLMM to all n = 9172 observations, in 34 seconds.
+In this chapter we saw that optimized Stan code inadequately addresses the coputational burden of fitting big data SGLMMs. PPMs, on the other hand, achieve efficiency sufficient to fit SGLMMs to a few thousand of observations. However, PPMs also proved inadequate as observation totals approached 9000. Our final approach, INLA, approximates parameters and thereby avoids the $\mathcal{O}(n^{3})$ computational burden of using MCMC to fit SGLMMs. INLA fit the SGLMM to all n = 9172 observations, in 34 seconds. Nonetheless, both PPMs and INLA involve statistical compromises.
+
+PPMs necessarily sacrifice some spatial information in reducing dimensionality. This dimension reduction possibly contributed to convergence difficulties we experienced; trace plots indicated non-convergence of most parameters after 30,000 draws with n = 97 knots and n = 1000 observations. Despite requiring 60 minutes for as many observations, Stan fit trace plots exhibited no such convergence difficulties. Examination of computational costs constituted our primary aim in this chapter, but in future research convergence diagnostics should precede substantive modeling and analysis for inference. The \verb|CODA| package offers diagnostic tools to assess mixing, autocorrelation, and convergence, such as the Gelman-Rubin convergence diagnostic \citep{CODA}, \citep{Gelman2014}, \citep{Brooks1998}
+
+Partially counterbalancing its model fitting speed, INLA for spatial Bernoulli data yields biased estimators \citep{Mondal2017}. Therefore, using INLA for further research and inference will require, like PPM, preliminary steps. These steps should include simulation analysis of the bias characteristics, and a literature review of the topic including the discussion in \cite{Rue2007}. 
+
+When satisfactory model fitting occurs, model comparison should follow. Comparison should include GLMs, SGLMMs fit with PPMs, and SGLMMs fit with INLA. Comparison can follow the example of \cite{Finley2009_2}, and use probability model scoring rules to compare fits \citep{Bickel2007}, \citep{Gneiting2007}. The essential question to answer: does the random effect enhance the model sufficiently to justify the increased computational costs?
+
+In summary, this chapter reviewed and detailed three approaches to fitting SGLMMs to big N, spatial, strike zone data. Future researchers can bypass model fitting in Stan, and proceed to the PPM and/or INLA preliminaries just described, depending on their goals and speed requirements.
