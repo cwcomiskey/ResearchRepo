@@ -1,0 +1,24 @@
+\section{Summary} % ================== 
+
+This research study serves four primary purposes. First, it provides an additional option to statisticians when it comes to resolution selection for empirical heat maps. Second, it provides an additional option for statisticians when it comes to presenting heat map confidence intervals. Three, it provides a starting point for parametric models relating  hitting biomechanics to pitch location-based swing success probabilitites. Four, it examines approaches for fitting mixed models to big spatial data in baseball.  
+
+In Chapter 2 we focused on empirical heat map resolution. To understand the problem, we examined the challenges and trade-offs inherent to heat map resolution selection. We developed VR heat mpas as a solution to these challenges. We showed how VR heat maps reduce the challenge and trade-offs of resolution selection. We presented the VR algorithm, and launched our R implementation package \verb|varyres|.
+
+In Chapter 3 we considered the biomechanics of hitting and developed a method to relate swing success to swing biomechanics in a GLM. This consisted of switching pitch locations from rectangular to polar coordinates, and translating the origin to a biomechanically meaningful location. This process yielded a viable model, and a model with which to explore heat map CIs. Specifically, we discussed the challenges of CIs on the color spectrum, instead of the number line. Heat maps CIs---a {\it surface} of estimate-to-color mappings---increase the challenge. Therefore, we developed interactive heat map CIs, with implementation in Shiny \citep{Shiny}.
+
+Last, in Chapter 4 we introduced the computational burden of fitting a big data SGLMM. We examined three approaches to addressing the ``big N'' problem: optimzation in the Bayesian computing problem Stan; dimension reduction with PPMs; and approximation with INLA. We used a host of techniques to improve efficiency in Stan, but the computational costs far exceeded Stan's capabilities on a PC. We experienced more success with our second approach, dimension reduction with PPMs. We successfully fit models to a few thousand observations using the R package \verb|spBayes| \citep{Finley2013}, with computation times on the order of hours. The final approach we examined, INLA, fit models with thousands of observations in seconds. In fact, for the first time we fit a SGLMM to the entire Peralta data set, in 34 seconds.
+
+\section{Discussion}
+% Coming to conclusions (more generalised than findings)
+% Limitations (somewhere)
+  % Independence
+  % Diagnostics
+% implications 
+% practical applications
+
+\section{Next Steps}
+% recommend future research 
+  % Augment varyres (subdivision, stopping rules, adaptive subdivision)
+  % Biomechanists  
+  % Augment mapapp
+  % Diagnostics, bias, scoring rules --- stuff above
