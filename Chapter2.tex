@@ -91,39 +91,39 @@ Notice the $4 \times 4$ resolution gives box 13 a sample size of 22, so that fur
       	\end{figure} 
 The centermost 16 boxes will yield low variance estimates of $\pi_{b}$, with standard errors of $p_{b}$ ranging from 0.01309 to 0.01889. Overall, 24 boxes contain 150 swings or more; and 15 boxes contain more than 250 swings. We believe that subdividing these boxes even more would yield additional information. On the other hand, many boxes, especially edge boxes, now have problematically small sample sizes. For example, 19 of 27 remaining edge boxes have $p_{b} = 0$. The remaining eight boxes have standard errors ranging from 0.026 to 0.088. Overall, 29 boxes contain fewer than 50 swings, and 17 boxes contain fewer than 20 swings. One box contains zero swings.
 
-With this range of box sample sizes, the non-extreme resolution choices contain both boxes with exceedingly small sample sizes {\it and} boxes with unnecessarily large sample sizes. Figure \ref{fig:6res} shows Peralta's data---the same data---at six resolutions. 
+Figure \ref{fig:6res} shows Peralta's data---the same data---at a sequence of six resolutions: $4^{\text{r}}\times 4 ^{\text{r}}$, for $r = 0, \dots, 5$.
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.055]{Images/Chapter_VarRes.jpg} 
-      	\caption{These six heat maps show the same data for Jhonny Peralta, at increasing resolutions. The maps range from too coarse to too fine. Notice how dramatically the image changes as the resolution increases. Which resolution yields the highest quality heat map?}
+      	\caption{These six heat maps show the same data for Jhonny Peralta, at increasing resolutions: $4^{\text{r}}\times 4 ^{\text{r}}$, for $r = 0, \dots, 5$. The maps range from too coarse to too fine. Notice how dramatically the image changes as the resolution increases. Which resolution yields the highest quality heat map?}
       	\label{fig:6res}
       	\end{figure} 
-We started with one box, and then subdivided each box into four equally-sized, smaller boxes at each iteration. Which of these six resolutions best balances spatially precise estimates of $p$ with acceptable box sample sizes? The user interested in the center of the strike zone might prefer the bottom-middle map, as the box sample sizes support such spatially specific estimates. However, the boxes closer to the edges of the strike zone then contain prohibitively small sample sizes, yielding higher variance estimates. 
+We started with one box, and then subdivided each box into four smaller boxes of equal area to create the next map. Which of these six resolutions best balances spatially precise estimates of $p$ with acceptable box sample sizes? The user interested in the center of the strike zone might prefer map (E). However, the boxes closer to the edges of the strike zone then contain prohibitively small sample sizes, yielding higher variance estimates. 
 
-The takeaway from Figure \ref{6res}: all six resolutions involve trade-offs. We propose a new heat map approach that eliminates trade-offs. The solution combines multiple resolutions into one map, according to the data's varying spatial density.
+The takeaway from Figure \ref{fig:6res}: all six resolutions involve trade-offs. We propose a new heat map approach that eliminates trade-offs. The solution combines multiple resolutions into one map, according to the varying abundance of data through the domain.
 
 \section{Variable-Resolution Heat Maps} \label{VRHM}
 
 \subsection{The Varying Resolution Solution}
 
-Consider again the Peralta $4 \times 4$ heat map in Figure \ref{fig:4x4}. Recall box 22 contains 22 swings, a sample size where subdividing further yields uninformatively small sample sizes. In contrast, box 1694 would support estimates that are more spatially accurate without $\text{Var}(p_{b})$ increasing beyond acceptable levels. To resolve this problem, we propose deciding resolution increases algorithmically, box by box, with a stopping rule; we christen it the variable-resolution (VR) algorithm. The map's author chooses a stopping rule, giving him/her the flexibility to create the heat map that suits the data. 
+Consider again the Peralta $4 \times 4$ heat map in Figure \ref{fig:4x4}. Recall box 13 contains 22 swings, a sample size where subdividing further yields trivially small sample sizes. By contrast, subdividing box 6 may result in estimates that are more spatially accurate without $\text{Var}(p_{b})$ increasing beyond acceptable levels. To resolve this problem, we propose deciding resolution increases algorithmically, box by box, until a stopping rule is satisfied; we call it the variable-resolution (VR) algorithm. The map producer chooses a stopping rule, allowing flexibility to create a heat map that is appropriate for the available data. 
 
-To demonstrate one iteration in the VR algorithm, let the stopping rule be a maximum box sample size of 200, and recall the $4 \times 4$ map in Figure \ref{fig:4x4} (Figure \ref{fig:4x4and8x8}, left). On this map we divide all boxes where $N_{b} > 200$, into four smaller, equally sized boxes. Figure \ref{fig:4x4and8x8} shows the map before and after. Moving through all boxes of the map to the left, subdividing when $N_{b} > 200$, yields the heat map to the right.
+To demonstrate one iteration in the VR algorithm, let the stopping rule be a maximum box sample size of 200. By this we mean that we will stop subdividing a box when $N_{b} \leq 200$. Recall the $4 \times 4$ map in Figure \ref{fig:4x4} (also Figure \ref{fig:4x4and8x8}, LHS). On this map we divide all boxes where $N_{b} > 200$, into four smaller boxes of equal area. In Figure \ref{fig:4x4and8x8} we show the map at $4 \times 4$ resolution (LHS) before subdividing, and with variable resolution (RHS) after subdividing.
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.08]{Images/Chapter4x4.jpg} 
       	\includegraphics[scale=.08]{Images/Chapter8x8_200.jpg} 
-      	\caption{One iteration in the variable-resolution algorithm. The algorithm subdivides all boxes with a sample size (printed on box) greater than 200. The iteration shown here yields the map on the right, from the map on the left. Box 22, and others like it, remain intact because further subdivision yields uninformatively low sample sizes.}
+      	\caption{One iteration in the variable-resolution algorithm. The algorithm subdivides all boxes with a sample size (printed on box) greater than 200. The single iteration shown here yields the map on the right, from the map on the left.}
       	\label{fig:4x4and8x8}
       	\end{figure} 
-The algorithm subdivides all boxes that have more than 200 observations, yielding the heat map on the right. Boxes with less than 200 observations, such as box 22, remain intact because further subdivision yields sample sizes the hypothetical author deems uninformative. Sixteen boxes still contain a sample size greater than 200, and 11 still have a sample size greater than 300. The next algorithmic iteration subdivides all 16 boxes that still contain more than 200 observations. 
+Boxes with fewer than 200 observations, such as box 13, remain intact because further subdivision yields sample sizes deemed too small. Sixteen boxes still contain a sample size greater than 200, and 11 still have a sample size greater than 300. In the next iteration of our algorithm, we subdivide all remaining boxes with more than 200 observations. 
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=.08]{Images/Chapter8x8_200.jpg} 
       	\includegraphics[scale=.08]{Images/Chapter16x16_200.jpg} 
       	\caption{Two iterations in the variable-resolution algorithm. The algorithm subdivides all boxes with a sample size (printed on box) greater than 200. This iteration yields the map on the right, from the map in the middle.}
       	\end{figure}
-The new iteration yields the map on the right from the middle map. The new map consists of 97 boxes, with a mean box sample size of 94.57, and median of 94. Box 9 contains the fewest observations, and box 189 contains the most. Box 63 serves as the first quartile, while box 125 serves as the third quartile. 
+Note the inverse correspondence between box size and observation abundance; smaller grid boxes correspond to greater observation abundance.
 
 Figure \ref{fig:allvr} shows the VR heat map for every iteration, for stopping rule $N_{b} < 200$.
         \begin{figure}[H]

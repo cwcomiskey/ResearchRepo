@@ -57,62 +57,64 @@
 \end{itemize}
 
 \subsection*{Supplementary Slides}
-% IRLS for Maximum Likelihood Estimation ===========================
-% To delineate the estimation procedure, first recall the likelihood function for Bernoulli random variables,
-% \begin{equation}
-% \mathcal{L}(\beta|\pmb{y}) = \prod_{i=1}^{n} f(y_{i}) =  \prod_{i=1}^{n} p_{i}^{y_{i}}(1-p_{i})^{1-y_{i}},
-% \end{equation}
-% which gives log-likelihood, 
-% \begin{align}
-% \text{ln} \mathcal{L}(\beta|\pmb{y}) &= \sum_{i=1}^{n} \left[ y_{i} \text{ ln}\left(\frac{p_{i}}{1-p_{i}}\right) \right] + \sum_{i=1}^{n} \text{ ln }(1-p_{i}) \\
-% &= \pmb{\beta}'\pmb{X}'\pmb{y} - \sum_{i=1}^{n} \text{ln}[1 + \text{exp}(\pmb{x}_{i}'\pmb{\beta})].
-% \end{align}
-% To maximize the likelihood with respect to $\pmb{\beta}$, first take the derivative with respect to $\pmb{\beta}$,
-% \begin{align}
-% \frac{\partial \text{ ln} \mathcal{L}(\beta|\pmb{y})}{\partial \pmb{\beta}} &= \pmb{X}'\pmb{y} - \sum_{i=1}^{n}  \left[ \frac{1}{1 + \text{exp}(\pmb{x}_{i}'\pmb{\beta})} \right] \text{exp}  (\pmb{x}_{i}' \pmb{\beta}) \pmb{x}_{i} \\
-% &= \pmb{X}'\pmb{y} - \sum_{i=1}^{n} p_{i} \pmb{x}_{i} \\
-% &= \pmb{X}(\pmb{y} - \pmb{p}),
-% \end{align}
-% set it equal to zero,
-% \begin{equation}
-% \pmb{X}(\pmb{y} - \pmb{p}) = 0,
-% \end{equation}
-% and solve for $\pmb{\beta}$. The nonlinear relationship between $\pmb{p}$ and $\pmb{\beta}$ accounts for the challenge of solving the score equation above for $\pmb{\beta}$.
-% \begin{equation}
-% p_{i} = \frac{1}{1 + \text{exp}(-\pmb{x}_{i}'\pmb{\beta})}
-% \end{equation}
-% In such nonlinear systems, we turn to iterative methods in lieu of closed form solutions. Parameter estimation with IRLS depends on the correspondence between minimizing the least squares function and maximizing the likelihood, hence ``iteratively reweighted {\it least squares}.'' To see this, define weighted sum of squares
-% \begin{equation}
-% \text{S} = \sum_{i = 1}^{n}\left[ \frac{(y_{i} - p_{i})^{2}}{\sigma_{i}^{2}} \right]
-% \end{equation}
+\begin{itemize}
+\item IRLS for Maximum Likelihood Estimation =========================== \\
+To delineate the estimation procedure, first recall the likelihood function for Bernoulli random variables,
+\begin{equation}
+\mathcal{L}(\beta|\pmb{y}) = \prod_{i=1}^{n} f(y_{i}) =  \prod_{i=1}^{n} p_{i}^{y_{i}}(1-p_{i})^{1-y_{i}},
+\end{equation}
+which gives log-likelihood,
+\begin{align}
+\text{ln} \mathcal{L}(\beta|\pmb{y}) &= \sum_{i=1}^{n} \left[ y_{i} \text{ ln}\left(\frac{p_{i}}{1-p_{i}}\right) \right] + \sum_{i=1}^{n} \text{ ln }(1-p_{i}) \\
+&= \pmb{\beta}'\pmb{X}'\pmb{y} - \sum_{i=1}^{n} \text{ln}[1 + \text{exp}(\pmb{x}_{i}'\pmb{\beta})].
+\end{align}
+To maximize the likelihood with respect to $\pmb{\beta}$, first take the derivative with respect to $\pmb{\beta}$,
+\begin{align}
+\frac{\partial \text{ ln} \mathcal{L}(\beta|\pmb{y})}{\partial \pmb{\beta}} &= \pmb{X}'\pmb{y} - \sum_{i=1}^{n}  \left[ \frac{1}{1 + \text{exp}(\pmb{x}_{i}'\pmb{\beta})} \right] \text{exp}  (\pmb{x}_{i}' \pmb{\beta}) \pmb{x}_{i} \\
+&= \pmb{X}'\pmb{y} - \sum_{i=1}^{n} p_{i} \pmb{x}_{i} \\
+&= \pmb{X}(\pmb{y} - \pmb{p}),
+\end{align}
+set it equal to zero,
+\begin{equation}
+\pmb{X}(\pmb{y} - \pmb{p}) = 0,
+\end{equation}
+and solve for $\pmb{\beta}$. The nonlinear relationship between $\pmb{p}$ and $\pmb{\beta}$ accounts for the challenge of solving the score equation above for $\pmb{\beta}$.
+\begin{equation}
+p_{i} = \frac{1}{1 + \text{exp}(-\pmb{x}_{i}'\pmb{\beta})}
+\end{equation}
+In such nonlinear systems, we turn to iterative methods in lieu of closed form solutions. Parameter estimation with IRLS depends on the correspondence between minimizing the least squares function and maximizing the likelihood, hence ``iteratively reweighted {\it least squares}.'' To see this, define weighted sum of squares
+\begin{equation}
+\text{S} = \sum_{i = 1}^{n}\left[ \frac{(y_{i} - p_{i})^{2}}{\sigma_{i}^{2}} \right]
+\end{equation}
 
-% {\bf Evaluate Inverse? Yes.} =====================================
+\item {\bf Evaluate Inverse? Yes.} =====================================
 % \begin{itemize}
 % \item logit\{EY(s)\} = $\pmb{X}(s)\pmb{\beta} + Z(s)$, with $Z(s) \sim MVN\{\pmb{0}, \Sigma_{s}\}$
 % \item $f(\pmb{\beta}, \phi, \sigma^{2}, \pmb{Z}|\pmb{Y}) \propto f(\pmb{Y}|\pmb{\beta}, \phi, \sigma^{2}, \pmb{Z})f(\pmb{\beta})f(\pmb{Z}|\phi, \sigma^{2})f(\phi)f(\sigma^{2})$
 % \item M-H proposal, iteration i: $Z_{10,i}$
 % $$ r = \frac{ f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \pmb{\beta}_{i-1}, \phi_{i}, \sigma^{2}_{i})}{f(Z_{10,i-1}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \pmb{\beta}_{i-1}, \phi_{i}, \sigma^{2}_{i})} $$
-%  
+%
 % \item Note: $f(z_{1}, z_{2}, z_{3}|\pmb{Y}) = f(z_{1}|z_{2},z_{3},\pmb{Y})f(z_{2},z_{3}|\pmb{Y})$. So... $$r \propto \frac{f(\pmb{Y}|\pmb{\theta}_{i})f(\pmb{\beta})f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})f(\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}|\phi_{i}, \sigma^{2}_{i})f(\phi)f(\sigma^{2})} {f(\pmb{Y}|\pmb{\theta}_{i-1})f(\pmb{\beta})f(Z_{10,i-1}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})f(\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}|\phi_{i}, \sigma^{2}_{i})f(\phi)f(\sigma^{2})}$$
-% 
+%
 % $$ r \propto \frac{f(\pmb{Y}|\pmb{\theta}_{i})f(Z_{10,i}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})}
 % {f(\pmb{Y}|\pmb{\theta}_{i-1})f(Z_{10,i-1}|\pmb{Z}_{1:9,i},\pmb{Z}_{11:n,i-1}, \phi_{i}, \sigma^{2}_{i})} $$
-% 
+%
 % \item And $f(\pmb{Z})$, $f(Z_{i}|\pmb{Z}_{-i})$, etc. are $MVN\{\cdot,\Sigma^{*}\}$, where $\Sigma^{*}$ either is, or is some function of, $\Sigma_{\pmb{s}}$; with PDF kernal containing $\Sigma_{\pmb{s}}^{*-1}$, (containing $\phi_{i}, \sigma^{2}_{i})$.
 % \end{itemize}
 
 
-% \subsubsection{MCMC Using Hamiltonian Dynamics } % ======
+\item MCMC Using Hamiltonian Dynamics ======
 %   \begin{itemize}
 %   \item Postion (q) (or momentum (p)) at $t_{0}$ plus time step times rate of change of position (q) (momentum (p)) variable at $t_{0}$ \citep{Neal2011}
 %   \item Leapfrom Method does half step for momentum (p), full step for postion (q), other half step for momentum (p). Damn good.
 %   \end{itemize}
+\end{itemize}
 
 \section*{Package Questions}
 \begin{itemize}
 \item How can I delete \verb|/ResearchRepo/varyres| since I have my \verb|varyres| repository now? Also, delete \verb|/ResearchRepo/images|?
 \item How do I load my package when {\bf not} working in package project?
-\item My packages seem to consist of one function each. This okay? A \& C: YES. 
+\item My packages seem to consist of one function each. This okay? A \& C: YES.
 \item Plus, see Hilary Parker below!!
 \end{itemize}
 
@@ -121,15 +123,15 @@
 
 \subsection*{Meeting - 20 July 2017}
 \begin{itemize}
-\item Use label and ref to so that figures and references to them line up
-\item {\bf TO DO}: go back through Ch1 and Ch2 and add label and ref to prevent errors.
-\item Need to add (3 page) conclusion: what did/said, next steps
+\item Use label and ref to so that figures and references to them line up \checkmark
+\item {\bf TO DO}: go back through Ch1 and Ch2 and add label and ref to prevent errors. \checkmark
+\item Need to add (3 page) conclusion: what did/said, next steps \checkmark
 \item Each chapter needs its own conclusion.
-\item Need to add packages
-\item Need to add language about packages in intro, roadmap, etc.
+\item Need to add packages \checkmark
+\item Need to add language about packages in intro, roadmap, etc. \checkmark
 \item Include ``plan to add .gif to package'' to Ch 3
 \item Don't worry about Shiny app spacing; fudge it
-\item {\bf TO DO}: PITCHf/x, tornado data okay to use? (PITCHf/x - basically (one more email)) (Tornado - YES)
+\item {\bf TO DO}: PITCHf/x, tornado data okay to use? (PITCHf/x - basically (one more email)) (Tornado - YES) \checkmark
 \item Defense presentation - basically my seminar talk; add \verb|varyres(...)| with the picture I show, a slide here and there
 \item The previous item allows more time to sharpen package
 \item The package docs: (i) Show A \& C pre-diss, and (ii) Include in diss.
@@ -150,11 +152,11 @@
 % – 54 mins, n = 3000, kn = 49, 80K samples
 \end{itemize}
 
-\section{Meeting, 27 July 2017}
+\section*{Meeting, 27 July 2017}
 \begin{itemize}
-\item TO DO: email {\bf Ch.4} to them both; hard copy also to Alix (Charlotte away this week)
-\item Always send Alix .pdf, b/c she wants color version always
-\item Should mention who invented heat maps, when they started, etc. 
+\item TO DO: email {\bf Ch.4} to them both; hard copy also to Alix (Charlotte away this week) \checkmark
+\item Always send Alix .pdf, b/c she wants color version always \checkmark
+\item Should mention who invented heat maps, when they started, etc.
 \item Heat map history: Try Michael Friendly, "Milestones in... Statistical Graphics.''
 \item Use ``{\bf box area}'' instead of ``box size'' (b/c confusing with sample *size*)
 \item Data density is bad; data ---?---- instead (??)
@@ -169,7 +171,32 @@
 \item Include alternate stopping rules, subdivision methods in ``Future VR work'' section
 \item Add oceans to tornado example, to kill the huge overlap boxes eyesore.
 \item INDEPENDENCE ASSUMPTION. Need to emphasize it is an assumption, b/c correlated within pitcher, correlated within year, day, etc. Need to talk more about it when I declare it, because it's a BIG ONE. Express caution.
-\item
+\item Table template:=================
+% \begin{tabular}[b]{ l | c | c | c | r }
+% \hline
+% Covariate         & $\beta_{i}$ & MLE   & SE     &      p  \\ \hline
+% N/A               & $\beta_{0}$ & -4.08 & 0.70 & $ <0.001$ \\ \hline
+% r                 & $\beta_{1}$ &  1.19 & 0.51 & $  0.018$ \\ \hline
+% $\theta$          & $\beta_{2}$ & -1.93 & 1.90 & $  0.311$ \\ \hline
+% $r*\theta$        & $\beta_{3}$ & -1.64 & 0.70 & $  0.064$ \\ \hline
+% $r^{2}$           & $\beta_{4}$ & -0.32 & 0.09 & $ <0.001$ \\ \hline
+% $\theta^{2}$      & $\beta_{5}$ & -3.92 & 1.10 & $ <0.001$ \\ \hline
+% $r^{2}*\theta^{2}$& $\beta_{6}$ & -0.46 & 0.21 & $  0.025$ \\ \hline
+% \hline
+% \end{tabular}
+\end{itemize}
+
+\section*{mapapp}
+\begin{itemize}
+\item Now \verb|runExample0()| runs with original \verb|CI_list| \& names (saved in \verb|R\| folder (``internally''), within \verb|sysdata.rda|)
+\end{itemize}
+
+\section*{``Come back to..." Edits}
+\begin{itemize}
+\item Chapter two outline in 1.1.1, first page
+\item Use sequential color scale, like \verb|scale_fill_viridis_c()| in dev version of {\bf ggplot2}.
+\item Colored box around 16 central squares in Fig 1.3 (8x8 map)
+\item Label maps in 6-different-resolutions figure
 \end{itemize}
 
 \section*{As of Now}
