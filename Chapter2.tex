@@ -116,16 +116,17 @@ To demonstrate one iteration in the VR algorithm, let the stopping rule be a max
       	\caption{One iteration in the variable-resolution algorithm. The algorithm subdivides all boxes with a sample size (printed on box) greater than 200. The single iteration shown here yields the map on the right, from the map on the left.}
       	\label{fig:4x4and8x8}
       	\end{figure} 
-Boxes with fewer than 200 observations, such as box 13, remain intact because further subdivision yields sample sizes deemed too small. Sixteen boxes still contain a sample size greater than 200, and 11 still have a sample size greater than 300. In the next iteration of our algorithm, we subdivide all remaining boxes with more than 200 observations. 
+Boxes with fewer than 200 observations, such as box 13, remain intact because further subdivision yields sample sizes deemed too small. Sixteen boxes still contain a sample size greater than 200, and 11 still have a sample size greater than 300. In the next iteration of our algorithm, which we show in Figure \ref{fig:fig:8x8to16x16}, we subdivide all remaining boxes with more than 200 observations. 
         \begin{figure}[H]
       	\centering
+      	\label{fig:8x8to16x16}
       	\includegraphics[scale=.08]{Images/Chapter8x8_200.jpg} 
       	\includegraphics[scale=.08]{Images/Chapter16x16_200.jpg} 
       	\caption{Two iterations in the variable-resolution algorithm. The algorithm subdivides all boxes with a sample size (printed on box) greater than 200. This iteration yields the map on the right, from the map in the middle.}
       	\end{figure}
 Note the inverse correspondence between box size and observation abundance; smaller grid boxes correspond to greater observation abundance.
 
-Figure \ref{fig:allvr} shows the VR heat map for every iteration, for stopping rule $N_{b} < 200$.
+In Figure \ref{fig:allvr} we show the VR heat map at every iteration of our algorithm using the stopping rule $N_{b} < 200$.
         \begin{figure}[H]
       	\centering
       	\includegraphics[scale=0.05]{Images/Chapter1x1.jpg}
@@ -136,6 +137,110 @@ Figure \ref{fig:allvr} shows the VR heat map for every iteration, for stopping r
       	\caption{Variable-resolution heat map sequence. Starting from the top left, the algorithm subdivides all boxes with a sample size (printed on box) greater than 200. The maps convey Jhonny Peralta's empirical success probability by mapping $p_{b}$ to a color.}
       	\label{fig:allvr}
       	\end{figure}
+      	
+Next we provide pseudo-code for our VR algorithm.
+      	
+\subsection{Variable-Resolution Algorithm}
+
+The VR algorithm requires a user make two primary decisions: subdivision method and stopping rule type and threshold. We subdivide into four boxes of equal area, but this could be modified to suit different scenarios. For example, a user could subdivide into six boxes of equal area by making two horizontal subdivisions and one vertical; or even subdivide into boxes of unequal area.
+
+For a stopping rule, we use $N_{b} < 200$. A user could modify this by type or threshold. For example, a user could modify the stopping rule type by using $\text{SE}(p_{b}) > \sigma_{0}$; and modify the stopping rule threshold by using $\text{SE}(p_{b}) > \sigma_{1}$, where $\sigma_{1} > \sigma_{0}$.
+
+Using a stopping rule based on a box sample size threshold, our algorithm in commented pseudo-code follows.
+
+\begin{verbatim}
+
+function(dataset, 
+         fun = mean, # function to apply to box data
+         cutoff,     # stopping rule threshold
+         max = 6){   # maximum number of subdivision iterations
+
+info_list <- list()       # information PRIMARY CONTAINER
+iter <- 0                 # Iteration counter
+
+# Initial ITERATION CONTAINER
+info <- x = (max(x)+min(x))/2,          # horizontal box centers
+        y = (max(y)+min(y))/2,          # vertical box centers
+        statistic = fun(res),           # statistic of interest
+        count = dim(dataset)[1],        # number of observations per box
+        width = max(x) - min(x),        # box widths
+        height = max(y) - min(y),       # box heights
+        xlb = min(x), xub = max(x),     # box horiz bounds 
+        ylb = min(y), yub = max(y)      # box vertical bounds
+
+info_list[[iter + 1]] <- info # add initial ITERATION CONTAINER to PRIMARY CONTAINER
+
+while(sum(info$count > cutoff) > 0 & iter < max) {
+
+  iter <- iter + 1             # Count "while" loops (iterations)
+  counter <- 0                 # Count subdivisions per iteration
+  loop_data <- data.frame()    # WITHIN-LOOP CONTAINER
+
+  for(r in 1:dim(info)[1]){    # (r)ows in ITERATION CONTAINER
+
+    if(info$count[r] > cutoff){ # Within-iteration boxes
+
+      counter <- counter + 1    # Count eligible boxes
+
+      # Create fill BOX R CONTAINER with BOX R DATA
+      box_r <- with(info, dplyr::filter(dataset,
+                                 x >= xlb[r] & x <= xub[r],
+                                 y >= ylb[r] & y <= yub[r]))
+
+      # BOX R DATA: x/y box centers
+      xbc <- with(info, seq(xlb[r] - (1e-6), xub[r] + (1e-6), , 5)[c(2,4)]) # x
+      ybc <- with(info, seq(ylb[r] - (1e-6), yub[r] + (1e-6), , 5)[c(2,4)]) # y
+
+      # Calculate BOX R DATA
+      box_r_image <- with(box_r,
+                        fields::as.image(res, FUN = fun,
+                                 cbind.data.frame(x, y),
+                                 grid = list(x = xbc, y = ybc)
+                                 )
+                        )
+
+      # Store BOX R DATA
+      box_r_info <- with(box_r_image,
+                         cbind(expand.grid(x = x, y = y),
+                               statistic = as.vector(z),
+                               count = as.vector(weights),
+                               width = rep(info$width[r]/2, 4),
+                               height = rep(info$height[r]/2, 4)
+                               )
+                         )
+
+      # BOX R DATA: Remove zero count boxes
+      box_r_info <- dplyr::filter(box_r_info,
+                                  count != "NA",
+                                  statistic != "NA")
+
+      # BOX R DATA: Add x/y lower/upper bounds for next round
+      box_r_info <- dplyr::mutate(box_r_info,
+                           xlb = x - width/2,
+                           xub = x + width/2,
+                           ylb = y - height/2,
+                           yub = y + height/2
+                           )
+
+      # Add BOX R CONTAINER to WITHIN-LOOP CONTAINER
+      loop_data <- rbind.data.frame(loop_data, box_r_info) 
+
+      } # END "if" statement
+    }   # END "for" loop
+
+  info <- rbind.data.frame(dplyr::filter(info, count <= cutoff),
+                           loop_data) # ITERATION CONTAINER (elig boxes only)
+
+  info_list[[iter + 1]] <- info # Add ITERATION CONTAINER to PRIMARY CONTAINER
+  elig_boxes[iter] <- counter   # Subdivisions
+
+  } # END "while" loop
+
+info_list[[iter+2]] <- elig_boxes # Add subdiv. box count to PRIMARY CONTAINER
+return(info_list)                 # Return PRIMARY CONTAINER
+}
+
+\end{verbatim}
       	
 \subsection{Data Density Information}
 
