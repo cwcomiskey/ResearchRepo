@@ -19,7 +19,7 @@ Statisticians rely on graphical displays---pictures, essentially---to communicat
 
 In this chapter we focus on one type of graphical display: heat maps. Existing heat map displays consist of uniformly sized grid boxes across the domain. This means that a single resolution must suffice even if data concentration varies through the domain. To address this limitation, we introduce a variable-resolution (VR) heat map.
 
-The remainder of Section \ref{ch2background} defines notation for Chapter 2, and introduces empirical strike zone heat maps. Next, in Section \ref{THM} we discuss traditional heat maps, and examine the problem of resolution selection. Then, in Section \ref{VRHM} we introduce VR heat maps as a solution to the resolution selection problem. Last, in Section \ref{ETI} we show an example of VR heat maps with non-baseball data.
+The remainder of Section \ref{ch2background} defines notation for Chapter 2, and introduces empirical strike zone heat maps. In Section \ref{THM} we discuss traditional heat maps, and examine the problem of resolution selection. Next, in Section \ref{VRHM} we introduce VR heat maps as a solution to the resolution selection problem. In Section \ref{ETI} we show an example of VR heat maps with tornado data, and then discuss future research extensions in Section \ref{fr}.
 
 \subsection{Bernoulli Swings}
 
@@ -151,98 +151,48 @@ The VR algorithm requires a user make two primary decisions: subdivision method 
 For a stopping rule, we use $N_{b} < 200$. A user could modify this by type or threshold. For example, a user could modify the stopping rule type by using $\text{SE}(p_{b}) > \sigma_{0}$; and modify the stopping rule threshold by using $\text{SE}(p_{b}) > \sigma_{1}$, where $\sigma_{1} > \sigma_{0}$.
 
 Using a stopping rule based on a box sample size threshold, our algorithm in commented pseudo-code follows.
-
 \begin{verbatim}
-
 function(dataset, 
          fun = mean, # function to apply to box data
          cutoff,     # stopping rule threshold
-         max = 6){   # maximum number of subdivision iterations
+         max ){      # maximum number of iterations
+         
+Create HISTORY_CONTAINER # to store every iteration result
+ITERATION <- 0              
+Create CURRENT_CONTAINER and store: box centers, 
+  statistic of interest, observations per box, 
+  box heights/widths, box vertical/horzontal upper/lower 
+  bounds
+Add first CURRENT CONTAINER to HISTORY CONTAINER as first
+  element
+Add CURRENT_CONTAINER to HISTORY_CONTAINER as its first
+  element
 
-info_list <- list()       # information PRIMARY CONTAINER
-iter <- 0                 # Iteration counter
-
-# Initial ITERATION CONTAINER
-info <- x = (max(x)+min(x))/2,          # horizontal box centers
-        y = (max(y)+min(y))/2,          # vertical box centers
-        statistic = fun(res),           # statistic of interest
-        count = dim(dataset)[1],        # number of observations per box
-        width = max(x) - min(x),        # box widths
-        height = max(y) - min(y),       # box heights
-        xlb = min(x), xub = max(x),     # box horiz bounds 
-        ylb = min(y), yub = max(y)      # box vertical bounds
-
-info_list[[iter + 1]] <- info # add initial ITERATION CONTAINER to PRIMARY CONTAINER
-
-while(sum(info$count > cutoff) > 0 & iter < max) {
-
-  iter <- iter + 1             # Count "while" loops (iterations)
-  counter <- 0                 # Count subdivisions per iteration
-  loop_data <- data.frame()    # WITHIN-LOOP CONTAINER
-
-  for(r in 1:dim(info)[1]){    # (r)ows in ITERATION CONTAINER
-
-    if(info$count[r] > cutoff){ # Within-iteration boxes
-
-      counter <- counter + 1    # Count eligible boxes
-
-      # Create fill BOX R CONTAINER with BOX R DATA
-      box_r <- with(info, dplyr::filter(dataset,
-                                 x >= xlb[r] & x <= xub[r],
-                                 y >= ylb[r] & y <= yub[r]))
-
-      # BOX R DATA: x/y box centers
-      xbc <- with(info, seq(xlb[r] - (1e-6), xub[r] + (1e-6), , 5)[c(2,4)]) # x
-      ybc <- with(info, seq(ylb[r] - (1e-6), yub[r] + (1e-6), , 5)[c(2,4)]) # y
-
-      # Calculate BOX R DATA
-      box_r_image <- with(box_r,
-                        fields::as.image(res, FUN = fun,
-                                 cbind.data.frame(x, y),
-                                 grid = list(x = xbc, y = ybc)
-                                 )
-                        )
-
-      # Store BOX R DATA
-      box_r_info <- with(box_r_image,
-                         cbind(expand.grid(x = x, y = y),
-                               statistic = as.vector(z),
-                               count = as.vector(weights),
-                               width = rep(info$width[r]/2, 4),
-                               height = rep(info$height[r]/2, 4)
-                               )
-                         )
-
-      # BOX R DATA: Remove zero count boxes
-      box_r_info <- dplyr::filter(box_r_info,
-                                  count != "NA",
-                                  statistic != "NA")
-
-      # BOX R DATA: Add x/y lower/upper bounds for next round
-      box_r_info <- dplyr::mutate(box_r_info,
-                           xlb = x - width/2,
-                           xub = x + width/2,
-                           ylb = y - height/2,
-                           yub = y + height/2
-                           )
-
-      # Add BOX R CONTAINER to WITHIN-LOOP CONTAINER
-      loop_data <- rbind.data.frame(loop_data, box_r_info) 
-
-      } # END "if" statement
-    }   # END "for" loop
-
-  info <- rbind.data.frame(dplyr::filter(info, count <= cutoff),
-                           loop_data) # ITERATION CONTAINER (elig boxes only)
-
-  info_list[[iter + 1]] <- info # Add ITERATION CONTAINER to PRIMARY CONTAINER
-  elig_boxes[iter] <- counter   # Subdivisions
-
-  } # END "while" loop
-
-info_list[[iter+2]] <- elig_boxes # Add subdiv. box count to PRIMARY CONTAINER
-return(info_list)                 # Return PRIMARY CONTAINER
-}
+WHILE(exists N_b > cutoff and ITERATION < max) {
+    ITERATION <- ITERATION + 1    
+    Create ITERATION CONTAINER
+            
+            FOR(All BOX_b in CURRENT CONTAINER){
+            
+                IF(BOX_b count > cutoff){ 
+                    Retrieve BOX_b data, create BOX_b
+                      CONTAINER
+                    SUB-BOXES_CURRENT_CONTAINER: 
+                      subdivide BOX_b, calculate BOX_b 
+                      sub-box information
+                    Add SUB-BOXES_CURRENT_CONTAINER to
+                      ITERATION CONTAINER  
+                  } # END "IF" statement
+                        
+              }  # END "FOR" loop
+              
+    Update CURRENT_CONTAINER: remove obsolete boxes,
+      and add ITERATION CONTAINER boxes
+    # Add CURRENT CONTAINER to HISTORY CONTAINER 
+      as element "ITERATION + 1"
+            
+  }  # END "WHILE" loop
+  }
 
 \end{verbatim}
       	
@@ -350,7 +300,7 @@ Notice how some grid boxes remain unnecessarily large, and awkwardly shaped rela
         \end{figure}
 The protruding box pattern occurred with boxes that protrude from, and partially overlap New Jersey, Southern Florida, Southern Texas, and Southern California. However, the size of these odd boxes does still indicate very low observation density, alerting the audience of the circumstance. Modifications to the algorithm---subdividing edge boxes with this quality---would eliminate this quirk.
 
-\section{Future Research}
+\section{Future Research} \label{fr}
 
 Future research could enhance the VR algorithm by adding stopping rule types or subdivision methods. For example, straightforward subdivision into boxes with equal area sometimes yields boxes with very unequal sample sizes. One alternative to prevent this is to subdivide {\it according} to sample size; horizontal and vertical divisions calculated to yield grid boxes of approximately equal numbers of observatoins. The resulting boxes would have similar sample sizes rather than equal area.
 
