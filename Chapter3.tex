@@ -139,17 +139,17 @@ Notice $\widehat{C}$ matches the Pearson $\chi^{2}$ statistic under this groupin
 H_{0}: & \text{ Model well fit.} \\
 H_{1}: & \text{ Model not well fit.}
 \end{align}
-We use \verb|hoslem.test()| in the R package {\bf ResourceSelection} to perform the test \citep{hoslem}, with g = 10 following the recommendation of \cite{Hosmer2013} based on their simulations \citep{Hosmer1980}. The test statistic for Jhonny Peralta's data, $\widehat{C} = 4.3758$, with eight degrees of freedom, gives a p-value of p = 0.8217. 
-
-  \begin{figure} % [!ht]
+We use \verb|hoslem.test()| in the R package {\bf ResourceSelection} to perform the test \citep{hoslem}, with g = 10 following the recommendation of \cite{Hosmer2013} based on their simulations \citep{Hosmer1980}. The test statistic for Jhonny Peralta's data, $\widehat{C} = 4.3758$, with eight degrees of freedom, gives a p-value of p = 0.8217. In Figure \ref{fig:hoslem} we compare the model fit with observed results using two graphics: a plot of the probability of success as estimated by the model fit against the empirical estimate, for each quantile group; and a plot of observed and predicted number of successes for each quantile group.
+  \begin{figure}[!ht]
     \centering
     \includegraphics[scale=.08]{Images/ppredVSpobs.jpg}
     \includegraphics[scale=.08]{Images/OvE.jpg}
-    \caption{In the first plot (LHS) we show model fit against empirical probabilities, for each of the quantile groups $k$, for $k = 1, \dots, g$. The probabilities are similar, with most points close to the 1:1 line, indicating a well fit model. In the second plot we show the number of successes for each quantile group, where color denotes model fit or observed frequency. The observed successes in each group are quite close together, again indicating a well fit model.}
+    \caption{Regarding the Hosmer-Lemshow goodness-of-fit test, in the first plot (LHS) we show model fit against empirical probabilities of success, for each of the quantile groups $k$, for $k = 1, \dots, g$. The probabilities are similar, with most points close to the 1:1 line, indicating a well fit model. In the second plot we show the number of successes for each quantile group, where color denotes model predicted or observed frequency. The observed and predicted successes in each group are quite close together, again indicating a well fit model.}
     \label{fig:hoslem}
   \end{figure}
+In the first plot (LHS) in Figure \ref{fig:hoslem}, the closeness of the points to the reference line indicates the similarity of predicted and observed probabilities of success. In the second plot of Figure \ref{fig:hoslem}, the proximity of the blue and pink points to one another shows the similarity of the observed and predicted number of successes, in each Hosmer-Lemeshow test quantile. 
 
-This lends credibility to the biomechanical covariate approach. This validation will suffice for now, and it sets the stage for the more substantial innovation in this chapter, an interactive heat map confidence interval.
+These observations and the test p-value lend credibility to the biomechanical covariate approach. This validation will suffice for now, and it sets the stage for the more substantial innovation in this chapter, an interactive heat map confidence interval.
 
 \section{Interactive Heat Map Confidence Intervals}
 
