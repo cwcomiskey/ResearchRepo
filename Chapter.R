@@ -9,6 +9,16 @@ library("dplyr")
 # hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
 load("~/Desktop/ResearchRepo/varyres/data/hitter.rda")
 
+
+# Ch4 Plots =======================
+vr <- varyres(hitter, cutoff = 200, max = 6)
+mapit(vr[[5]]) + spec_fcn(g = FALSE) + geom_point(data = vr[[5]], aes(x = x, y = y), size = 5)
+dim(vr[[5]])
+
+ggsave("/Users/ABC/Desktop/ResearchRepo/Images/knots.jpg", height = 8.5, width = 8.5)
+
+
+
 # Empirical Mothership plot ==============================
 
 righties <- read.csv("~/Desktop/ResearchRepo/Data/righties.csv")
@@ -18,7 +28,7 @@ coordsR <- with(righties, cbind.data.frame(px, pz))
 # nx = 55, ny = 75
 xbc <- seq(-1.5 - 1e-6, 1.5 + (1e-6), , 11)[c(2, 4, 6, 8, 10)]
 ybc <- seq(   1 - 1e-6,   4 + (1e-6), , 11)[c(2, 4, 6, 8, 10)]
-hitgridR <- with(righties, 
+hitgridR <- with(righties,
                  as.image(hit, coordsR, grid = list(x = xbc, y = ybc)))
 ABC.R <- with(hitgridR,
               cbind(expand.grid(x, y), as.vector(z)))
@@ -73,9 +83,19 @@ source('~/Desktop/ResearchRepo/varyres/R/mapit.R')
 dat <- varyres(hitter, cutoff = 200)
 
 # Scatter plot ============== #
-# ggplot(data = hitter, aes(x, y)) + geom_point(alpha = 0.3, size = 0.3) + coord_equal() + labs(title = "Scatter Plot", x = "", y = "") + theme(plot.title = element_text(hjust = 0.5, size = 35)) 
+# ggplot(data = hitter, aes(x, y)) + geom_point(alpha = 0.3, size = 0.3) + coord_equal() + labs(title = "Scatter Plot", x = "", y = "") + theme(plot.title = element_text(hjust = 0.5, size = 35))
 
-mapit(dat[[5]]) + spec_fcn() + lab_fcn() + sz_fcn()
+mapit(dat[[4]]) + spec_fcn() + text_fcn(3)
+
+# Standard error calculations
+d2 <- filter(d, x > -1 & x < 1 & y > 1.5 & y < 3.5)
+d2 <- mutate(d2, SE = sqrt((statistic*(1-statistic))/count))
+
+d3 <- filter(d, x < -1.5 | x > 1.5 | y < .75 | y > 4)
+d4 <- filter(d3, statistic > 0)
+d5 <- mutate(d4, SE = sqrt((statistic*(1-statistic))/count))
+summary(d5$SE)
+
 
 # ggsave("/Users/ABC/Desktop/ResearchRepo/Images/Peralta_var-res.jpg", height = 8.5, width = 8.5)
 
@@ -116,15 +136,15 @@ hitter <- mutate(hitter,
 # doh <- glm(hit ~ px*pz + I(px^2)*I(pz^2),
 #            family = binomial, data = hitter )
 
+# hitter2 <- sample_n(hitter, 1000)
+
 mod.polar <- glm(res ~ r*theta + I(r^2)*I(theta^2),
                  family = binomial, data = hitter)
 
-
-# Plot ===================
-
 # Points for plotting through the hitting zone
-hitzone <- with(hitter, cbind(expand.grid(x = seq(min(x), max(x), length = 50),
-                             y = seq(min(y), max(y), length = 70)))) %>%
+hitzone <- with(hitter,
+                cbind(expand.grid(x = seq(min(x), max(x), length = 50),
+                                  y = seq(min(y), max(y), length = 70)))) %>%
   mutate(r = sqrt( (x + 2)^2 + (y - 3.5)^2),
          theta = atan2(y - 3.5, x + 2) )
 
@@ -133,22 +153,23 @@ preds <- predict(mod.polar, newdata = hitzone, se.fit = TRUE)
 # source('~/Desktop/ResearchRepo/varyres/R/mapit.R')
 
 inv_logit <- function(x){exp(x)/(1+exp(x))}
-hitzone <- with(preds, 
-                mutate(hitzone, 
-                       logit = fit, 
-                       SE_logit = se.fit, 
+hitzone <- with(preds,
+                mutate(hitzone,
+                       logit = fit,
+                       SE_logit = se.fit,
                        phat = inv_logit(logit)
                 )
 )
 
 ggplot(aes(x, y), data = hitzone) +
-  geom_tile(data = hitzone, aes(fill = phat)) + 
+  geom_tile(data = hitzone, aes(fill = phat)) +
   sz_fcn() +
   coord_equal() + # xlim(-1.5, 1.5) + ylim(1, 4) +
-  spec_fcn() + lab_fcn() + 
+  spec_fcn() + lab_fcn() +
   ggtitle("Polar Covariate GLM \n Success Probability")
 
 # ggsave("Peralta_fit.jpg", height = 8.5, width = 8.5, path = "/Users/ABC/Desktop/ResearchRepo/Images")
+
 
 # H-L GoF test ===============
 # (pg 133 Myers)
@@ -156,11 +177,43 @@ ggplot(aes(x, y), data = hitzone) +
 # H_A: Lack of fit
 
 library(ResourceSelection)
-hoslem.test(mod.polar$y, fitted(mod.polar)) # p-value = 0.8217
-hoslem.test(doh$y, fitted(doh))
+d <- hoslem.test(mod.polar$y, fitted(mod.polar)) # p-value = 0.8217
 
-hitter <- mutate(hitter, p.hat = predict(mod.polar, newdata = righties, type = "response"))
+# o_0 <- d$observed
+# e_0 <- d$expected
 
+o <- as.data.frame(d$observed)
+o2 <- cbind.data.frame(o[1:10,], o[11:20,]) 
+o2 <- with(o2, data.frame(k = cutyhat, n0 = o2[,3], n1 = o2[,6]))
+o2 <- mutate(o2, p_o = n1/(n0+n1))
+
+e <- as.data.frame(d$expected)
+e2 <- cbind.data.frame(e[1:10,], e[11:20,])
+e2 <- with(e2, data.frame(k = cutyhat, n0 = e2[,3], n1 = e2[,6]))
+e2 <- mutate(e2, p_e = n1/(n0+n1))
+
+pdat <- cbind.data.frame(p_o = o2$p_o, p_e = e2$p_e)
+
+# Plot: p_predicted VS. p_observed =========== #
+ggplot(data = pdat, aes(x = p_o, y = p_e)) + geom_point(size = 13) + geom_abline(intercept = 0, slope = 1, size = 2) +   
+  lab_fcn(s2 = 20) +
+  labs(title = "Success Probabilities: Observed vs. Predicted ", 
+       x = expression(p[obs]), y = expression(p[GLM]))
+
+ggsave("ppredVSpobs.jpg", height = 8.5, width = 8.5, path = "/Users/ABC/Desktop/ResearchRepo/Images")
+
+# Plot: ``Successes: Observed VS. Expected'' =========== #
+dat <- rbind.data.frame(o, e)
+ones <- filter(dat, Var2 == "y1" | Var2 == "yhat1")
+ones$cutyhat <- rep(1:10, 2)
+names(ones)[1:2] <- c("k", "Successes")
+
+ggplot(data = ones, aes(x = k, y = Freq, color = Successes)) + 
+  geom_point(size = 10) + lab_fcn(s2=20) +
+  ggtitle("Successes: Observed vs Expected") +
+  scale_color_discrete(labels=c("Observed", "Expected"))
+
+ggsave("OvE.jpg", height = 8.5, width = 8.5, path = "/Users/ABC/Desktop/ResearchRepo/Images/")
 
 
 # Line and Bands =====================
