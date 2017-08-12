@@ -6,9 +6,11 @@ library(rgeos)
 library(rgdal)
 
 # grab whole world of oceans
-oceans <- ne_download(scale = 50, type = 'ocean', category = 'physical')
+oceans <- ne_download(scale = 50, type = 'ocean', 
+                      category = 'physical')
 
-canada <- ne_countries(scale = 50, type = "countries", country = "canada")
+canada <- ne_countries(scale = 50, type = "countries", 
+                       country = "canada")
 canada <- crop(canada, extent(-125, -65, 40, 50))
 
 mexico <- ne_countries(scale = 50, type = "countries", country = "mexico")

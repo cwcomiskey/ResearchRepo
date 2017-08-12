@@ -1,5 +1,15 @@
 # Maps
 
+# Standard map packages.
+install.packages(c("maps", "mapdata"))
+
+# the github version of ggmap
+devtools::install_github("dkahle/ggmap")
+
+library(ggplot2)
+library(ggmap)
+library(maps)
+library(mapdata)
 library(dplyr)
 library(readr)
 library(ggplot2)
@@ -12,6 +22,9 @@ library(ggplot2)
 # write.csv(torn, file = "torn.csv")
 # write.csv(torn_vr, file = "torn_vr.csv")
 # end mess =====
+
+
+usa <- map_data("usa")
 
 torn_vr <- read.csv("/Users/ABC/Desktop/ResearchRepo/Tornado/torn_vr.csv", row.name = 1)
 
@@ -41,19 +54,9 @@ ggplot2::ggplot(dat, aes(x, y, fill=statistic)) +
                  fill = "green") 
 }
 
-# Standard map packages.
-install.packages(c("maps", "mapdata"))
+vanado(tornado_vr[[7]])
 
-# the github version of ggmap
-devtools::install_github("dkahle/ggmap")
 
-library(ggplot2)
-library(ggmap)
-library(maps)
-library(mapdata)
-
-usa <- map_data("usa")
-dim(usa); head(usa)
 
 # Full plot ===== #
 mapnado <- function(dat){
