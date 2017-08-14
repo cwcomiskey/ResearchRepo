@@ -5,14 +5,17 @@ library(fields)
 library("reshape2")
 library("gridExtra")
 library("dplyr")
+library(varyres)
 
 # hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
 load("~/Desktop/ResearchRepo/varyres/data/hitter.rda")
+h <- hitter
 
+# source('~/Desktop/ResearchRepo/varyres/R/mapit.R')
 
 # Ch4 Plots =======================
 vr <- varyres(hitter, cutoff = 200, max = 6)
-mapit(vr[[5]]) + spec_fcn(g = FALSE) + geom_point(data = vr[[5]], aes(x = x, y = y), size = 5)
+mapit(vr[[5]]) + geom_point(data = vr[[5]], aes(x = x, y = y), size = 5)
 dim(vr[[5]])
 
 ggsave("/Users/ABC/Desktop/ResearchRepo/Images/knots.jpg", height = 8.5, width = 8.5)
@@ -26,24 +29,25 @@ righties <- filter(righties, pz >= 1 & pz <= 4, px >= -1.5 & px <= 1.5 )
 
 coordsR <- with(righties, cbind.data.frame(px, pz))
 # nx = 55, ny = 75
-xbc <- seq(-1.5 - 1e-6, 1.5 + (1e-6), , 11)[c(2, 4, 6, 8, 10)]
-ybc <- seq(   1 - 1e-6,   4 + (1e-6), , 11)[c(2, 4, 6, 8, 10)]
+# xbc <- seq(-1.5 - 1e-6, 1.5 + (1e-6), , 11)[c(2, 4, 6, 8, 10)]
+# ybc <- seq(   1 - 1e-6,   4 + (1e-6), , 11)[c(2, 4, 6, 8, 10)]
 hitgridR <- with(righties,
-                 as.image(hit, coordsR, grid = list(x = xbc, y = ybc)))
+                 as.image(hit, nx = 33, ny = 19, coordsR))
 ABC.R <- with(hitgridR,
               cbind(expand.grid(x, y), as.vector(z)))
 names(ABC.R) <- c("Horizontal", "Vertical", "Hitting")
 
 # source('~/Desktop/ResearchRepo/varyres/R/mapit.R')
 
+mapit_seq(ABC.R)
+
 ggplot(ABC.R, aes(Horizontal, Vertical)) +
   geom_tile(data = ABC.R, aes(fill = Hitting)) +
-  # xlim(-1.5, 1.5) + ylim(1, 4) +
-  spec_fcn() +
   coord_equal() + lab_fcn() + sz_fcn() +
-  ggtitle("Right-Handed Hitter \n Empirical Success")
+  scale_fill_distiller(palette = "YlOrRd", trans = "reverse",
+                       guide = guide_legend(title = expression(paste(p[b]))))
 
-# ggsave("/Users/ABC/Desktop/ResearchRepo/Images/Rudimentary.jpg", height = 8.5, width = 8.5) # righties empirical
+# ggsave("/Users/ABC/Desktop/ResearchRepo/Images/Mothership.jpg", height = 8.5, width = 8.5) # righties empirical
 
 
 
@@ -75,19 +79,35 @@ ggsave("Chapter_VarRes.jpg", g,
 
 
 
-# Increasing resolution on `batter == 425509' =======
+
+# You-name-it resolution =======
 
 load("~/Desktop/ResearchRepo/varyres/data/hitter.rda")
 source('~/Desktop/ResearchRepo/varyres/R/var_res.R')
 source('~/Desktop/ResearchRepo/varyres/R/mapit.R')
-dat <- varyres(hitter, cutoff = 200)
+dat <- varyres(hitter, cutoff = 200, max = 6)
 
-# Scatter plot ============== #
+seq_mapit(dat[[5]], txt = 4) #  + sz_fcn()
+
+# ggsave("/Users/ABC/Desktop/ResearchRepo/Images/Chapter16x16_200.jpg", height = 8.5, width = 8.5)
+
+a <- seq_mapit(dat[[1]], txt = 15, ttl = "(A)")
+b <- seq_mapit(dat[[2]], txt = 15, ttl = "(B)")
+c <- seq_mapit(dat[[3]], txt = 15, ttl = "(C)")
+d <- seq_mapit(dat[[4]], txt = 7, ttl = "(D)")
+e <- seq_mapit(dat[[5]], txt = 5, ttl = "(E)")
+f <- seq_mapit(dat[[6]], txt = 3, ttl = "(F)")
+
+
+g <- grid.arrange(a, b, c, d, e, f, ncol = 3)
+
+# ggsave("/Users/ABC/Desktop/ResearchRepo/Images/6_100.jpg", g, height = 2*8.5, width = 3*8.5)
+
+dev.off()
+
+# Scatter plot ============== 
 # ggplot(data = hitter, aes(x, y)) + geom_point(alpha = 0.3, size = 0.3) + coord_equal() + labs(title = "Scatter Plot", x = "", y = "") + theme(plot.title = element_text(hjust = 0.5, size = 35))
-
-mapit(dat[[4]]) + spec_fcn() + text_fcn(3)
-
-# Standard error calculations
+# Standard error calculations ========== 
 d2 <- filter(d, x > -1 & x < 1 & y > 1.5 & y < 3.5)
 d2 <- mutate(d2, SE = sqrt((statistic*(1-statistic))/count))
 
@@ -95,23 +115,6 @@ d3 <- filter(d, x < -1.5 | x > 1.5 | y < .75 | y > 4)
 d4 <- filter(d3, statistic > 0)
 d5 <- mutate(d4, SE = sqrt((statistic*(1-statistic))/count))
 summary(d5$SE)
-
-
-# ggsave("/Users/ABC/Desktop/ResearchRepo/Images/Peralta_var-res.jpg", height = 8.5, width = 8.5)
-
-B <- mapit(dat[[2]]) + spec_fcn() + text_fcn(10)
-C <- mapit(dat[[3]]) + spec_fcn() + text_fcn(10)
-D <- mapit(dat[[4]]) + spec_fcn() + text_fcn(8)
-E <- mapit(dat[[5]]) + spec_fcn() + text_fcn(6)
-F_<- mapit(dat[[6]]) + spec_fcn() + text_fcn(4)
-
-
-
-g <- grid.arrange(A, B, C, D, E, F_, ncol = 3)
-ggsave("/Users/ABC/Desktop/ResearchRepo/Images/Chapter_VarRes.jpg", g, height = 2*8.5, width = 3*8.5)
-dev.off()
-
-
 
 
 
@@ -194,10 +197,10 @@ e2 <- mutate(e2, p_e = n1/(n0+n1))
 
 pdat <- cbind.data.frame(p_o = o2$p_o, p_e = e2$p_e)
 
-# Plot: p_predicted VS. p_observed =========== #
+# Plot: p_fitted VS. p_observed =========== #
 ggplot(data = pdat, aes(x = p_o, y = p_e)) + geom_point(size = 13) + geom_abline(intercept = 0, slope = 1, size = 2) +   
   lab_fcn(s2 = 20) +
-  labs(title = "Success Probabilities: Observed vs. Predicted ", 
+  labs(title = "Success Probabilities: Observed vs. Fitted ", 
        x = expression(p[obs]), y = expression(p[GLM]))
 
 ggsave("ppredVSpobs.jpg", height = 8.5, width = 8.5, path = "/Users/ABC/Desktop/ResearchRepo/Images")

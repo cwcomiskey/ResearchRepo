@@ -6,9 +6,16 @@ Broadly speaking, we add a spatial random effect to improve the model by attempt
 
 This chapter consists of four sections. The first section covers four background topics for the remaining sections: Gaussian Random Fields, SGLMMs, big spatial data computational burdens, and Markov Chain Monte Carlo. The remaining three sections detail three approaches to dealing with the computational burdens of fitting our SGLMM: optimization, dimension reduction, and approximation.
 
-\subsection{Gaussian Random Field} % ================== 
+\subsection{Spatial Generalized Linear Mixed Model (SGLMM)} % ======= ======= ===
+Let $\pmb{w}(\pmb{s}_{ij})$ be a spatial random effect at location $\pmb{s}_{ij}$, and add it to the linear predictor in equation \ref{eq:glm} to give the following SGLMM:
+\begin{equation}
+Y_{ij}|\mathbf{X}_{ij}(\mathbf{s}_{ij}) \stackrel{ind}{\sim} \mbox{Bernoulli}(\pi_{ij}) 
+\end{equation}
+with
+\begin{equation} \text{logit}(\pi_{ij}|\pmb{s}_{ij}) = \mathbf{X}_{ij}(\mathbf{s}_{ij})\beta + w(\pmb{s}_{ij}). 
+\end{equation}
 
-A Gaussian random field (GRF) provides a tractable structure for spatial random effects in a linear model \citep{Gelfand2010}. To define a GRF, first define vector of locations $\pmb{s} \in \pmb{D} \subseteq \pmb{R}^{2}$, for spatial domain $\pmb{D}$. Then, define multivariate Normal random vector $\pmb{w}(\pmb{s})$, with mean $\pmb{0}$; and symmetric, positive definite covariance matrix $\Sigma(\pmb{\theta})$, with covariance parameters $\pmb{\theta}$ \citep{Haran2011}.
+A Gaussian random field (GRF) provides a tractable structure for $n \times 1$ vector of random effects $\pmb{w}(\pmb{s})$ \citep{Gelfand2010}. Accordingly, for vector of locations $\pmb{s} \in \pmb{D} \subseteq \pmb{R}^{2}$, with spatial domain $\pmb{D}$ (hitting zone) $\pmb{w}(\pmb{s})$: let $\pmb{w}(\pmb{s})$ be a multivariate Normal random vector, with mean $\pmb{0}$; and symmetric, positive definite covariance matrix $\Sigma(\pmb{\theta})$, with covariance parameters $\pmb{\theta}$ \citep{Haran2011}.
 \begin{equation} \label{eq:w}
 \pmb{w}(\pmb{s}) | \pmb{\theta} \sim MVN(\pmb{0}, \Sigma(\pmb{\theta})) 
 \end{equation}
@@ -17,16 +24,6 @@ In sections \ref{stanopt} and \ref{ppm} we use an isotropic spatial exponential 
 \Sigma(\phi, \sigma^{2})_{i,j} = \sigma^{2} exp(-||\pmb{s}_{i} - \pmb{s}_{j}||/\phi),
 \end{equation}
 with scale parameter $\sigma^{2}$, range parameter $\phi$, and where $||s_{i} - s_{j}||$ denotes the Euclidean distance between $\pmb{s}_{i}$ and $\pmb{s}_{j}$.
-
-\subsection{Spatial Generalized Linear Mixed Model}
-Adding $\pmb{w}(\pmb{s})$ to the linear predictor in equation \ref{eq:glm} gives the following spatial generalized linear mixed model (SGLMM):
-$$ Y_{ij}|\mathbf{X}_{ij}(\mathbf{s}_{ij}) \stackrel{ind}{\sim} \mbox{Bernoulli}(\pi_{ij}) $$
-with
-$$ \text{logit}(\pi_{ij}|\pmb{s}_{ij}) = \mathbf{X}_{ij}(\mathbf{s}_{ij})\beta + w(\pmb{s}_{ij}).$$
-
-% \begin{equation} \label{eq:SGLMM}
-% \text{logit}(\pi_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + w(\pmb{s}_{ij}).
-% \end{equation}
 
 This spatial model, containing a latent (unobserved) Gaussian random field, gives $\pmb{Y}$ a complicated correlation structure. Bayesian hierarchical spatial models most effectively accommodate this structure, and Markov chain Monte Carlo (MCMC) methods most effectively estimate model parameters \citep{Banerjee2014}. High dimensionality for this spatial model induces substantial computational costs, referred to as the ``Big N problem'' \citep{Lindgren2011}.
 
@@ -48,7 +45,7 @@ To address these computational challenges, we used three model-fitting approache
 \begin{enumerate}
 \item Computational optimization in Bayesian computing software Stan \citep{rstan}.
 \item Dimension reduction with Predictive process models, implemented in R with the R package {\bf spBayes} \citep{Eidsvik2012}, \citep{Finley2013}.
-\item Integrated Nested Laplace Approximations with Stochastic Partial Differential Equations, implemented in the R with the package \verb|INLA-R| \citep{Lindgren2015}.
+\item Integrated Nested Laplace Approximations \citep{Rue2009} with Stochastic Partial Differential Equations \citep{Lindgren2011}, implemented in the R with the package \verb|INLA-R| \citep{Lindgren2015}.
 \end{enumerate}
 
 \subsection{Markov Chain Monte Carlo (MCMC)}
@@ -75,7 +72,7 @@ To understand HMC, imagine a solid disk with known position and momentum on a fr
 
 \subsection{The Hamilton Equations} % =================
 
-In this section we follow the notation of \cite{Neal2011}. To define the Hamilton equations for d variables of interest, let d-dimensional position vector $q(t)$ depend on time $t$; and let $U(q(t))$ denote the potential energy at time $t$. Let $p(t)$ give the d-dimensional momentum at time $t$, and $K(p(t))$ denote kinetic energy at time $t$. Then the Hamilton equation,
+This section uses the notation of \cite{Neal2011}. To define the Hamilton equations for d variables of interest, let d-dimensional position vector $q(t)$ depend on time $t$; and let $U(q(t))$ denote the potential energy at time $t$. Let $p(t)$ give the d-dimensional momentum at time $t$, and $K(p(t))$ denote kinetic energy at time $t$. Then the Hamilton equation,
 \begin{equation}
 H(q(t),p(t)) = U(q(t)) + K(p(t)),
 \end{equation}
@@ -166,9 +163,10 @@ However, increasing the number of observations to $n=500$ required approximately
 
 Optimization in Stan proved inadequate for addressing the ``big N'' problem. Next, in an effort to address the big N problem in another way, we examine an approach that creates a reduced dimension representation of a SGLMM. 
 
-\section{Dimension Reduction with Predictive Process Models} \label{ppm} % ======
+% =========== ========== ========= ======== ========
+\section{Dimension Reduction with Predictive Process Models} \label{ppm} 
 
-\subsection{Introduction}
+\subsection{Introduction} % ======= ====== ====== =====
 
 Predictive process models (PPMs) reduce the dimension of our SGLMM's covariance matrix to circumvent the big N problem. Several general strategies exist for this task, with often several methods to implement each strategy. \cite{Fuentes2007} and \cite{Paciorek2007} use a spectral representation of the covariance function, and Fourier transformations, to reduce the dimensionality of data on a regular lattice. ``Covariance tapering'' involves setting small values in the covariance matrix to zero, and achieving computational gains that come with a sparse matrix \citep{Furrer2006}, \citep{Kaufman2008}. We explore one computational approximation approach in Section \ref{INLA} \citep{Rue2009}, but others exist \citep{Stein2004}, \citep{Eidsvik2014}, \citep{Aune2014}. Still others approaches, including PPMs which we use, apply exact methods to a simplified, lower rank version of the original model \citep{Cressie2008}, \citep{Higdon2002}, \citep{Eidsvik2012}.
 
@@ -177,26 +175,26 @@ PPMs provide a competitive modeling approach, and computational advantages speci
 \subsection{PPM Procedure}
 Consider again the SGLMM from equation \ref{eq:SGLMM}, defined as it was there, and Gaussian random field $\pmb{w}(\pmb{s})$:
 \begin{align}
-\text{logit}(p_{ij}|\pmb{s}_{ij}) &= \pmb{X}_{ij}(s_{ij}) \pmb{\beta}_{j} + w(\pmb{s}_{ij}) \label{eq:orig} \\
-\pmb{w}(\pmb{s}) | \pmb{\theta} &\sim \text{GRF}(\pmb{0}, \pmb{C}(\pmb{\theta})) \label{eq:GRF}
+\text{logit}(\pi_{ij}|\pmb{s}_{ij}) &= \pmb{X}_{ij}(s_{ij}) \pmb{\beta}_{j} + w(\pmb{s}_{ij}) \label{eq:orig} \\
+\pmb{w}(\pmb{s}) | \pmb{\theta} &\sim \text{GRF}(\pmb{0}, \Sigma(\pmb{\theta})) \label{eq:GRF}
 \end{align}
-Equation \ref{eq:GRF} defines a stationary GRF for an n $\times$ 1 vector of random effects $\pmb{w}$, at locations $\pmb{s}$, conditioned on covariance parameters $\pmb{\theta}$; with mean equal to the n $\times$ 1 zero vector, $\pmb{0}$; and a symmetric, positive-definite, n $\times$ n covariance matrix, $\pmb{C}(\pmb{\theta})$.
+Equation \ref{eq:GRF} defines a stationary GRF for an n $\times$ 1 vector of random effects $\pmb{w}$, at locations $\pmb{s}$, conditioned on covariance parameters $\pmb{\theta}$; with mean equal to the n $\times$ 1 zero vector, $\pmb{0}$; and a symmetric, positive-definite, n $\times$ n covariance matrix, $\Sigma(\pmb{\theta})$.
 
-To define the PPM procedure, let $C(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})$ denote the covariance of random effects at locations $\pmb{s}_{i}$ and $\pmb{s}_{j}$, so that $C(\pmb{\theta}) = [C(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})]_{i,j=1}^{n}$. Next, let $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ give a set of $m << n$ knot locations, not necessarily a subset of observed locations.\footnote{Knot selection is equivalent to the area of study known as spatial sampling design \citep{Finley2009}. See \citep{Xia2006} for a summary of spatial sampling approaches.} We denote knot location random effects with the m $\times$ 1 vector $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m}$, and the m $\times$ m knot covariance matrix and its elements as $\pmb{C}^{*}(\pmb{\theta}) = \left[C(\pmb{s}_{i}^{*}, \pmb{s}_{j}^{*})\right]_{i,j = 1}^{m}$. The knot random effects constitute a distinct m-dimensional GRF:
+To define the PPM procedure, let $\Sigma(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})$ denote the covariance of random effects at locations $\pmb{s}_{i}$ and $\pmb{s}_{j}$, so that $\Sigma(\pmb{\theta}) = [\Sigma(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})]_{i,j=1}^{n}$. Next, let $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ give a set of $m << n$ knot locations, not necessarily a subset of observed locations.\footnote{Knot selection is equivalent to the area of study known as spatial sampling design \citep{Finley2009}. See \citep{Xia2006} for a summary of spatial sampling approaches.} We denote knot location random effects with the m $\times$ 1 vector $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m}$, and the m $\times$ m knot covariance matrix and its elements as $\Sigma^{*}(\pmb{\theta}) = \left[\Sigma(\pmb{s}_{i}^{*}, \pmb{s}_{j}^{*})\right]_{i,j = 1}^{m}$. The knot random effects constitute a distinct m-dimensional GRF:
 \begin{equation}
-\pmb{w}^{*}|\pmb{\theta} \sim \text{GRF}\{\pmb{0}, \pmb{C}^{*}(\pmb{\theta})\}.
+\pmb{w}^{*}|\pmb{\theta} \sim \text{GRF}\{\pmb{0}, \Sigma^{*}(\pmb{\theta})\}.
 \end{equation}
-Consider a new loction $\pmb{s}_{0}$. The PPM procedure uses the m knots, the covariance structure of the original GRF (of all $n$ observations, equation \ref{eq:GRF}) in the original model (\ref{eq:orig}), and kriging to interpolate $w$ at $\pmb{s}_{0}$ \citep{Schabenberger2004}. To see this, let $\tilde{w}(\pmb{s}_{0})$ represent this interpolated random effect, and let $\pmb{c}(\pmb{s}_{0};\pmb{\theta}) = \left[C(\pmb{s}_{0}, \pmb{s}_{j}^{*}; \pmb{\theta})\right]_{j = 1}^{m}$ be an m $\times$ 1 covariance vector giving the covariance of the random effect at $\pmb{s}_{0}$ with the knot random effects. Then, the kriging estimator
+Consider a new loction $\pmb{s}_{0}$. The PPM procedure uses the m knots, the covariance structure of the original GRF (of all $n$ observations, equation \ref{eq:GRF}) in the original model (\ref{eq:orig}), and kriging to interpolate $w$ at $\pmb{s}_{0}$ \citep{Schabenberger2004}. To see this, let $\tilde{w}(\pmb{s}_{0})$ represent this interpolated random effect, and let $\pmb{\sigma}(\pmb{s}_{0};\pmb{\theta}) = \left[\Sigma(\pmb{s}_{0}, \pmb{s}_{j}^{*}; \pmb{\theta})\right]_{j = 1}^{m}$ be an m $\times$ 1 covariance vector giving the covariance of the random effect at $\pmb{s}_{0}$ with the knot random effects. Then, the kriging estimator
 \begin{align}
 \tilde{w}(\pmb{s}_{0}) &= E[w(\pmb{s}_{0})|\pmb{w}^{*}] \\ 
-&= \pmb{c}^{T}(\pmb{s}_{0};\pmb{\theta}) \cdot \pmb{C}^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*} \label{eq:krig}
+&= \pmb{\sigma}^{T}(\pmb{s}_{0};\pmb{\theta}) \cdot \Sigma^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*} \label{eq:krig}
 \end{align}
 minimizes the squared error loss function among all linear predictors \citep{Schabenberger2004}. Notice that the linear combination (\ref{eq:krig}) varies spatially. Accordingly, the predictive process $\tilde{w}(\pmb{s})$ defines the following GRF and covariance matrix.
 \begin{align}
-\tilde{\pmb{w}}(\pmb{s}) &\sim \text{GRF}\{0, \tilde{C}(\cdot)\} \\
-\tilde{C}(\pmb{s}, \pmb{s}'; \pmb{\theta}) &= \pmb{c}^{T}(\pmb{s};\pmb{\theta}) \cdot \pmb{C}^{*-1}(\pmb{\theta}) \cdot \pmb{c}(\pmb{s}';\pmb{\theta})
+\tilde{\pmb{w}}(\pmb{s}) &\sim \text{GRF}\{0, \widetilde{\Sigma}(\cdot)\} \\
+\widetilde{\Sigma}(\pmb{s}, \pmb{s}'; \pmb{\theta}) &= \pmb{\sigma}^{T}(\pmb{s};\pmb{\theta}) \cdot \Sigma^{*-1}(\pmb{\theta}) \cdot \pmb{\sigma}(\pmb{s}';\pmb{\theta})
 \end{align}
-Recall that the m $\times$ 1 vector $\pmb{c}(\pmb{s};\pmb{\theta}) = \left[C(\pmb{s}, \pmb{s}_{j}^{*})\right]_{j = 1}^{m}$ gives the covariance of the random effect at $\pmb{s}$ with knot random effects. This last GRF replaces the original GRF (\ref{eq:GRF}) of all $n$ observations in the original model (\ref{eq:orig}), to give the following logistic regression model equation:
+Recall that the m $\times$ 1 vector $\pmb{\sigma}(\pmb{s};\pmb{\theta}) = \left[\Sigma(\pmb{s}, \pmb{s}_{j}^{*})\right]_{j = 1}^{m}$ gives the covariance of the random effect at $\pmb{s}$ with knot random effects. This last GRF replaces the original GRF (\ref{eq:GRF}) of all $n$ observations in the original model (\ref{eq:orig}), to give the following logistic regression model equation:
 \begin{equation}
 \text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + \tilde{w}(\pmb{s}).
 \end{equation}
@@ -204,46 +202,35 @@ We used the R package {\bf spBayes} to implement the PPM approach to model the r
 
 \subsection{Results} \label{PPMresults}
 
-The R package {\bf spBayes} includes a function \verb|spGLM(...)|, which we used to fit our SGLMM \citep{Finley2013}. Using PPMs requires knot selection, and the number of knots ( some $m < < n$) directly impacts the computational costs. Using a range of values for $m$, in terms of speed PPMs drastically outperformed Stan optimization big N model fitting on the Jhonny Peralta data. However, PPM models failed to converge. 
+The R package {\bf spBayes} includes a function \verb|spGLM(...)|, which we used to fit our SGLMM \citep{Finley2013}. Using PPMs requires knot selection, and the number of knots (some $m < < n$) directly impacts the computational costs. Using a range of values for $m$, in terms of speed PPMs drastically outperformed Stan optimization big N model fitting on the Jhonny Peralta data. However, PPM model MCMC chains failed to converge in all attempts in our study. Therefore, as with Stan optimzation, this approach to the ``big N'' problem did not provide parameter estimates. Nonetheless, we provide computing times for the iterations we ran, even though MCMC chains did not converge within the number of iterations we prescribed.
 
-In our model fits with PPMs, we used VR heat map box centers for knots. In our first set of model fits, we used 97 VR heat map box centers as knots. 
+In our model fits with PPMs, we used as knots VR heat map box centers, specifically from the Jhonny Peralta data VR heat map with stopping rule $N_{b} < 200$. In our first set of model fits, we chose all 97 (final) VR heat map box centers as knots, an amount comparable to knot quantities in the \cite{Finley2009_2} study of ``tree species assemblages.'' 
   \begin{figure}[H]
 	\centering 
 	\includegraphics[scale=.08]{Images/knots.jpg}
 	\caption{This map shows 97 PPM knots as variable-resolution heat map box centers. This Jhonny Peralta map used stopping rule $n_{b} < 200$.}
+	\label{fig:knots}
 	\end{figure}
-Using these 97 knots, for n = 300 observations, the PPM model fit generated 10,000 samples in three minutes. For n = 500 observation, 10,000 posterior draws required 4 minutes. For the same number of knots, but n = 1000 observations, 10,000 posterior draws required approximately seven minutes; and 37,500 draws required 23 minutes. The follow graphic shows VR empirical, GLM, and PPM fits for the same random n = 1000 subsample.
-%   \begin{figure}[H]
-% 	\centering 
-% 	\includegraphics[scale=.05]{Images/VR_GLM_PPM.jpg}
-% 	\caption{Empirical, generalized linear model, and predictive process model (97 knots) fits for a random subset of 1000 Jhonny Peralta observations. The predictive process model fit took approximately 23 minutes, while the generalized linear model fit took less than 10 seconds.}
-% 	\label{fig:comps1}
-% 	\end{figure}
-Each fit tells its own story, with some overlap. All three maps appear to agree on Peralta's region of maximum success probabilities, but differ on the maximum. In particular, the GLM fit predicts much lower success probabilities than the PPM fit; even though they both assign similar shapes to the so called hot zone. The range of $\hat{p}$ on the empirical map more closely matches the GLM fit than the PPM fit. However, these observations only hold value as an interpretable example; the subset of n = 1000 observations falls far short of the available Peralta data.
+For all results below, we again used a 2012 Macbook Pro with a 2.5 GHz Intel processor, two cores, and 4 GB of RAM. Using the 97 knots in Figure \ref{fig:knots}, for $n = 300$ observations, the \verb|spGLM| fucntion generated 10,000 (nonconvergent) MCMC iterations in three minutes. For $n = 500$ observation, 10,000 (nonconvergent) iterations required 4 minutes. For the same number of knots, but $n = 1000$ observations, 10,000 (nonconvergent) iterations required approximately seven minutes; and 37,500 (nonconvergent) iterations required 23 minutes. 
 
-Changing the number of knots to 49, but still using n = 1000 observations, the fit generated 30,000 posterior draws in seven minutes. Finally, for n = 3000 observations, still with 49 knots, the fit generated 37,500 posterior draws in 27 minutes. Notice that the elapsed time increased by only four minutes, despite going from n = 1000 to n = 3000 observations. This small increase results from reducing the number of knots from 97 to 49. These two factors---the number of observations and the number of knots---interactively influence the computational costs. Figure \ref{fig:comps2} below shows heap maps for the n = 3000 observation subset model fits. 
-  \begin{figure}[H]
-	\centering 
-	\includegraphics[scale=.05]{Images/VR_GLM_PPM_3000.jpg}
-	\caption{Empirical, generalized linear model, and predictive process model (49 knots) fits for a random subset of 3000 Jhonny Peralta observations. The predictive process model fit took approximately 27 minutes, while the GLM fit took under 10 seconds.}
-	\label{fig:comps2}
-	\end{figure}
-These maps show less variation than those in Figure \ref{fig:comps1}, probably owing to a larger set of observations. However, as before, this example serves only to demonstrate the tremendous increase in computational cost over the GLM model fit; and the tremendous increase in speed over model fitting in Stan, where we were unable to fit a model to an n = 3000 observation data set. 
+In our second set of model fits, we chose as knots all 49 VR heat map box centers from the penultimate ($4^{th}$) iteration. Still using $n = 1000$ observations, the \verb|spGLM| function generated 30,000 iterations in seven minutes. For $n = 3000$ observations (still with 49 knots), \verb|spGLM| generated 37,500 iterations in 27 minutes. Notice that the elapsed time increased by only four minutes, despite going from $n = 1000$ to $n = 3000$ observations. This small increase resulted from reducing the number of knots from 97 to 49. These two factors---the number of observations and the number of knots---interactively influence the computational costs. 
+
+These computing times demonstrate the tremendous increase in computational cost over the GLM model fit; and the increase in MCMC iterative speed over model fitting in Stan, where we were unable to fit a model to an n = 3000 observation data set. 
 
 \subsection{Discussion}
-These results show promise in terms of speed. However, recall the Peralta data set contained 9,172 observations, and the final PPM fit described used only n = 3000 observations. Increasing the number of observations beyond 3000 slowed computations significantly, and closer to 9000 observations R sessions stalled and sometimes aborted. We seek a SGLMM fit to all 9,172 observations for comparison to the GLM fit, in order to answer: does a spatial random effect enhance the model sufficiently to justify its inclusion, given the increased computational demands?  
+These results show promise in terms of MCMC sampling speed, but no MCMC chains converged at our sampling lengths. Recall that the Peralta data set contains 9,172 observations, however, and the final PPM attempt described used only $n = 3000$ of these. Increasing the number of observations beyond 3000 slowed MCMC iterations substantially. Closer to 9000 observations, R sessions stalled and sometimes aborted. Ultimately, we would like a SGLMM fit to all 9,172 observations for comparison to the GLM fit, in order to answer whether a spatial random effect enhances the model sufficiently to justify its inclusion.  
 
-In the long run we seek a practical model, efficient enough to quickly re-fit with new data in real-time, on a personal computer. Ideally, such a model includes more covariates and categories; recall the numerous aspects of the hitter vs. pitcher contest we omitted. With these goals in mind, next we explore a sophisticated approximation technique that should reduce computation time even further.
+Our goal is a practical model, efficient enough to quickly re-fit with new data in real-time on a personal computer. Ideally, such a model includes more covariates and categories; recall the numerous aspects of the hitter vs. pitcher contest we omitted. With these goals in mind, next we explore an approximation technique that should reduce computation time even further.
 
 \section{Integrated Nested Laplace Approximations} \label{INLA} % =================
 
-Rue2009
+\section{Introduction}
 
 Integrated Nested Laplace Approximation (INLA) works well for parameter estimation in Bayesian hierarchical models with latent Gaussian {\it Markov} random fields (GMRFs), but not directly with GRFs \citep{Rue2007}.
 
-Adding a specific neighborhood structure to a GRF yields a GMRF \citep{Rue2007}. The neighborhood structure explicitly defines when random effects at two locations are neighbors, and the Markov structure assigns non-zero correlation to two random effects if and only if the two effects are neighbors. 
+Adding a particular neighborhood structure to a GRF yields a GMRF \citep{Rue2007}. The neighborhood structure explicitly defines when two spatial random effects are neighbors, and the Markov structure assigns non-zero correlation to them if and only if they are neighbors. The importance of the distinction between GRFs and GMRFs lies in the GMRF's sparse precision matrix, because INLA's speedy computations rely on it.
 
-The importance of the distinction between GRFs and GMRFs lies in the sparse precision matrix of a GMRF, because INLA's speedy computations rely on sparse precision matrices. Therefore, we need to represent our continuous GRF as a discrete GMRF in order to use INLA; stochastic calculus provides a link. Namely, the stochastic partial derivative of a {\it Matern} GRF equals a Gaussian random field white noise process \citep{Lindgren2011}. This stochastic partial differential equation (SPDE) buttresses a method to approximate a {\it Matern} GRF with a GMRF, in the form of a piecewise linear basis representation. The approach, known as Finite Element Method (FEM), projects the SPDE onto a basis representation \citep{Dhatt2012}, consisting of deterministic basis functions, defined by a triangulation of the domain, and GMRF weights. This discrete basis representation, with a sparse precision matrix, qualifies for INLA. In the next section we formally define a GMRF.
+\cite{Lindgren2011} used stochastic calculus \citep{Mao2007} to provide an explicit link between continuous GRFs and discrete GMRFs, and thus made INLA accessible to models with a GRF like ours. Specifically, the stochastic partial derivative of a Mat\'ern GRF equals a Gaussian random field white noise process \citep{Lindgren2011}. This stochastic partial differential equation (SPDE) buttresses a method to approximate a {\it Mat\'ern} GRF with a GMRF, in the form of a piecewise linear basis representation. The approach, known as Finite Element Method (FEM), projects the SPDE onto a basis representation \citep{Dhatt2012}, consisting of deterministic basis functions, defined by a triangulation of the domain, and GMRF weights. This discrete basis representation, with a sparse precision matrix, qualifies for INLA. In the next section we formally define a GMRF.
 
 
 \subsection{Gaussian Markov Random Fields}
@@ -254,33 +241,33 @@ Integrated Nested Laplace Approximations (INLAs) require a GMRF structure for th
 
 \subsection{Stochastic Partial Differential Equation (SPDE)} \label{SPDE}
 
-\cite{Whittle1954} declared $\text{Matern}_{\nu = 1}$ spatial correlation structure---not the exponential ($\text{Matern}_{\nu = 1/2}$)---the ``elementary correlation'' function in two dimensions. The following defines the Matern family of covariance functions.
+\cite{Whittle1954} declared $\text{Mat\'ern}_{\nu = 1}$ spatial correlation structure---not the exponential ($\text{Mat\'ern}_{\nu = 1/2}$)---the ``elementary correlation'' function in two dimensions. The following defines the Mat\'ern family of covariance functions.
 $$\text{C}(h) = \frac{\sigma^{2}}{2^{\nu - 1}\Gamma(\nu)}(\kappa h)^{\nu}K_{\nu}(\kappa h)$$
-This parameterization includes range parameter $\kappa > 0$, smoothness parameter $\nu > 0$, scale parameter $\sigma^{2}$, and modified Bessel function $K_{\nu}(\cdot)$ \citep{Schabenberger2004}. Matern random fields solve the following SPDE \citep{Whittle1954},
+This parameterization includes range parameter $\kappa > 0$, smoothness parameter $\nu > 0$, scale parameter $\sigma^{2}$, and modified Bessel function $K_{\nu}(\cdot)$ \citep{Schabenberger2004}. Mat\'ern random fields solve the following SPDE \citep{Whittle1954},
 \begin{equation} \label{eq:spde1}
 (\kappa^{2} - \Delta)^{\alpha/2}x(\pmb{s}) = \mathcal{W}(\pmb{s}),
 \end{equation}
-which includes the Laplace operator $\Delta = \sum_{i=1}^{d} \frac{\partial^{2}}{\partial x_{i}^{2}}$; spatial scale (range) parameter $\kappa$; smoothness parameter $\alpha$; and Gaussian spatial white noise process $\mathcal{W}(\pmb{s})$. The SPDE and Matern coupling dictates $\alpha = \nu + d/2$, where d = 2 for $\mathbb{R}^{2}$; and $$\sigma^{2} = \frac{\Gamma(\nu)}{\Gamma(\alpha)(4\pi)^{d/2}\kappa^{2\nu}}.$$
+which includes the Laplace operator $\Delta = \sum_{i=1}^{d} \frac{\partial^{2}}{\partial x_{i}^{2}}$; spatial scale (range) parameter $\kappa$; smoothness parameter $\alpha$; and Gaussian spatial white noise process $\mathcal{W}(\pmb{s})$. The SPDE and Mat\'ern coupling dictates $\alpha = \nu + d/2$, where d = 2 for $\mathbb{R}^{2}$; and $$\sigma^{2} = \frac{\Gamma(\nu)}{\Gamma(\alpha)(4\pi)^{d/2}\kappa^{2\nu}}.$$
 Based on \citep{Whittle1954}, \citep{Mondal2017}, and \citep{Lindgren2015}, we use $\nu = 1$, which implies $\alpha = 2$. This specification simplifies the SPDE to 
 \begin{equation} \label{eq:spde}
 (\kappa^{2} - \Delta)x(\pmb{s}) = \mathcal{W}(\pmb{s});
 \end{equation}
-the Matern covariance to 
-\begin{equation} \label{eq:matern}
+the Mat\'ern covariance to 
+\begin{equation} \label{eq:Mat\'ern}
 \text{C}(h) = \sigma^{2}(\kappa h)K_{1}(\kappa h);
 \end{equation}
 and the variance to $\sigma^{2} = \frac{1}{4 \pi \kappa}$.
 
-Recall equation \ref{eq:SGLMM}; until now we assumed an exponential covariance structure for $w(\pmb{s}_{ij})$. This section marks a shift: based on \citep{Whittle1954}, \citep{Mondal2017}, and \citep{Lindgren2015}, now we assume a $\text{Matern}_{\nu = 1}$ covariance structure for random effect $w(\pmb{s}_{ij})$. 
+Recall equation \ref{eq:SGLMM}; until now we assumed an exponential covariance structure for $w(\pmb{s}_{ij})$. This section marks a shift: based on \citep{Whittle1954}, \citep{Mondal2017}, and \citep{Lindgren2015}, now we assume a $\text{Mat\'ern}_{\nu = 1}$ covariance structure for random effect $w(\pmb{s}_{ij})$. 
 
-The next three subsections organize and delineate the steps to use the SPDE in equation \ref{eq:spde} to map a $\text{Matern}_{\nu = 1}$ GRF to a GMRF, and thus allow us to use the INLA procedure \citep{Lindgren2011}.
+The next three subsections organize and delineate the steps to use the SPDE in equation \ref{eq:spde} to map a $\text{Mat\'ern}_{\nu = 1}$ GRF to a GMRF, and thus allow us to use the INLA procedure \citep{Lindgren2011}.
 
 \subsubsection{Piecewise Linear Basis Representation}
 The Finite Element Method, projects the SPDE onto a piecewise linear basis representation \citep{Simpson2012}. The basis representation,
 \begin{equation} \label{eq:basisrep}
 x(\pmb{s}) = \sum_{k=1}^{n} \psi_{k}(\pmb{s})x_{k},
 \end{equation}
-contains deterministic basis functions, $\psi_{k}(\cdot)$; and GMRF weights $\pmb{x} = \{x_{1},\dots,x_{n}\}$. The two combine in \ref{eq:basisrep} so that the distribution of $x(\pmb{s})$ approximates the Matern GRF that solves the SPDE, but retains a sparse precision matrix and its accordant computational advantages. 
+contains deterministic basis functions, $\psi_{k}(\cdot)$; and GMRF weights $\pmb{x} = \{x_{1},\dots,x_{n}\}$. The two combine in \ref{eq:basisrep} so that the distribution of $x(\pmb{s})$ approximates the Mat\'ern GRF that solves the SPDE, but retains a sparse precision matrix and its accordant computational advantages. 
 
 The next section describes how the SPDE link produces the the deterministic basis functions in equation \ref{eq:basisrep}.
 
@@ -290,7 +277,7 @@ A triangulation of the domain defines the deterministic component, $\psi_{k}(\pm
   \begin{figure}[H]
 	\centering 
 	\includegraphics[scale=.4]{Images/PLBF.jpg}
-	\caption{A Gaussian Markov random field, defined as the piecewise linear basis function $  x(\pmb{s}) = \sum_{k=1}^{n} \protect\psi_{k}(\pmb{s})x_{k}$, approximates a Matern GRF. This image illustrates how a triangular mesh over the domain determines basis functions $\protect\psi_{k}(\pmb{s})$ 
+	\caption{A Gaussian Markov random field, defined as the piecewise linear basis function $  x(\pmb{s}) = \sum_{k=1}^{n} \protect\psi_{k}(\pmb{s})x_{k}$, approximates a Mat\'ern GRF. This image illustrates how a triangular mesh over the domain determines basis functions $\protect\psi_{k}(\pmb{s})$ 
 	\citep{Simpson2012}.}
 	\label{fig:basis}
 	\end{figure}
@@ -369,13 +356,13 @@ Using the Gaussian approximation, $p_{\text{G}}(x_{j}|\pmb{\theta, y})$, from eq
 For additional details of the procedure, see \cite{Rue2009}. We implement the SPDE-INLA procedure of the previous two subsections with the R package \verb|INLA| \citep{INLA}, \citep{Lindgren2015}.
         
 \subsection{Results}
-We fit our SGLMM with the same n = 1000 and n = 3000 observations used for the PPM fits in Section \ref{PPMresults}, and shown in Figures \ref{fig:comps1} and \ref{fig:comps2}. The INLA model fit with n = 1000 observations required approximately 5 seconds; and the n = 3000 fit required approximately 9 seconds. Most impressively, the INLA fit to all 9172 Peralta observations required approximately 34 seconds. This marks the first complete fit of our SGLMM to all Peralta observations, in our research. Figure \ref{fig:INLA} shows all three INLA model fits.
+The INLA model fit with n = 1000 observations required approximately 5 seconds; and the n = 3000 fit required approximately 9 seconds. Most impressively, the INLA fit to all 9172 Peralta observations required approximately 34 seconds. This marks the first complete fit of our SGLMM to all Peralta observations, in our research. Figure \ref{fig:INLA} shows all three INLA model fits.
   \begin{figure}[H]
 	\centering 
 	\includegraphics[scale=.05]{Images/INLA1000.jpg}	
 	\includegraphics[scale=.05]{Images/INLA3000.jpg}
 	\includegraphics[scale=.05]{Images/INLA9172.jpg}
-	\caption{Integrated nested Laplace approximation model fits. The model fit for n = 1000 observations required approximately five seconds; compare this fit to Figure \ref{fig:comps1}. The n = 3000 model fit required approximately nine seconds; compare this map to Figure \ref{fig:comps2}. Finally, the INLA fit with all n = 9172 Peralta observations required approximately 34 seconds; compare this map to the variable-resolution empirical heat map in Figure \ref{fig:interp}.}
+	\caption{Integrated nested Laplace approximation model fits. The model fit for n = 1000 observations required approximately five seconds. The n = 3000 model fit required approximately nine seconds. Finally, the INLA fit with all n = 9172 Peralta observations required approximately 34 seconds.}
 	\label{fig:INLA}
 	\end{figure}
 The n = 1000 INLA fit clearly resembles the n = 1000 GLM fit more closely than the PPM fit. The contours of all three match closely, but the maximum success probability regions of the PPM fit exceed the maximum regions of the INLA and GLM fits. This interesting result suggests the PPM fit infers greater impact from the random effect than the INLA fit infers. 
