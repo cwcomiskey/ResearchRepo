@@ -19,11 +19,11 @@ A Gaussian random field (GRF) provides a tractable structure for $n \times 1$ ve
 \begin{equation} \label{eq:w}
 \pmb{w}(\pmb{s}) | \pmb{\theta} \sim MVN(\pmb{0}, \Sigma(\pmb{\theta})) 
 \end{equation}
-In sections \ref{stanopt} and \ref{ppm} we use an isotropic spatial exponential covariance structure for $\Sigma(\pmb{\theta})$. Element $i,j$ of the exponential covariance matrix, $\pmb{\Sigma}(\pmb{\theta})$, gives the covariance of the random effects $\pmb{w}(\pmb{s}_{i})$ and $\pmb{w}(\pmb{s}_{j})$:
+In sections \ref{stanopt} and \ref{ppm} we use an isotropic spatial exponential covariance structure for $\Sigma(\pmb{\theta})$. Element $i,k$ of the exponential covariance matrix, $\pmb{\Sigma}(\pmb{\theta})$, gives the covariance of the random effects $\pmb{w}(\pmb{s}_{ij})$ and $\pmb{w}(\pmb{s}_{kj})$ (two locations for hitter $j$):
 \begin{equation} \label{eq:exp}
-\Sigma(\phi, \sigma^{2})_{i,j} = \sigma^{2} exp(-||\pmb{s}_{i} - \pmb{s}_{j}||/\phi),
+\Sigma(\phi, \sigma^{2})_{i,k} = \sigma^{2} \text{exp}(-||\pmb{s}_{ij} - \pmb{s}_{kj}||/\phi),
 \end{equation}
-with scale parameter $\sigma^{2}$, range parameter $\phi$, and where $||s_{i} - s_{j}||$ denotes the Euclidean distance between $\pmb{s}_{i}$ and $\pmb{s}_{j}$.
+with scale parameter $\sigma^{2}$, range parameter $\phi$, and where $||s_{ij} - s_{kj}||$ denotes the Euclidean distance between $\pmb{s}_{ij}$ and $\pmb{s}_{kj}$.
 
 This spatial model, containing a latent (unobserved) Gaussian random field, gives $\pmb{Y}$ a complicated correlation structure. Bayesian hierarchical spatial models most effectively accommodate this structure, and Markov chain Monte Carlo (MCMC) methods most effectively estimate model parameters \citep{Banerjee2014}. High dimensionality for this spatial model induces substantial computational costs, referred to as the ``Big N problem'' \citep{Lindgren2011}.
 
@@ -163,8 +163,9 @@ However, increasing the number of observations to $n=500$ required approximately
 
 Optimization in Stan proved inadequate for addressing the ``big N'' problem. Next, in an effort to address the big N problem in another way, we examine an approach that creates a reduced dimension representation of a SGLMM. 
 
-% =========== ========== ========= ======== ========
+% =========== ========== ========= ======== ======== =======
 \section{Dimension Reduction with Predictive Process Models} \label{ppm} 
+% =========== ========== ========= ======== ======== =======
 
 \subsection{Introduction} % ======= ====== ====== =====
 
@@ -180,23 +181,23 @@ Consider again the SGLMM from equation \ref{eq:SGLMM}, defined as it was there, 
 \end{align}
 Equation \ref{eq:GRF} defines a stationary GRF for an n $\times$ 1 vector of random effects $\pmb{w}$, at locations $\pmb{s}$, conditioned on covariance parameters $\pmb{\theta}$; with mean equal to the n $\times$ 1 zero vector, $\pmb{0}$; and a symmetric, positive-definite, n $\times$ n covariance matrix, $\Sigma(\pmb{\theta})$.
 
-To define the PPM procedure, let $\Sigma(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})$ denote the covariance of random effects at locations $\pmb{s}_{i}$ and $\pmb{s}_{j}$, so that $\Sigma(\pmb{\theta}) = [\Sigma(\pmb{s}_{i}, \pmb{s}_{j}; \pmb{\theta})]_{i,j=1}^{n}$. Next, let $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ give a set of $m << n$ knot locations, not necessarily a subset of observed locations.\footnote{Knot selection is equivalent to the area of study known as spatial sampling design \citep{Finley2009}. See \citep{Xia2006} for a summary of spatial sampling approaches.} We denote knot location random effects with the m $\times$ 1 vector $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m}$, and the m $\times$ m knot covariance matrix and its elements as $\Sigma^{*}(\pmb{\theta}) = \left[\Sigma(\pmb{s}_{i}^{*}, \pmb{s}_{j}^{*})\right]_{i,j = 1}^{m}$. The knot random effects constitute a distinct m-dimensional GRF:
+To define the PPM procedure, let $\Sigma(\pmb{s}_{ij}, \pmb{s}_{kj}; \pmb{\theta})$ denote the hitter $j$ covariance of random effects at locations $\pmb{s}_{ij}$ and $\pmb{s}_{kj}$, so that $\Sigma(\pmb{\theta}) = [\Sigma(\pmb{s}_{ij}, \pmb{s}_{kj}; \pmb{\theta})]_{i,k=1}^{n}$. Next, let $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ give a set of $m << n$ knot locations, not necessarily a subset of observed locations.\footnote{Knot selection is equivalent to the area of study known as spatial sampling design \citep{Finley2009}. See \citep{Xia2006} for a summary of spatial sampling approaches.} We denote knot location random effects with the m $\times$ 1 vector $\pmb{w}^{*} = \left[w(\pmb{s}_{ij}^{*})\right]_{i=1}^{m}$, and the m $\times$ m knot covariance matrix and its elements as $\Sigma^{*}(\pmb{\theta}) = \left[\Sigma(\pmb{s}_{ij}^{*}, \pmb{s}_{kj}^{*})\right]_{i,k = 1}^{m}$. The knot random effects constitute a distinct m-dimensional GRF:
 \begin{equation}
 \pmb{w}^{*}|\pmb{\theta} \sim \text{GRF}\{\pmb{0}, \Sigma^{*}(\pmb{\theta})\}.
 \end{equation}
-Consider a new loction $\pmb{s}_{0}$. The PPM procedure uses the m knots, the covariance structure of the original GRF (of all $n$ observations, equation \ref{eq:GRF}) in the original model (\ref{eq:orig}), and kriging to interpolate $w$ at $\pmb{s}_{0}$ \citep{Schabenberger2004}. To see this, let $\tilde{w}(\pmb{s}_{0})$ represent this interpolated random effect, and let $\pmb{\sigma}(\pmb{s}_{0};\pmb{\theta}) = \left[\Sigma(\pmb{s}_{0}, \pmb{s}_{j}^{*}; \pmb{\theta})\right]_{j = 1}^{m}$ be an m $\times$ 1 covariance vector giving the covariance of the random effect at $\pmb{s}_{0}$ with the knot random effects. Then, the kriging estimator
+Consider a new loction $\pmb{s}_{0j}$. The PPM procedure uses the m knots, the covariance structure of the original GRF (of all $n$ observations, equation \ref{eq:GRF}) in the original model (\ref{eq:orig}), and kriging to interpolate $w$ at $\pmb{s}_{0j}$ \citep{Schabenberger2004}. To see this, let $\tilde{w}(\pmb{s}_{0j})$ represent this interpolated random effect, and let $\pmb{\sigma}(\pmb{s}_{0j};\pmb{\theta}) = \left[\Sigma(\pmb{s}_{0j}, \pmb{s}_{ij}^{*}; \pmb{\theta})\right]_{i = 1}^{m}$ be an m $\times$ 1 covariance vector giving the covariance of the random effect at $\pmb{s}_{0j}$ with the knot random effects. Then, the kriging estimator
 \begin{align}
-\tilde{w}(\pmb{s}_{0}) &= E[w(\pmb{s}_{0})|\pmb{w}^{*}] \\ 
-&= \pmb{\sigma}^{T}(\pmb{s}_{0};\pmb{\theta}) \cdot \Sigma^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*} \label{eq:krig}
+\tilde{w}(\pmb{s}_{0j}) &= E[w(\pmb{s}_{0j})|\pmb{w}^{*}] \\ 
+&= \pmb{\sigma}^{T}(\pmb{s}_{0j};\pmb{\theta}) \cdot \Sigma^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*} \label{eq:krig}
 \end{align}
 minimizes the squared error loss function among all linear predictors \citep{Schabenberger2004}. Notice that the linear combination (\ref{eq:krig}) varies spatially. Accordingly, the predictive process $\tilde{w}(\pmb{s})$ defines the following GRF and covariance matrix.
 \begin{align}
 \tilde{\pmb{w}}(\pmb{s}) &\sim \text{GRF}\{0, \widetilde{\Sigma}(\cdot)\} \\
 \widetilde{\Sigma}(\pmb{s}, \pmb{s}'; \pmb{\theta}) &= \pmb{\sigma}^{T}(\pmb{s};\pmb{\theta}) \cdot \Sigma^{*-1}(\pmb{\theta}) \cdot \pmb{\sigma}(\pmb{s}';\pmb{\theta})
 \end{align}
-Recall that the m $\times$ 1 vector $\pmb{\sigma}(\pmb{s};\pmb{\theta}) = \left[\Sigma(\pmb{s}, \pmb{s}_{j}^{*})\right]_{j = 1}^{m}$ gives the covariance of the random effect at $\pmb{s}$ with knot random effects. This last GRF replaces the original GRF (\ref{eq:GRF}) of all $n$ observations in the original model (\ref{eq:orig}), to give the following logistic regression model equation:
+Recall that the m $\times$ 1 vector $\pmb{\sigma}(\pmb{s};\pmb{\theta}) = \left[\Sigma(\pmb{s}, \pmb{s}_{ij}^{*})\right]_{i = 1}^{m}$ gives the covariance of the random effect at $\pmb{s}$ with knot random effects. This last GRF replaces the original GRF (\ref{eq:GRF}) of all $n$ observations in the original model (\ref{eq:orig}), to give the following logistic regression model equation:
 \begin{equation}
-\text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + \tilde{w}(\pmb{s}).
+\text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + \tilde{w}(\pmb{s}_{ij}).
 \end{equation}
 We used the R package {\bf spBayes} to implement the PPM approach to model the residual spatial autocorrelation in Jhonny Peralta's swing data \citep{Finley2013}. 
 
@@ -230,14 +231,13 @@ Integrated Nested Laplace Approximation (INLA) works well for parameter estimati
 
 Adding a particular neighborhood structure to a GRF yields a GMRF \citep{Rue2007}. The neighborhood structure explicitly defines when two spatial random effects are neighbors, and the Markov structure assigns non-zero correlation to them if and only if they are neighbors. The importance of the distinction between GRFs and GMRFs lies in the GMRF's sparse precision matrix, because INLA's speedy computations rely on it.
 
-\cite{Lindgren2011} used stochastic calculus \citep{Mao2007} to provide an explicit link between continuous GRFs and discrete GMRFs, and thus made INLA accessible to models with a GRF like ours. Specifically, the stochastic partial derivative of a Mat\'ern GRF equals a Gaussian random field white noise process \citep{Lindgren2011}. This stochastic partial differential equation (SPDE) buttresses a method to approximate a {\it Mat\'ern} GRF with a GMRF, in the form of a piecewise linear basis representation. The approach, known as Finite Element Method (FEM), projects the SPDE onto a basis representation \citep{Dhatt2012}, consisting of deterministic basis functions, defined by a triangulation of the domain, and GMRF weights. This discrete basis representation, with a sparse precision matrix, qualifies for INLA. In the next section we formally define a GMRF.
-
+\cite{Lindgren2011} used stochastic calculus \citep{Mao2007} to provide an explicit link between continuous GRFs and discrete GMRFs, and thus made INLA accessible to models with a GRF like ours. Specifically, the stochastic partial derivative of a Mat\'ern GRF equals a Gaussian random field white noise process \citep{Lindgren2011}. This stochastic partial differential equation (SPDE) buttresses a method to approximate a {\it Mat\'ern} GRF with a GMRF, in the form of a piecewise linear basis representation. The approach, known as Finite Element Method (FEM), projects the SPDE onto a basis representation \citep{Dhatt2012}, consisting of deterministic basis functions, defined by a triangulation of the domain, and GMRF weights. This discrete basis representation has a sparse precision matrix, suitable for INLA. 
 
 \subsection{Gaussian Markov Random Fields}
 
-To formally define a GMRF \citep{Rue2007}, let $\pmb{x} = \{ x_{i}:i \in \mathscr{V} \}$, where $\mathscr{V} = \{1,\dots,n\}$, for $n = |\mathscr{V}|$-dimensional Gaussian random vector $\pmb{x}$. Now define graph $\mathscr{G} = \{ \mathscr{V}, \mathscr{E} \}$, containing vertices $\mathscr{V}$ and edges $\mathscr{E}$. Vertices $x_{i}$ and $x_{j}$ are conditionally independent given all other elements of $\pmb{x}$, if and only if $\{i, j\} \notin \mathscr{E}$. The neighborhood structure defined by this graph yields GMRF $\pmb{x}$ with respect to $\mathscr{G}$, where $i \sim j$ denotes $i$ neighbors $j$. The edges in $\mathscr{E}$ correspond exactly to the non-zero elements of the GMRF precision matrix $\pmb{Q}$; $\{ i, j \} \in \mathscr{E}$ if and only if $Q_{ij} \neq 0 \text{ for } i \neq j$. Non-zero elements of $Q_{ij}$ correspond to neighbors.
+To formally define a GMRF , let $\pmb{w}(\pmb{s}) = \{w(\pmb{s}_{ij}):i \in V\}$, where $V = \{1,\dots,n\}$. Now define graph $G = \{ V, E \}$, containing vertices $V$ and edges $E$. Vertices $w(\pmb{s}_{ij})$ and $w(\pmb{s}_{kj})$ are conditionally independent given all other elements of $\pmb{w}(\pmb{s})$, if and only if $\{\pmb{s}_{ij}, \pmb{s}_{kj}\} \notin E$. The neighborhood structure defined by this graph yields a GMRF, $\pmb{w}(\pmb{s})$, with respect to $G$, where $\pmb{s}_{ij} \sim \pmb{s}_{kj}$ denotes that $w(\pmb{s}_{ij})$ neighbors $w(\pmb{s}_{kj})$. The edges in $E$ correspond exactly to the non-zero elements of the GMRF precision matrix $\Sigma$: $\{\pmb{s}_{ij}, \pmb{s}_{kj}\} \in E$ if and only if $\Sigma_{ik} \neq 0 \text{ for } i \neq k$. Non-zero elements of $\Sigma_{ik}$ correspond to neighbors.
 
-Integrated Nested Laplace Approximations (INLAs) require a GMRF structure for the latent random effect. However, our original model contains a GRF. Therefore, we use a stochastic partial differential equations (SPDEs) as an explicit link between GRFs and GMRFs. Section \ref{SPDE} describes the SPDE link. 
+INLA requires that latent random effect $\pmb{w}(\pmb{s})$ be a GMRF. We use the method of \cite{Lindgren2011}, who use an SPDE to explicitly link a Mat\'ern GRF to a GMRF. 
 
 \subsection{Stochastic Partial Differential Equation (SPDE)} \label{SPDE}
 
