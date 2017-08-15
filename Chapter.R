@@ -9,13 +9,14 @@ library(varyres)
 
 # hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
 load("~/Desktop/ResearchRepo/varyres/data/hitter.rda")
-h <- hitter
+hitter <- hitter
 
 # source('~/Desktop/ResearchRepo/varyres/R/mapit.R')
 
-# Ch4 Plots =======================
+# Ch4 Plot =======================
 vr <- varyres(hitter, cutoff = 200, max = 6)
-mapit(vr[[5]]) + geom_point(data = vr[[5]], aes(x = x, y = y), size = 5)
+mapit(vr[[5]]) + 
+  geom_point(data = vr[[5]], aes(x = x, y = y), size = 5)
 dim(vr[[5]])
 
 ggsave("/Users/ABC/Desktop/ResearchRepo/Images/knots.jpg", height = 8.5, width = 8.5)
@@ -49,9 +50,7 @@ ggplot(ABC.R, aes(Horizontal, Vertical)) +
 
 # ggsave("/Users/ABC/Desktop/ResearchRepo/Images/Mothership.jpg", height = 8.5, width = 8.5) # righties empirical
 
-
-
-# Empirical Mothership plot ==============================
+# Empirical Mothership plot 2 ==============================
 
 hitter <- read.csv("~/Desktop/ResearchRepo/Data/hitter.csv")
 
@@ -69,16 +68,12 @@ ggplot(ABC.R, aes(Horizontal, Vertical)) +
 
 # ggsave("Mothership.pdf", height = 8.5, width = 8.5) # righties empirical
 
-
 # grid.arrange(...) - Plot increasing resolution, Peralta =======
 
 g <- gridExtra::grid.arrange(G1, G4, G16, G64, G256, G1024, ncol = 3)
 dev.off()
 ggsave("Chapter_VarRes.jpg", g,
        width = 8.5*3, height = 8.5*2)
-
-
-
 
 # You-name-it resolution =======
 
@@ -146,32 +141,37 @@ mod.polar <- glm(res ~ r*theta + I(r^2)*I(theta^2),
 
 # Points for plotting through the hitting zone
 hitzone <- with(hitter,
-                cbind(expand.grid(x = seq(min(x), max(x), length = 50),
-                                  y = seq(min(y), max(y), length = 70)))) %>%
+                cbind(expand.grid(
+                  x = seq(min(x), max(x), length = 50),
+                  y = seq(min(y), max(y), length = 70)))) %>%
   mutate(r = sqrt( (x + 2)^2 + (y - 3.5)^2),
          theta = atan2(y - 3.5, x + 2) )
 
-preds <- predict(mod.polar, newdata = hitzone, se.fit = TRUE)
+preds <- predict(mod.polar, newdata = hitzone, se.fit = TRUE) # logit scale
 
 # source('~/Desktop/ResearchRepo/varyres/R/mapit.R')
 
 inv_logit <- function(x){exp(x)/(1+exp(x))}
 hitzone <- with(preds,
-                mutate(hitzone,
-                       logit = fit,
+                mutate(hitzone, logit = fit,
                        SE_logit = se.fit,
                        phat = inv_logit(logit)
+                       )
                 )
-)
 
 ggplot(aes(x, y), data = hitzone) +
   geom_tile(data = hitzone, aes(fill = phat)) +
   sz_fcn() +
   coord_equal() + # xlim(-1.5, 1.5) + ylim(1, 4) +
-  spec_fcn() + lab_fcn() +
-  ggtitle("Polar Covariate GLM \n Success Probability")
+  scale_fill_distiller(palette = "YlOrRd", trans = "reverse", 
+                       guide = guide_legend(
+                         title = expression(paste(p[GLM]))),
+                       limits = c(0.155, 0)) +
+                       # guide = FALSE)  
+  lab_fcn() +
+  ggtitle("GLM Success Probability \n Point Estimate")
 
-# ggsave("Peralta_fit.jpg", height = 8.5, width = 8.5, path = "/Users/ABC/Desktop/ResearchRepo/Images")
+# ggsave("Perralta_fit.pdf", height = 8.5, width = 8.5, path = "/Users/ABC/Desktop/ResearchRepo/Images")
 
 
 # H-L GoF test ===============

@@ -110,7 +110,7 @@ Note that given a hitter $j$, and pitch location $\pmb{s}_{ij}$, the elements of
 As a first step in exploring the effectiveness of the approach developed above, we fit the model to Johnny Peralta's data (see Chapter 2). Let $j = P$, denoting player (P)eralta. We use Peralta's $n_{\text{P}} = 9177$ observed swings, and fit the model using the R \verb|glm()| function , finding maximum likelihood estimates of $\pmb{\beta}_{\text{P}}$ with the iteratively reweighted least squares algorithm (IRLS) \citep{Myers2012}. In Figure \ref{fig:empvsfit} we show the Peralta empirical and fitted heat maps.
   \begin{figure}[!ht]
     \centering
-    \includegraphics[scale=.08]{Images/Peralta_var-res.jpg}
+    \includegraphics[scale=.08]{Images/Peralta_var-res2.jpg}
     \includegraphics[scale=.08]{Images/Peralta_fit.jpg}
     \caption{Jhonny Peralta variable-resolution heat map and generalized linear model fit. The general shapes of higher success probability regions seem to match. Both maps show lower success probabilities near the borders of the hitting zone, especially those borders further from the center of the water drop shape.}
     \label{fig:empvsfit}
@@ -173,16 +173,16 @@ We find this heat map confidence interval method to be relatively inaccessible, 
 While one quickly, intuitively, and easily understands the content of the number line, we typically cannot so easily fill in missing segments of the color spectrum. With heat map confidence intervals, {\it colors} represent the point estimate and confidence bounds. A point estimate of ``green'' with a confidence interval of (purple, red) is simple but not straightforward to interpret or understand. In Figure \ref{fig:colorCI}, for example, we show lower and upper color bounds to represent a confidence interval, but without a quantitative x-axis, it is difficult to really know what this means.
   \begin{figure}[H]
   \centering
-	\includegraphics[scale=.75]{Images/Lower.jpeg}
-	\includegraphics[scale=.75]{Images/SpectrumPE.jpg}
-	\includegraphics[scale=.75]{Images/Upper.jpeg}
+	\includegraphics[scale=.75]{Images/SeqLB.png}
+	\includegraphics[scale=.75]{Images/SeqPE.png}
+	\includegraphics[scale=.75]{Images/SeqUB.png}
 	\caption{This representation of a confidence interval on the color spectrum demonstrates the interpretive challenge. What stream of colors exist between each bound and the point estimate?}
 	\label{fig:colorCI}
 	\end{figure}
 We might understand a color confidence interval more easily if we include the entire interval as in Figure \ref{fig:specint}.
   \begin{figure}[H]
   \centering
-	\includegraphics[scale=.65]{Images/SpectrumCI.jpg}
+	\includegraphics[scale=.65]{Images/SeqSpec.png}
 	\caption{We understand a colored confidence interval without missing color segments, with the entire color confidence interval visible}
 	\label{fig:specint}
 	\end{figure}
@@ -194,10 +194,10 @@ The inimitable RStudio created the Shiny framework to facilitate interactive web
 Recall the GLM model heat map for Johnny Peralta's data. In Figure \ref{fig:LPU} we show lower and upper pointwise 95\% confidence interval heat maps, calculated with the variance-covariance estimates from the IRLS procedure \citep{Myers2012}.
   \begin{figure}[H]
 	\centering
-	\includegraphics[scale=.2]{Images/Lower.pdf}
-	\includegraphics[scale=.25]{Images/Perralta_fit.pdf}
-	\includegraphics[scale=.2]{Images/Upper.pdf}
-	\caption{Current best practices for a heat map confidence interval. The generalized linear model fit for Jhony Peralta in the center, the pointwise 95\% confidence interval lower/upper bounds on the left/right. Our interactive, dynamic heat map confidence intervals ease understanding.}
+	\includegraphics[scale=.19]{Images/Lower.pdf}
+	\includegraphics[scale=.27]{Images/Perralta_fit.pdf}
+	\includegraphics[scale=.19]{Images/Upper.pdf}
+	\caption{Current best practices for a heat map confidence interval. The generalized linear model fit for Jhonny Peralta in the center, the pointwise 95\% confidence interval lower/upper bounds on the left/right. Our interactive, dynamic heat map confidence intervals ease understanding.}
 	\label{fig:LPU}
 	\end{figure}
 The heat map on the left gives the lower bound of the 95\% confidence interval, the heat map in the middle gives the model fit point estimates, and the heat map on the right gives the upper bound of the 95\% confidence interval. We removed labels from the left and right heat maps to de-clutter the figure. The data visualization challenge lies in filling the space, graphically and conceptually, between the bounds and point estimate. We fill the space by allowing the user, in real time, to interact with a Shiny ``slider'' (an interactive button that the user can scroll left and right) controls the confidence interval layers shown on-screen. 
@@ -230,7 +230,7 @@ While the paper version resembles the customary presentation, the actual interac
 
 To provide wider access to our interactive confidence intervals, we created a R package called {\bf mapapp} that automates creating interactive heat map confidence intervals. The vignette in the next section introduces users to {\bf mapapp}, and guides them through some of its features. 
 
-\section{ An R Package: {\bf mapapp}}
+\section{{\bf mapapp}: An R Package}
 
 \section{Conclusion}
 
