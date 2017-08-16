@@ -296,38 +296,60 @@ A triangulation of the spatial domain defines the deterministic component, $\psi
 	\caption{A Gaussian Markov random field, defined as the piecewise linear basis function $\pmb{w}(\pmb{s}) = \sum_{k=1}^{n_{v}} \protect\psi_{k}(\pmb{s})\protect\omega_{k}$, approximates a Mat\'ern GRF. This image illustrates how a triangular mesh over the domain determines basis functions $\protect\psi_{k}(\pmb{s})$ (Reproduced from \cite{Simpson2012}).}
 	\label{fig:basis}
 	\end{figure}
-Figure \ref{fig:basis} (b) shows a domain triangulation, under the surface it is used to approximate. In equation \ref{eq:basisrep}, $n_{v}$ represents the number of {\it vertices} in the domain triangulation. The basis functions $\psi_{k}$ are piecewise linear in each triangle, with basis function $k$ equal to one at vertex $k$: $\psi_{k}(V_{k}) = 1$; and basis function $k$ equal to zero at all other vertices: $\psi_{k}(V_{k'}) = 0$ for $k'\neq k$. This implies that: 
+Figure \ref{fig:basis} (b) shows a domain triangulation, under the surface it is used to approximate. In equation \ref{eq:basisrep}, $n_{v}$ represents the number of {\it vertices} in the domain triangulation. The basis functions $\psi_{k}$ are piecewise linear in each triangle, with basis function $k$ equal to one at vertex $k$: $\psi_{k}(V_{k}) = 1$; and basis function $k$ equal to zero at all other vertices: $\psi_{k}(V_{k'}) = 0$ for $k'\neq k$. This implies that the approximation at vertex $k$, $\widetilde{\pmb{w}}(V_{k})$,  is equal to the value of the GRF weight, $\omega_{k}$, at that vertex.
 \begin{align}
-\widetilde{\pmb{w}}(V_{k}) &= \psi_{k}(V_{k}) \omega_{k}
-1 \cdot \omega_{k}.
+\widetilde{\pmb{w}}(V_{k}) &= \psi_{k}(V_{k}) \omega_{k} \\
+&= 1 \cdot \omega_{k}
 \end{align}
-For points $\pmb{s}$ located in triangle interiors, $\widetilde{\pmb{w}}(\pmb{s})$ equals a linear combination of the GRF weights $\omega$ at the three vertices that form the containing triangle. That is, for triangle $T$ made from vertices $t_{1}, t_{2}, t_{3}$; $\pmb{s} \in T$; and constants $c_{1}, c_{2}, c_{3}$,
+For points $\pmb{s}$ located in triangle interiors, $\widetilde{\pmb{w}}(\pmb{s})$ equals a linear combination of the GRF weights, $\omega$, at the three vertices that form the containing triangle. That is, for triangle $T$ made from vertices $t_{1}, t_{2}, t_{3}$; location $\pmb{s} \in T$; and constants $c_{1}, c_{2}, c_{3}$:
 \begin{align}
 \widetilde{\pmb{w}}(\pmb{s}) &= \psi_{t_{1}}(\pmb{s})\omega_{t_{1}} + \psi_{t_{2}}(\pmb{s})\omega_{t_{2}} 
 + \psi_{t_{2}}(\pmb{s})\omega_{t_{2}} \nonumber \\
-& c_{1}\omega_{t_{1}} + c_{2}\omega_{t_{2}} 
+&= c_{1}\omega_{t_{1}} + c_{2}\omega_{t_{2}} 
 + c_{3}\omega_{t_{2}} \nonumber
 \end{align}
 
-\subsubsection{GMRF Weights} % ========= ========= =========
+\subsubsection{Gaussian Weights} % ========= ========= =========
 
-Stochastic calculus identities provide a way to calculate the weights in the basis representation of \ref{eq:basisrep}. To start, let $$\langle f, g \rangle = \int f(\pmb{u}) g(\pmb{u}) d\pmb{u}.$$ 
-Then we find weights $\pmb{x}$ such that, for a set of test functions $\phi_{k}$, the following equality holds \citep{Lindgren2011}:
-\begin{equation} \label{eq:stoch}
-\left[ \left< \phi_{k}, (\kappa^{2} - \Delta)^{\alpha/2} \pmb{x} \right> \right]_{k = 1, \hdots, n} \overset{D}{=} \Big[ \langle \phi_{k}, \mathcal{W} \rangle \Big]_{k = 1, \hdots, n}.
+Stochastic calculus identities provide a way to calculate the weights, $\omega$, in the basis representation of \ref{eq:basisrep}. To start, define notation: $$\langle f(\pmb{u}, g\pmb{u}) \rangle = \int f(\pmb{u}) g(\pmb{u}) d\pmb{u}.$$ 
+Then find weights $\pmb{\omega}$ such that, for a set of test functions $\phi_{k}$ where $k = 1, \dots, n_{*}$, the following distributional equality of integral random vectors holds \citep{Lindgren2011}:
+\begin{equation}  \label{eq:stoch} % =======
+\left[ \left< \phi_{l}, (\kappa^{2} - \Delta) \pmb{w} \right> \right]_{l = 1, \hdots, n_{*}} 
+\overset{D}{=}
+\left[ \langle \phi_{l}, \pmb{W} \rangle \right]_{l = 1, \hdots, n_{*}}.
 \end{equation}
 
-The solution, weight vector $\pmb{x}$, gives the stochastic weak solution solution to the SPDE in equations \ref{eq:spde1} and \ref{eq:spde}. \citep{Mao2007}, \cite{Lindstrom2014}. Following \cite{Lindgren2011}, we use the Galerkin solution where $\alpha = 2$ and $\phi_{i} = \psi_{i}$. Therefore, replace $\pmb{x}$ in equation \ref{eq:stoch} with basis function representation $\Sigma_{k}\psi_{k}w_{k}$:
-$$ \left[ \left< \phi_{i}, (\kappa^{2} - \Delta)^{\alpha/2} \psi_{j} \right> \right]_{i,j}\pmb{w} \overset{D}{=} \Big[ \langle \phi_{k}, \mathcal{W} \rangle \Big]_{k}.$$
-Next, let $\alpha = 2$ and $\phi_{i} = \psi_{i}$ as in the Galerkin solution, and simplify to get:
-$$ \Big(
-\kappa^{2} [ \langle \psi_{i}, \psi_{j} \rangle ] + [ \langle \psi_{i}, -\Delta \psi_{j} \rangle ]
-\Big) \pmb{w} \overset{D}{=} \Big[ \langle \psi_{k}, \mathcal{W} \rangle \Big]. $$
+The solution---weight vector $\pmb{\omega}$ in basis representation $\widetilde{\pmb{w}}$ (equation \ref{eq:basisrep})---gives the stochastic weak solution solution to the SPDE in Equation \ref{eq:spde} \citep{Mao2007}, \citep{Lindstrom2014}. 
 
-Simplify notation by letting $\pmb{C}_{i,j} = \langle \psi_{i}, \psi_{j} \rangle$, and $ \pmb{G}_{i,j} = \langle \psi_{i}, - \Delta \psi_{j} \rangle$, so that
+We follow \cite{Lindgren2011} and use the {\it Galerkin} solution, where the deterministic basis functions, $\psi_{k}$,  of section \ref{dbf} serve as test functions: $\phi_{k} = \psi_{k}$. Substituting these into \ref{eq:stoch} gives:
+
+\begin{equation} \label{eq:stoch2} % =======
+\left[ \left< \psi_{l}, (\kappa^{2} - \Delta) \pmb{w} \right> \right]_{l = 1, \hdots, n_{v}} 
+\overset{D}{=}
+\left[ \langle \psi_{l}, \pmb{W} \rangle \right]_{l = 1, \hdots, n_{v}}.
+\end{equation}
+
+Then, substitute the basis function representation in Equation \ref{eq:basisrep}, $\widetilde{\pmb{w}}$, in for $\pmb{w}$ and simplify:
+% $\widetilde{w} = \Sigma_{k}\psi_{k}w_{k}$:
+
+% \left[ \left< \psi_{l}, (\kappa^{2} - \Delta) \left( \sum_{k=1}^{n_{v}} \psi_{k}\omega_{k} \right) \right> \right]_{l = 1, \hdots, n_{*}} \overset{D}{=} \Big[ \langle \psi_{l}, \pmb{W} \rangle \Big]_{l = 1, \hdots, n_{*}}.
+
+$$ \left[ \left< \psi_{l}, (\kappa^{2} - \Delta) \left( \sum_{k=1}^{n_{v}} \psi_{k}\omega_{k} \right) \right> \right]_{l = 1, \hdots, n_{v}} 
+\overset{D}{=}
+\left[ \langle \psi_{l}, \pmb{W} \rangle \right]_{l = 1, \hdots, n_{v}} $$
+
+$$ \left[ \left< \psi_{l}, (\kappa^{2} - \Delta) \psi_{k} \right> \right]_{l,k} \pmb{\omega} 
+\overset{D}{=} 
+\Big[ \langle \psi_{l}, \pmb{W} \rangle \Big]_{l} $$ 
+
+$$ \Big( \kappa^{2} [ \langle \psi_{l}, \psi_{k} \rangle ] + [ \langle \psi_{l}, -\Delta \psi_{k} \rangle ] \Big) \pmb{\omega} 
+\overset{D}{=} 
+\Big[ \langle \psi_{k}, \pmb{W} \rangle \Big]_{l} $$
+
+Simplify notation by letting $\pmb{C}_{l,k} = \langle \psi_{l}, \psi_{k} \rangle$, and $ \pmb{G}_{l,k} = \langle \psi_{l}, - \Delta \psi_{k} \rangle$, so that
 $$ \left(
-\kappa^{2} \pmb{C} + \pmb{G} \right) \pmb{w} \overset{D}{=} \text{N}(\pmb{0},\pmb{C}).$$
-Thus, $\pmb{w} \sim \text{N}(\pmb{0}, \pmb{Q}^{-1})$, where:
+\kappa^{2} \pmb{C} + \pmb{G} \right) \pmb{\omega} \overset{D}{=} \text{N}(\pmb{0},\pmb{C}).$$
+Thus, $\pmb{\omega} \sim \text{N}(\pmb{0}, \pmb{Q}_{\kappa}^{-1})$, where:
 \begin{equation} \label{eq:Q}
 \pmb{Q}_{\kappa} = \left( \kappa^{2} \pmb{C} + \pmb{G} \right)^{T} \pmb{C}^{-1} \left( \kappa^{2} \pmb{C} + \pmb{G} \right).
 \end{equation}
@@ -336,9 +358,7 @@ Thus, $\pmb{w} \sim \text{N}(\pmb{0}, \pmb{Q}^{-1})$, where:
 % \begin{equation} \label{eq:Q2}
 % \pmb{Q}_{\kappa} = \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right)^{T} \pmb{C}^{-1} \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right).
 % \end{equation}
-Note that this solution specifies the distribution of the weights $x_{k}$ in the basis representation of equation \ref{eq:basisrep}, not $x(\pmb{s})$ itself.
-
-With this representation achieved, via the SPDE link, we move on to INLA, which approximates the model parameters.
+Note that this solution, $\pmb{\omega}$, specifies the distribution of the weights $\omega_{k}$ in the piecewise linear basis function representation of $\widetilde{\pmb{w}}(\pmb{s})$ (equation \ref{eq:basisrep}), not $\widetilde{\pmb{w}}(\pmb{s})$ itself.
 
 % ========= ========= ========= ========= ========= =========
 \subsection{Integrated Nested Laplace Approximations (INLA)}
