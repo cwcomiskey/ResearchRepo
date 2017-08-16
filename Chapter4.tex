@@ -375,39 +375,53 @@ Note that this solution specifies the distribution of the vector of weights $\pm
 % ========= ========= ========= ========= ========= =========
 \subsection{Integrated Nested Laplace Approximations (INLA)}
 
-INLA estimates the marginal posterior distributions for latent field parameters, $p(x_{i}|\pmb{y})$; and covariance hyperparameter posterior $p(\theta|\pmb{y})$. This means INLA does not estimate posteriors $p(\pmb{x}|\pmb{y})$ and $p(\pmb{x},\pmb{\theta}|\pmb{y})$. We break the INLA procedure into three steps to facilitate explanation.
+To explain INLA in this section, define hyperparameter vector $\pmb{\theta} = \{\kappa, \sigma \}$; parameter vector $\pmb{\rho} = \{ \pmb{\beta}^{\text{T}}, \widetilde{w} \}^{\text{T}}$; and let $\pmb{Q}$ denote the precision matrix of $\pmb{\rho}$.
+
+INLA estimates the marginal posterior distributions for latent field parameters, $p(\rho_{i}|\pmb{y})$; and covariance hyperparameter posterior $p(\pmb{\theta}|\pmb{y})$. This means INLA does not estimate posteriors $p(\pmb{\rho}|\pmb{y})$ and $p(\pmb{\rho},\pmb{\theta}|\pmb{y})$. We break the INLA procedure into three steps to facilitate explanation.
 
 \subsubsection{Step 1, Gaussian Approximation} % ======= ======
 
-INLA begins by ``matching the mode and curvature at the mode'' of Gaussian estimator $p_{G}(\pmb{x}|\pmb{\theta}, \pmb{y})$ to that of $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ \citep{Rue2005}. Note that INLA requires Gaussian priors for all parameters, excluding covariance hyperparameters. INLA also requires conditional independence: $p(\pmb{y}|\pmb{x}, \pmb{\theta}) = \prod_{i} p(y_{i}|\pmb{x}_{i},\pmb{\theta})$. Our analysis satisfies this requirement, and therefore $$p(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp}\left(-\frac{1}{2}\pmb{x}^{T}\pmb{Q x} + \sum_{i} \text{log }p(y_{i}|\pmb{x}_{i},\pmb{\theta}) \right).$$ Assuming Gaussian priors and conditional independence, the INLA Gaussian approximation for $p(\pmb{x}|\pmb{\theta}, \pmb{y})$ takes the form
+INLA begins by ``matching the mode and curvature at the mode'' of Gaussian estimator $p_{G}(\pmb{\rho}|\pmb{\theta}, \pmb{y})$ to that of $p(\pmb{\rho}|\pmb{\theta}, \pmb{y})$ \citep{Rue2005}. Note that INLA requires Gaussian priors for all parameters in $\pmb{\rho}$, excluding covariance hyperparameters in $\pmb{\theta}$. INLA also requires conditional independence: $p(\pmb{y}|\pmb{\rho}, \pmb{\theta}) = \prod_{i} p(y_{i}|\pmb{\rho}_{i},\pmb{\theta})$. In our case, with a spatial random effect, if we condition on the random effect, we essentially fix it, and thus what remains is independent. Therefore 
+\begin{align}
+p(\pmb{\rho} |\pmb{\theta},\pmb{y}) & \propto p(\pmb{y}|\pmb{\rho}, \pmb{\theta}) p(\pmb{\rho}|\pmb{\theta}) p(\pmb{\theta}) \nonumber \\
+p(\pmb{\rho}|\pmb{\theta},\pmb{y}) & \propto \text{exp}\left(-\frac{1}{2}\pmb{\rho}^{T}\pmb{Q \rho} + \sum_{i} \text{log }p(y_{i}|\pmb{\rho}_{i},\pmb{\theta}) \right). \nonumber
+\end{align}
+Assuming Gaussian priors and conditional independence, the INLA Gaussian approximation for $p(\pmb{\rho}|\pmb{\theta}, \pmb{y})$ takes the form
 \begin{equation} \label{eq:ga}
-p_{G}(\pmb{x}|\pmb{\theta},\pmb{y}) \propto \text{exp} \left( -\frac{1}{2}(\pmb{x-\mu})^{T} (\pmb{Q} + \text{diag}(\pmb{c}) ) (\pmb{x - \mu}) \right),
+p_{G}(\pmb{\rho}|\pmb{\theta},\pmb{y}) \propto \text{exp} \left( -\frac{1}{2}(\pmb{\rho-\mu})^{T} (\pmb{Q} + \text{diag}(\pmb{c}) ) (\pmb{\rho - \mu}) \right),
 \end{equation}
-where vectors $\pmb{c}$ and $\pmb{\mu}$ depend on second order Taylor expansions of $f(\pmb{x}) = \sum_{i} \text{log }p(y_{i}|\pmb{x}_{i},\pmb{\theta})$ about the mode \citep{Lindstrom2014}. A Newton-Raphson algorithm iteratively computes the mode and precision matrix until convergence \citep{Rue2009}. Step 2 uses the approximation in \ref{eq:ga} to approximate $p(\pmb{\theta}|\pmb{y})$.
+where the vectors $\pmb{c}$ and $\pmb{\mu}$ depend on second order Taylor expansions of $f(\pmb{\rho}) = \sum_{i} \text{log }p(y_{i}|\pmb{\rho}_{i},\pmb{\theta})$ about the mode \citep{Lindstrom2014}. A Newton-Raphson algorithm iteratively computes the mode and precision matrix until convergence \citep{Rue2009}. Step 2 uses the approximation in \ref{eq:ga} to approximate $p(\pmb{\theta}|\pmb{y})$.
 
 \subsubsection{Step 2, Laplace Approximation}  % ====== ======
 
-This step begins with two sides of a familiar identity, and its subsequent rearrangement.
-\begin{align}
-p(\pmb{y} , \pmb{x} | \pmb{\theta}) = p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta})  &= p(\pmb{x} | \pmb{y}, \pmb{\theta}) p(\pmb{y} | \pmb{\theta}) \\
-\frac{p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta})} {p(\pmb{x} | \pmb{y}, \pmb{\theta})} &= p(\pmb{y} | \pmb{\theta})  
-\end{align}
-Next, substitute this last formulation of $p(\pmb{y}|\pmb{\theta})$ into the foundational Bayesian proportionality.
-\begin{align}
-p(\theta|\pmb{y}) & \propto p(\pmb{y}|\pmb{\theta})p(\pmb{\theta}) \\
-& \propto \frac{p(\pmb{y} | \pmb{x}, \pmb{\theta}) p(\pmb{x} | \pmb{\theta})}{p(\pmb{x} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta})
-\end{align}
-For a given $\pmb{\theta}$, let $\pmb{x}_{0} = \text{argmax}_{x}p(\pmb{x}|\pmb{y},\pmb{\theta})$. Then,
-\begin{equation} \label{eq:la}
-p(\pmb{\theta}|\pmb{y}) \approx \tilde{p}(\pmb{\theta}|\pmb{y}) \propto  \frac{p(\pmb{y} | \pmb{x}_{0}, \pmb{\theta}) p(\pmb{x}_{0} | \pmb{\theta})}{p_{G}(\pmb{x}_{0} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta}),
+This step begins with two sides of a familiar identity, and its subsequent rearrangement. Recall conditional probability rules give the two equalities for $p(\pmb{y} , \pmb{\rho} | \pmb{\theta})$:
+\begin{enumerate}
+\item $p(\pmb{y} , \pmb{\rho} | \pmb{\theta}) = p(\pmb{\rho} | \pmb{y}, \pmb{\theta}) p(\pmb{y} | \pmb{\theta})$. 
+\item $p(\pmb{y} , \pmb{\rho} | \pmb{\theta}) = p(\pmb{y} | \pmb{\rho}, \pmb{\theta}) p(\pmb{\rho} | \pmb{\theta})$
+\end{enumerate} 
+Linking these together we have
+$$ p(\pmb{y} , \pmb{\rho} | \pmb{\theta}) = p(\pmb{\rho} | \pmb{y}, \pmb{\theta}) p(\pmb{y} | \pmb{\theta}) = p(\pmb{y} | \pmb{\rho}, \pmb{\theta}) p(\pmb{\rho} | \pmb{\theta}),$$
+and removing ``$p(\pmb{y} , \pmb{\rho} | \pmb{\theta})$'' from the far left-hand side leaves
+$$ p(\pmb{\rho} | \pmb{y}, \pmb{\theta}) p(\pmb{y} | \pmb{\theta}) = p(\pmb{y} | \pmb{\rho}, \pmb{\theta}) p(\pmb{\rho} | \pmb{\theta}). $$
+Now divide both sides by ``$p(\pmb{\rho} | \pmb{y}, \pmb{\theta})$'' to get 
+\begin{equation}
+p(\pmb{y} | \pmb{\theta}) = \frac{p(\pmb{y} | \pmb{\rho}, \pmb{\theta}) p(\pmb{\rho} | \pmb{\theta})} {p(\pmb{\rho} | \pmb{y}, \pmb{\theta})}.
 \end{equation}
-with the Taylor approximation of $f(\pmb{x}) = \sum_{i} \text{log }p(y_{i}|x_{i})$ in $p_{G}(\pmb{x} | \pmb{y}, \pmb{\theta})$ expanded about $\pmb{x}_{0}$. Then, we have approximate maximum likelihood estimate $\hat{\pmb{\theta}}_{\text{ML}} \approx \text{argmax}_{\theta} \tilde{p}(\pmb{\theta}|\pmb{y})$. \cite{Tierney1986} showed this approximation matches the Laplace approximation. 
-
-Next, in Step 3, we use the results of Step 1 and Step 2 to nest and numerically integrate the Laplace approximations to approximate marginal posteriors.
+Next, substitute this last formulation of $p(\pmb{y}|\pmb{\theta})$ into Bayesian theorem:
+\begin{align}
+p(\theta|\pmb{y}) & \propto p(\pmb{y}|\pmb{\theta})p(\pmb{\theta}) \nonumber \\
+& \propto \frac{p(\pmb{y} | \pmb{\rho}, \pmb{\theta}) p(\pmb{\rho} | \pmb{\theta})}{p(\pmb{\rho} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta})
+\end{align}
+For a given $\pmb{\theta}$, let $\pmb{\rho}_{0} = \text{argmax}_{\rho}p(\pmb{\rho}|\pmb{y},\pmb{\theta})$. Then,
+\begin{equation} \label{eq:la}
+p(\pmb{\theta}|\pmb{y}) \approx \tilde{p}(\pmb{\theta}|\pmb{y}) \propto  \frac{p(\pmb{y} | \pmb{\rho}_{0}, \pmb{\theta}) p(\pmb{\rho}_{0} | \pmb{\theta})}{p_{G}(\pmb{\rho}_{0} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta}),
+\end{equation}
+with the Taylor approximation of $f(\pmb{\rho}) = \sum_{i} \text{log }p(y_{i}|\rho_{i})$ in $p_{G}(\pmb{\rho} | \pmb{y}, \pmb{\theta})$ expanded about $\pmb{\rho}_{0}$. Then, we have approximate maximum likelihood estimate $\hat{\pmb{\theta}}_{\text{ML}} \approx \text{argmax}_{\theta} \tilde{p}(\pmb{\theta}|\pmb{y})$. \cite{Tierney1986} showed this approximation matches the Laplace approximation. 
+Next, in Step 3, we use the results of Step 1 and Step 2 to nest and numerically integrate the Laplace approximations to obtain approximate marginal posteriors.
 
 \subsubsection{Step 3, Numerical Integration} % === === === === ===
-Using the Gaussian approximation, $p_{\text{G}}(x_{j}|\pmb{\theta, y})$, from equation \ref{eq:ga} in Step 1; and the Laplace approximation, $\tilde{p}(\pmb{\theta}|\pmb{y})$, from equation \ref{eq:la} in Step 2; we can now integrate numerically to find posterior marginals $p(x_{i}|\pmb{y})$ and $p(\theta_{i}|\pmb{y})$. 
-        $$ p(x_{j} | \pmb{y}) \approx \int p_{\text{G}}(x_{j}|\pmb{\theta, y})\tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta} $$
+Using the Gaussian approximation, $p_{\text{G}}(\rho_{j}|\pmb{\theta, y})$, from equation \ref{eq:ga} in Step 1; and the Laplace approximation, $\tilde{p}(\pmb{\theta}|\pmb{y})$, from equation \ref{eq:la} in Step 2; we can now integrate numerically to find posterior marginals $p(\rho_{i}|\pmb{y})$ and $p(\theta_{i}|\pmb{y})$. 
+        $$ p(\rho_{j} | \pmb{y}) \approx \int p_{\text{G}}(\rho_{j}|\pmb{\theta, y})\tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta} $$
         $$ p(\theta_{k} | \pmb{y}) \approx \int \tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta}_{-k} $$
         
 For additional details of the procedure, see \cite{Rue2009}. We implement the SPDE-INLA procedure of the previous two subsections with the R package \verb|INLA| \citep{INLA}, \citep{Lindgren2015}.
@@ -422,11 +436,7 @@ The INLA model fit with n = 1000 observations required approximately 5 seconds; 
 	\caption{Integrated nested Laplace approximation model fits. The model fit for n = 1000 observations required approximately five seconds. The n = 3000 model fit required approximately nine seconds. Finally, the INLA fit with all n = 9172 Peralta observations required approximately 34 seconds.}
 	\label{fig:INLA}
 	\end{figure}
-The n = 1000 INLA fit clearly resembles the n = 1000 GLM fit more closely than the PPM fit. The contours of all three match closely, but the maximum success probability regions of the PPM fit exceed the maximum regions of the INLA and GLM fits. This interesting result suggests the PPM fit infers greater impact from the random effect than the INLA fit infers. 
-
-All three n = 3000 fits look more simmilar than the n = 1000 fits. However, the PPM fit contours differ from the INLA and GLM fits. Namely, the teardrop shape appears slightly flattened, with regions of higher probability extending further outside the strike zone up and to the left.  
-
-For the n = 9172 INLA fit, we use only the VR empirical heat map as a point of comparison. The fit resembles the empirical map with approximately the same degree of similarity as the GLM and PPM fits resemble their respective VR maps. Most noteworthy, the INLA fit succeeded. The model fits required quantities of time sufficiently small to allow amateur and professional experimentation on personal computers, achieving one of our goals.
+For the $n = 9172$ case with INLA, we use only the VR empirical heat map as a point of comparison. The fit resembles the empirical map with approximately the same degree of similarity as the GLM and PPM fits resemble their respective VR maps. Most noteworthy, the INLA fit succeeded for this larger data set. The model fits required quantities of time sufficiently small to allow amateur and professional experimentation on personal computers, achieving one of our goals.
 
 
 \section{Conclusion}
