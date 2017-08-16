@@ -4,7 +4,7 @@ Tobler's First Law of Geography says that things close together in space tend to
 
 Broadly speaking, we add a spatial random effect to improve the model by attempting to model residual spatial correlation. More narrowly, as a first step in that process, the research in this chapter examines three procedures and their effectiveness for fitting big data SGLMMs on a personal computer (PC).
 
-This chapter consists of four sections. The first section covers four background topics for the remaining sections: Gaussian Random Fields, SGLMMs, big spatial data computational burdens, and Markov Chain Monte Carlo. The remaining three sections detail three approaches to dealing with the computational burdens of fitting our SGLMM: optimization, dimension reduction, and approximation.
+This chapter consists of four sections. The first section covers three topics for the remaining sections:  SGLMMs and Gaussian Random Fields (GRFs), big spatial data computational burdens, and Markov Chain Monte Carlo. The remaining three sections detail three approaches to dealing with the computational burdens of fitting our SGLMM: optimization, dimension reduction, and approximation.
 
 \subsection{Spatial Generalized Linear Mixed Model (SGLMM)} % ======= ======= ===
 Let $\pmb{w}(\pmb{s}_{ij})$ be a spatial random effect at location $\pmb{s}_{ij}$, and add it to the linear predictor in equation \ref{eq:glm} to give the following SGLMM:
@@ -259,7 +259,7 @@ We adopt a Mat\'ern covariance structure for the GRF because  Mat\'ern random fi
 \begin{equation} \label{eq:spde1}
 (\kappa^{2} - \Delta)^{\alpha/2}\pmb{w}(\pmb{s}) = \pmb{W}(\pmb{s}),
 \end{equation}
-includes the Laplace operator $\Delta = \sum_{i=1}^{d} \frac{\partial^{2}}{\partial w_{i}^{2}}$; spatial scale (range) parameter $\kappa$; smoothness parameter $\alpha$; and Gaussian spatial white noise process $\pmb{W}(\pmb{s})$. 
+includes the Laplace operator $\Delta = \sum_{s_{i}=x_{i},y_{i}} \frac{\partial^{2}}{\partial s_{i}^{2}}$; spatial scale (range) parameter $\kappa$; smoothness parameter $\alpha$; and Gaussian spatial white noise process $\pmb{W}(\pmb{s})$. 
 
 Based on the SPDE-Mat\'ern relationship and $\nu = 1$, we have the following forms for $\alpha$, $\sigma$, and the SPDE:
 \begin{align}
@@ -342,28 +342,40 @@ $$ \left[ \left< \psi_{l}, (\kappa^{2} - \Delta) \psi_{k} \right> \right]_{l,k} 
 \overset{D}{=} 
 \Big[ \langle \psi_{l}, \pmb{W} \rangle \Big]_{l} $$ 
 
+$$  \left[ \left< \psi_{l}, (\kappa^{2}\psi_{k} - \Delta \psi_{k})  \right> \right]_{l,k} \pmb{\omega} 
+\overset{D}{=} 
+\Big[ \langle \psi_{l}, \pmb{W} \rangle \Big]_{l}  $$
+
 $$ \Big( \kappa^{2} [ \langle \psi_{l}, \psi_{k} \rangle ] + [ \langle \psi_{l}, -\Delta \psi_{k} \rangle ] \Big) \pmb{\omega} 
 \overset{D}{=} 
-\Big[ \langle \psi_{k}, \pmb{W} \rangle \Big]_{l} $$
+\Big[ \langle \psi_{l}, \pmb{W} \rangle \Big]_{l} $$
 
-Simplify notation by letting $\pmb{C}_{l,k} = \langle \psi_{l}, \psi_{k} \rangle$, and $ \pmb{G}_{l,k} = \langle \psi_{l}, - \Delta \psi_{k} \rangle$, so that
+Simplify notation by letting $\pmb{C} = \langle \psi_{l}, \psi_{k} \rangle$, and $ \pmb{G} = \langle \psi_{l}, - \Delta \psi_{k} \rangle$, to give
+
+$$ \left(
+\kappa^{2} \pmb{C} + \pmb{G} \right) \pmb{\omega} \overset{D}{=} \Big[ \langle \psi_{l}, \pmb{W} \rangle \Big]_{l}.$$
+
+The {\it Galerkin} solution\footnote{For additional details and proofs see \cite{Lindgren2011}: pages 429 - 431, Appendix A and Appendix C.} gives $\Big[ \langle \psi_{l}, \pmb{W} \rangle \Big]_{l} \sim \text{N}(\pmb{0},\pmb{C})$, so that
 $$ \left(
 \kappa^{2} \pmb{C} + \pmb{G} \right) \pmb{\omega} \overset{D}{=} \text{N}(\pmb{0},\pmb{C}).$$
-Thus, $\pmb{\omega} \sim \text{N}(\pmb{0}, \pmb{Q}_{\kappa}^{-1})$, where:
+
+Thus, $\pmb{\omega} \sim \text{N}(\pmb{0}, \pmb{Q}^{-1})$ for precision matrix
 \begin{equation} \label{eq:Q}
-\pmb{Q}_{\kappa} = \left( \kappa^{2} \pmb{C} + \pmb{G} \right)^{T} \pmb{C}^{-1} \left( \kappa^{2} \pmb{C} + \pmb{G} \right).
+\pmb{Q} = \left( \kappa^{2} \pmb{C} + \pmb{G} \right)^{T} \pmb{C}^{-1} \left( \kappa^{2} \pmb{C} + \pmb{G} \right).
 \end{equation}
-% However, $\pmb{C}^{-1}$ has a sparse precision matrix, so replace $\pmb{C}$ in equation \ref{eq:Q} with diagonal matrix $\widetilde{\pmb{C}}$:
-% $$ \widetilde{\pmb{C}}_{i,i} = \langle \psi_{i}, \pmb{1} \rangle = \int \psi_{i}(\pmb{s}) d\pmb{s}.$$ 
-% \begin{equation} \label{eq:Q2}
-% \pmb{Q}_{\kappa} = \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right)^{T} \pmb{C}^{-1} \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right).
-% \end{equation}
-Note that this solution, $\pmb{\omega}$, specifies the distribution of the weights $\omega_{k}$ in the piecewise linear basis function representation of $\widetilde{\pmb{w}}(\pmb{s})$ (equation \ref{eq:basisrep}), not $\widetilde{\pmb{w}}(\pmb{s})$ itself.
+
+$\pmb{C}^{-1}$ has a sparse precision matrix, however the same is not necessarily true of $\pmb{C}$. Therefore, replace $\pmb{C}$ in equation \ref{eq:Q} with diagonal matrix $\widetilde{\pmb{C}}$:
+$$ \widetilde{\pmb{C}}_{i,i} = \langle \psi_{i}, \pmb{1} \rangle = \int \psi_{i}(\pmb{s}) d\pmb{s}.$$
+\begin{equation} \label{eq:Q2}
+\pmb{Q} = \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right)^{T} \pmb{C}^{-1} \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right).
+\end{equation}
+
+Note that this solution specifies the distribution of the vector of weights $\pmb{\omega}_{k}$ in the piecewise linear basis function representation of $\widetilde{\pmb{w}}(\pmb{s})$ (equation \ref{eq:basisrep}), not the distribution of $\widetilde{\pmb{w}}(\pmb{s})$ itself.
 
 % ========= ========= ========= ========= ========= =========
 \subsection{Integrated Nested Laplace Approximations (INLA)}
 
-INLA estimates the marginal posterior distributions for latent field parameters, $p(x_{i}|\pmb{y})$; and covariance hyperparameter posterior $p(\theta|\pmb{y})$. This means INLA does not estimate posteriors $p(\pmb{x}|\pmb{y})$ and $p(\pmb{x},\pmb{\theta}|\pmb{y})$. We break the INLA procedure into three steps to facilitate explanation; their details comprise the next three subsections.
+INLA estimates the marginal posterior distributions for latent field parameters, $p(x_{i}|\pmb{y})$; and covariance hyperparameter posterior $p(\theta|\pmb{y})$. This means INLA does not estimate posteriors $p(\pmb{x}|\pmb{y})$ and $p(\pmb{x},\pmb{\theta}|\pmb{y})$. We break the INLA procedure into three steps to facilitate explanation.
 
 \subsubsection{Step 1, Gaussian Approximation} % ======= ======
 
