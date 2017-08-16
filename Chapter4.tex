@@ -424,28 +424,63 @@ Using the Gaussian approximation, $p_{\text{G}}(\rho_{j}|\pmb{\theta, y})$, from
         $$ p(\rho_{j} | \pmb{y}) \approx \int p_{\text{G}}(\rho_{j}|\pmb{\theta, y})\tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta} $$
         $$ p(\theta_{k} | \pmb{y}) \approx \int \tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta}_{-k} $$
         
-For additional details of the procedure, see \cite{Rue2009}. We implement the SPDE-INLA procedure of the previous two subsections with the R package \verb|INLA| \citep{INLA}, \citep{Lindgren2015}.
+For additional details of the procedure, see \cite{Rue2009}. We implement the SPDE-INLA procedure of the previous two subsections with the function \verb|inla()| in the R package {\bf INLA} \citep{INLA}, \citep{Lindgren2015}.
         
 \subsection{Results}
-The INLA model fit with n = 1000 observations required approximately 5 seconds; and the n = 3000 fit required approximately 9 seconds. Most impressively, the INLA fit to all 9172 Peralta observations required approximately 34 seconds. This marks the first complete fit of our SGLMM to all Peralta observations, in our research. Figure \ref{fig:INLA} shows all three INLA model fits.
+The INLA model fit with n = 1000 observations required approximately 5 seconds; and the n = 3000 fit required approximately 9 seconds. Most impressively, the INLA fit to all 9177 Peralta observations required approximately 34 seconds. In Figure \ref{fig:INLA} we show the VR heat map, GLM fit heat map, and the INLA fit heat map.
   \begin{figure}[H]
-	\centering 
-	\includegraphics[scale=.05]{Images/INLA1000.jpg}	
-	\includegraphics[scale=.05]{Images/INLA3000.jpg}
-	\includegraphics[scale=.05]{Images/INLA9172.jpg}
-	\caption{Integrated nested Laplace approximation model fits. The model fit for n = 1000 observations required approximately five seconds. The n = 3000 model fit required approximately nine seconds. Finally, the INLA fit with all n = 9172 Peralta observations required approximately 34 seconds.}
+	\centering 	
+	\includegraphics[scale=.05]{Images/Peralta_var-res2.jpg}
+	\includegraphics[scale=.05]{Images/Peralta_fit.jpg}
+	\includegraphics[scale=.05]{Images/INLA.jpg}
+	\caption{VR heat map, GLM fit heat map, and Integrated Nested Laplace Approximation (INLA) model fit heat map. The INLA fit with all n = 9177 Peralta observations required approximately 34 seconds.}
 	\label{fig:INLA}
 	\end{figure}
-For the $n = 9172$ case with INLA, we use only the VR empirical heat map as a point of comparison. The fit resembles the empirical map with approximately the same degree of similarity as the GLM and PPM fits resemble their respective VR maps. Most noteworthy, the INLA fit succeeded for this larger data set. The model fits required quantities of time sufficiently small to allow amateur and professional experimentation on personal computers, achieving one of our goals.
+The fit resembles the empirical map with approximately the same degree of similarity as the GLM. The GLM and INLA fit heat maps are very similar. We show GLM and INLA estimates in the tables below for compairson.  \\
 
+\begin{tabular}{| l | c | c | c |}
+\hline
+\multicolumn{4}{|c|}{} \\
+\multicolumn{4}{|c|}{} \\
+\multicolumn{4}{|c|}{GLM} \\
+\hline
+Covariate         & $\beta_{i}$ & MLE   & SE   \\ \hline
+1                 & $\beta_{0}$ & -4.08 & 0.70 \\ \hline
+r                 & $\beta_{1}$ &  1.19 & 0.51 \\ \hline
+$\theta$          & $\beta_{2}$ & -1.93 & 1.90 \\ \hline
+$r*\theta$        & $\beta_{3}$ & -1.64 & 0.70 \\ \hline
+$r^{2}$           & $\beta_{4}$ & -0.32 & 0.09 \\ \hline
+$\theta^{2}$      & $\beta_{5}$ & -3.92 & 1.10 \\ \hline
+$r^{2}*\theta^{2}$& $\beta_{6}$ & -0.46 & 0.21 \\ \hline
+\end{tabular}
+\quad
+\begin{tabular}{| l | c | c | c |}
+\hline
+\multicolumn{4}{|c|}{INLA} \\
+\hline
+Covariate         & $\rho _{i}$ & $\hat{\rho}_{i}$ & SE \\ \hline
+N/A               & $\kappa$    &  3.23 & $\pm$ 1 SE: (1.35, 7.54) \\ \hline
+N/A               & $\sigma$    &  0.11 & $\pm$ 1 SE: (0.05, 0.26) \\ \hline
+1                 & $\beta_{0}$ & -4.14 & 0.76 \\ \hline
+r                 & $\beta_{1}$ &  1.25 & 0.55 \\ \hline
+$\theta$          & $\beta_{2}$ & -1.90 & 1.96 \\ \hline
+$r*\theta$        & $\beta_{3}$ & -1.70 & 0.93 \\ \hline
+$r^{2}$           & $\beta_{4}$ & -0.33 & 0.10 \\ \hline
+$\theta^{2}$      & $\beta_{5}$ & -3.93 & 1.14 \\ \hline
+$r^{2}*\theta^{2}$& $\beta_{6}$ & -0.48 & 0.22 \\ \hline 
+\end{tabular} \\
+
+The coefficient estimates and SEs are very similary for the GLM and INLA model fits. The INLA Mat\'ern covariance parameter estimate $\hat{\kappa}$ indicates long range correlation, albeit at a low scale indicated by $\hat{\sigma} = 0.11$.
+
+Most noteworthy, the INLA fit succeeded for this larger data set. The model fits required quantities of time sufficiently small to allow amateur and professional experimentation on personal computers, achieving one of our goals.
 
 \section{Conclusion}
-In this chapter we saw that optimized Stan code inadequately addresses the coputational burden of fitting big data SGLMMs. PPMs, on the other hand, achieve efficiency sufficient to fit SGLMMs to a few thousand of observations. However, PPMs also proved inadequate as observation totals approached 9000. Our final approach, INLA, approximates parameters and thereby avoids the $\mathcal{O}(n^{3})$ computational burden of using MCMC to fit SGLMMs. INLA fit the SGLMM to all n = 9172 observations, in 34 seconds. Nonetheless, both PPMs and INLA involve statistical compromises.
+In this chapter we saw that optimized Stan code and PPMs both inadequately address the coputational burden of fitting an SGLMM to our data. Our final approach, INLA, approximates parameters and thereby avoids the $\mathcal{O}(n^{3})$ computational burden of using MCMC to fit SGLMMs. INLA fit the SGLMM to all n = 9177 observations, in 34 seconds.
 
-PPMs necessarily sacrifice some spatial information in reducing dimensionality. This dimension reduction possibly contributed to convergence difficulties we experienced; trace plots indicated non-convergence of most parameters after 30,000 draws with n = 97 knots and n = 1000 observations. Despite requiring 60 minutes for as many observations, Stan fit trace plots exhibited no such convergence difficulties. Examination of computational costs constituted our primary aim in this chapter, but in future research convergence diagnostics should precede substantive modeling and analysis for inference. The \verb|CODA| package offers diagnostic tools to assess mixing, autocorrelation, and convergence, such as the Gelman-Rubin convergence diagnostic \citep{CODA}, \citep{Gelman2014}, \citep{Brooks1998}
+PPMs necessarily sacrifice some spatial information in reducing dimensionality. This dimension reduction possibly contributed to non-convergence; trace plots indicated non-convergence of most parameters after 30,000 draws with n = 97 knots and n = 1000 observations. Despite requiring 60 minutes for as many observations, Stan fit trace plots exhibited no such convergence difficulties. In future attempts to use PPMs, convergence diagnostics should precede substantive modeling and analysis for inference. The \verb|CODA| package offers diagnostic tools to assess mixing, autocorrelation, and convergence, such as the Gelman-Rubin convergence diagnostic \citep{CODA}, \citep{Gelman2014}, \citep{Brooks1998}
 
-Partially counterbalancing its model fitting speed, INLA for spatial Bernoulli data yields biased estimators \citep{Mondal2017}. Therefore, using INLA for further research and inference will require, like PPM, preliminary steps. These steps should include simulation analysis of the bias characteristics, and a literature review of the topic including the discussion in \cite{Rue2007}. 
+Partially counterbalancing its model fitting speed, INLA for spatial Bernoulli data yields biased estimators \citep{Mondal2017}. Therefore, using INLA for further research and inference will require, like PPM, preliminary steps. These steps should include simulation analysis of the bias characteristics, and a literature review of the topic including the discussion in \cite{Rue2007}. In addition, a thorough examination of estimate variance characteristics should follow. Creating an interactive HMCI in {\bf mapapp} would help compare the variance of INLA estimates to the variance of GLM estimates.
 
-When satisfactory model fitting occurs, model comparison should follow. Comparison should include GLMs, SGLMMs fit with PPMs, and SGLMMs fit with INLA. Comparison can follow the example of \cite{Finley2009_2}, and use probability model scoring rules to compare fits \citep{Bickel2007}, \citep{Gneiting2007}. The essential question to answer: does the random effect enhance the model sufficiently to justify the increased computational costs?
+When satisfactory model fitting occurs, model comparison of GLMs and SGLMMs fit with INLA should follow. Comparisons can follow the example of \cite{Finley2009_2}, and use probability model scoring rules to compare fits \citep{Bickel2007}, \citep{Gneiting2007}. The essential question to answer: does the random effect enhance the model sufficiently to justify the increased computational costs?
 
-In summary, this chapter reviewed and detailed three approaches to fitting SGLMMs to big N, spatial, strike zone data. Future researchers can bypass model fitting in Stan, and proceed to the PPM and/or INLA preliminaries just described, depending on their goals and speed requirements.
+In summary, this chapter reviewed and detailed three approaches to fitting SGLMMs to big N, spatial, strike zone data. Future researchers, depending on goals and speed requirements, can bypass model fitting in Stan; focus on convergence and convergence diagnotics of long MCMC runs for PPM fitting; and investigate INLA variance properties as just described. 
