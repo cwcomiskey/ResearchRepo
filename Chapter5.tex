@@ -1,24 +1,37 @@
-\section{Summary} % ================== 
+\section{Overview} % ================== 
 
-This research study serves four primary purposes. First, it provides an additional option to statisticians when it comes to resolution selection for empirical heat maps. Second, it provides an additional option for statisticians when it comes to presenting heat map confidence intervals. Three, it provides a starting point for parametric models relating  hitting biomechanics to pitch location-based swing success probabilitites. Four, it examines approaches for fitting mixed models to big spatial data in baseball.  
+Through this research we make four primary contributions. First, we provide an additional option to statisticians for resolution selection with empirical heat maps, and an R package called {\bf varyres} to implement this option. Second, we give statisticians another option for presenting heat map confidence intervals, and an R package called {\bf mapapp} to implement this option. Third, we provide a starting point for a parametric model relating hitting biomechanics to location-based swing success probabilities. Fourth, we delineate, use, and assesses three approaches for fitting mixed models to big spatial data in baseball. 
 
-In Chapter 2 we focused on empirical heat map resolution. To understand the problem, we examined the challenges and trade-offs inherent to heat map resolution selection. We developed VR heat mpas as a solution to these challenges. We showed how VR heat maps reduce the challenge and trade-offs of resolution selection. We presented the VR algorithm, and launched our R implementation package \verb|varyres|.
+\section{Dissertation Summary}
 
-In Chapter 3 we considered the biomechanics of hitting and developed a method to relate swing success to swing biomechanics in a GLM. This consisted of switching pitch locations from rectangular to polar coordinates, and translating the origin to a biomechanically meaningful location. This process yielded a viable model, and a model with which to explore heat map CIs. Specifically, we discussed the challenges of CIs on the color spectrum, instead of the number line. Heat maps CIs---a {\it surface} of estimate-to-color mappings---increase the challenge. Therefore, we developed interactive heat map CIs, with implementation in Shiny \citep{Shiny}.
+Ted Williams thought of the strike zone as divided into pitch locations with varying probabilities of getting a hit, and relatively new PITCHf/x\textsuperscript{\textregistered} technology provides the data to explore Williams's conception of the strike zone as a success probability heat map.
 
-Last, in Chapter 4 we introduced the computational burden of fitting a big data SGLMM. We examined three approaches to addressing the ``big N'' problem: optimzation in the Bayesian computing problem Stan; dimension reduction with PPMs; and approximation with INLA. We used a host of techniques to improve efficiency in Stan, but the computational costs far exceeded Stan's capabilities on a PC. We experienced more success with our second approach, dimension reduction with PPMs. We successfully fit models to a few thousand observations using the R package \verb|spBayes| \citep{Finley2013}, with computation times on the order of hours. The final approach we examined, INLA, fit models with thousands of observations in seconds. In fact, for the first time we fit a SGLMM to the entire Peralta data set, in 34 seconds.
+Heat maps present certain visualization challenges. In Chapter 2, we focused on empirical heat map resolution selection. To understand the problem, we examined the challenges and trade-offs inherent to traditional heat map resolution: a resolution is often appropriate to some, but not all, regions; it conceals variation in data abundance. To address these challenges, we developed the VR algorithm and VR heat maps. We showcased VR heat maps through examples, and launched an R package called \verb|varyres| to implement VR heat maps.
+
+Putting a model to Williams's conception, in Chapter 3 we developed a logistic regression model that relates swing success to swing biomechanics. This consisted of translating pitch locations from rectangular to polar coordinates, and translating the origin to a biomechanically meaningful location. This process yielded a viable model, which we used to examine a second heat map visualization challenge: heat map confidence intervals.
+
+We discussed the challenges of confidence intervals on the color spectrum, and how a surface (heat map) of such intervals magnifies those challenges. We developed interactive heat map confidence intervals, ; and launched an R package called {\bf mapapp} for implementation in Shiny \citep{Shiny}.
+
+Buidling on Chapter 3, we added a spatial random effect to our GLM, yielding the SGLMM of Chapter 4. An SGLMM increases the model fitting computational burden substantially, over the GLM. We examined three approaches to addressing this problem in fitting an SGLMM to our baseball data: optimization in the Bayesian computing program Stan; dimension reduction with PPMs; and approximation with INLA. 
+
+We used a host of techniques to improve efficiency in Stan, but the computational costs far exceeded Stan's capabilities on our PC. Dimension reduction with PPMs was much faster, but MCMC chains failed to converge. Using INLA we fit an SGLMM to the entire Peralta data set in 34 seconds, the first time we were able to fit the SGLMM to Peralta's entire data set.
 
 \section{Discussion}
-% Coming to conclusions (more generalised than findings)
-% Limitations (somewhere)
-  % Independence
-  % Diagnostics
-% implications 
-% practical applications
+This body of research also contributes more broadly than specific results, to the research community. First, we nudge forward the collective state of statistical graphics with our VR heat maps and interactive CIs. This is important because statistical graphics facilitate communication in the research community, and between statisticians and non-technical audiences. Second, we hope the concepts of varying resolution heat maps and interactive CIs spur creativity. In this vein, we provide our packages openly to the research community at GitHub, to use, experimentation, and improvements.
+
+Our work also encourages rigorous, academic-level baseball research in at least four ways. First, MLBAM\textsuperscript{\textregistered} makes PITCHf/x\textsuperscript{\textregistered} data publicly available, but it is only beginning to make its way into academia; hopefully this work provides a nudge. Second, it encourages interdisciplinary research. For example, Glenn Fleisig's ASMI lab could conduct swing biomechanics research on relationships our model suggests. Third, using polar coordinates to relate swing biomechanics to pitch locations may spur new ideas and creativity. Fourth, knowing the scope of the ``big N'' problem at the outset, with our assessment of a few approaches, provides future researchers direction on one obstacle to swing SGLMMs.
 
 \section{Next Steps}
+
+The research presented in this dissertation suggests further research at every turn. Starting with our graphical contributions, we will improve both packages. To begin,  we will add options in \verb|varyres| for additional subdivision methods and stopping rules. In \verb|mapapp| we will try to increase speed; the meaning of toggling through the interval will be easier to understand if the image changes more smoothly. In this vein, we plan to add a feature in both packages for creating a graphics interchange format (gif) file to animate the generated maps. In \verb|varyres| this will animate the process of subdividing boxes and increasing resolution in certain regions; and in \verb|mapapp| this would automate a smooth, animated movement through the interval.
+
+The approaches to the big N problem we described in Chapter 4 require further research. As mentioned in the chapter's conclusion, before we use PPMs for inference in our model we need to assess MCMC mixing, autocorrelation, and convergence. With INLA, we should investigate the bias inherent to the fit. With a better understanding of the model fits, a comparison, using scoring rules, should follow to weigh the costs and benefits of adding a random effect to the model. The random effect points to another topic for future research.
+
+Future research should revisit the expedient independence assumption. We expect, for example, correlation within games, years, pitchers, pitch type, ballpark, etc. The ideal model will incorporate these within-group correlations, and thereby make better predictions, with more realistic interpretations. These efforts will need to simultaneously address the big N problem and the relatively sparse data with this much subsetting.
+
+
+
+% implications 
+% practical applications
 % recommend future research 
-  % Augment varyres (subdivision, stopping rules, adaptive subdivision)
   % Biomechanists  
-  % Augment mapapp
-  % Diagnostics, bias, scoring rules --- stuff above
