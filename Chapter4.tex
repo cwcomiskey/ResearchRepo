@@ -106,7 +106,7 @@ The differential equation solutions give the position and momentum at time t. Wi
 In summary, the HMC algorithm samples from the auxiliary Normal distribution, and then calculates the proposal as the positions vector in the Hamilton equation. This method yields high probability, well mixed Metropolis proposals. This combination, and Stan's efficient Bayesian model fitting, motivated us to use Stan for model fitting.
 
 \subsection{Optimization Techniques} % =================
-With the techniques presented in this section, we aimed to improve Stan model fitting efficiency enough to successfully fit our SGLMM to thousands, or tens of thousands, of observations. The techniques include Bayesian, linear algebra, and purely computational strategies. We start with techniques related to the Bayesian model components.
+A primary advantage of Stan is that a user doesn't have to understand the HMC steps to implement a model. However, naive specification of models can lead to poor performance. In this section we present techniques we implemented to try to improve Stan model fitting efficiency enough to successfully fit our SGLMM to thousands, or tens of thousands, of observations. The techniques include Bayesian model specification, linear algebra, and purely computational strategies. We start with techniques related to the Bayesian model components.
 
 Stan permits users to omit prior distributions for parameters, but then assumes a non-informative, uniform prior for that parameter. However, prominent Bayesian statistician and Stan developer Andrew Gelman pointed out in personal correspondence that the exponential covariance range parameter, $\phi$ in equation \ref{eq:exp}, requires an informative prior for model identifiability (uniqueness) \citep{Gelman2014}. In this vein, Stan developer Rob Trangucci recommended, also in personal correspondence, a sharp tailed prior distribution for range parameter $\phi$, such as the normal or log-normal, to act as soft upper and lower bound constraints \citep{Trangucci}. Even further, for practical computing time and convergence considerations, Trangucci indicated complex models---such as spatial hierarchical models---require proper priors for all $\beta$ coefficients \citep{Trangucci}. The next two techniques combine linear algebra and computational considerations.
 
@@ -121,23 +121,23 @@ for (n in 1:N)
 \end{verbatim}
 The first, faster line includes N$\times$1 column vectors \verb|hit|, \verb|beta|, and \verb|Z|; and N$\times$p matrix \verb|X|. The second, slower snippet, instead uses scalars \verb|hit[n]|, \verb|beta[n]|, and \verb|Z[n]|; and 1$\times$p row vector \verb|X[n]|.
 
-Trangucci also suggested a QR factorization on covariate matrix $\pmb{X}$, in the linear predictor, to increase computational efficiency \citep{Trangucci}. A QR factorization consists of factoring an n $\times$ p matrix into the product of an n $\times$ p orthogonal matrix $\pmb{Q}$ and a p $\times$ p upper triangular matrix $\pmb{R}$, such that $\pmb{X} = \pmb{QR}$. Leveraging this factorization into a speed increase requires a reparameterization. To this end, let $\pmb{\theta} = \pmb{R \beta}$, which gives:
-\begin{align}
-\pmb{X} &= \pmb{QR} \\
-\pmb{X \beta} &= \pmb{QR \beta} \\
-\pmb{X \beta} &= \pmb{Q \theta},
-\end{align}
-and the model
+Trangucci also suggested a QR factorization on covariate matrix $\pmb{X}$, in the linear predictor, to increase computational efficiency \citep{Trangucci}. A QR factorization consists of factoring an n $\times$ p matrix into the product of an n $\times$ p orthogonal matrix $\pmb{Q}$ and a p $\times$ p upper triangular matrix $\pmb{R}$, such that $\pmb{X} = \pmb{QR}$. Leveraging this factorization into a speed increase requires a reparameterization. To this end, let $\pmb{\theta} = \pmb{R \beta}$. We have:
+$$ \pmb{X} = \pmb{QR},$$
+and right multiply both sides by $\pmb{\beta}$ to get:
+$$ \pmb{X \beta} = \pmb{QR \beta}. $$
+Substitute in $\pmb{\theta} = \pmb{R \beta}$, which gives:
+$$ \pmb{X \beta} = \pmb{Q \theta}. $$
+The resulting model is:
 \begin{equation} \label{eq:reparam}
 \text{logit}(p_{i}|\pmb{s}_{i}) = \pmb{Q}_{i}(\pmb{s}_{i}) \pmb{\theta}_{j} + w_{i}.
 \end{equation}
-With this parameterization we incorporate prior information about $\pmb{\beta}$ in the $\pmb{\theta}$ prior distributions. 
+With this parameterization we must incorporate prior information about $\pmb{\beta}$ in the $\pmb{\theta}$ prior distributions. 
 
-Consider non-informative prior distributions on p-dimensional parameter vector $\pmb{\beta}$,
+Consider uninformative prior distributions on p-dimensional parameter vector $\pmb{\beta}$,
 \begin{equation}
 \pmb{\beta} \sim N(\pmb{0}, \sigma^{2}\pmb{I}_{p}), 
 \end{equation}
-with p $\times$ p identity matrix $\pmb{I}_{p}$; and p $\times$ 1 zero vector $\pmb{0}$. Notice the intended variance of the non-informative prior must be modified, to be on the scale of $\pmb{\theta}$.
+with p $\times$ p identity matrix $\pmb{I}_{p}$; and p $\times$ 1 zero vector $\pmb{0}$. In order for the prior on $\theta$ to reflect this variance it must be modified. Notice the intended variance of the non-informative prior must be modified, to be on the scale of $\pmb{\theta}$.
 \begin{align}
 \text{Var}(\pmb{\theta}) &= \text{Var}(\pmb{R \beta}) \\
 &= \pmb{R}\text{Var}(\pmb{\beta})\pmb{R}' \\
@@ -151,16 +151,16 @@ While we chose a covariance structure meeting all necessary criteria, we add com
 for (n in 1:N)
   Sigma[n, n] = Sigma[n, n] + 1e-6;
 \end{verbatim}
-The stan function \verb|cov_exp_quad(...)| assembles the covariance matrix, and the added diagonal noise guarantees that it remains numerically positive-definite \citep{Trangucci2017}. This reduces wasted MCMC iterations, because \verb|cov_exp_quad(...)| can generate numerically non-positive-definite matrices when operating at high dimensions.
+The stan function \verb|cov_exp_quad(...)| assembles the covariance matrix, and the added diagonal noise guarantees that it remains numerically positive-definite \citep{Trangucci2017}. This reduces wasted MCMC iterations, because at high dimensions \verb|cov_exp_quad(...)| can generate numerically non-positive-definite matrices.
 
-Finally, Stan developer Bob Carpenter recommended, in personal communication, a Cholesky decomposition and reparameterization, noting the efficiency of a vectorized scalar approach \citep{Carpenter}.
+Finally, Stan developer Bob Carpenter recommended, in personal communication, a Cholesky decomposition and reparameterization of $\Sigma$, noting the efficiency of a vectorized scalar approach \citep{Carpenter}.
 \begin{verbatim}
 L = cholesky_decompose(Sigma);  
 Z ~ normal(0, 1);  
 Z_mod = L * Z; 
 hit ~ bernoulli_logit(Q*theta + Z_mod);
 \end{verbatim}
-The first line performs a Cholesky decomposition on the covariance matrix \verb|Sigma|, by finding lower triangular matrix \pmb{L} such that $\Sigma = \text{\pmb{LL}}'$. Line 2, ``vectorized scalar'' \verb|Z ~ normal(0, 1)| generates n standard normal random variables, by reusing ``\verb|normal(0, 1)|'' for every element of \verb|Z|. These two lines remove the dependence of random vector \pmb{Z}, which must be generated, on the unknown parameters \citep{Trangucci2017}. The third line, \verb|Z_mod = L * Z|, uses \verb|L| to transform \verb|Z|, so that \verb|Z_mod| possesses the desired distribution. Note that $\text{Var}(\text{\pmb{LZ}}) = \text{\pmb{L}} \text{I}_{n}\text{\pmb{L}}' = \Sigma$, so that $\pmb{LZ} \sim N(\pmb{0}, \Sigma)$ as desired. The final line specifies the model.
+The first line performs a Cholesky decomposition on the covariance matrix \verb|Sigma|, by finding lower triangular matrix \pmb{L} such that $\Sigma = \text{\pmb{LL}}'$. Line 2, ``vectorized scalar'' \verb|Z ~ normal(0, 1)| generates n standard normal random variables, by reusing the Normal(0,1) distribution for every element of \verb|Z|. These two lines remove the dependence of random vector \pmb{Z}, which must be generated, on the unknown parameters \citep{Trangucci2017}. The third line, \verb|Z_mod = L * Z|, uses \verb|L| to transform \verb|Z|, so that \verb|Z_mod| possesses the desired distribution. Note that $\text{Var}(\text{\pmb{LZ}}) = \text{\pmb{L}} \text{I}_{n}\text{\pmb{L}}' = \Sigma$, so that $\pmb{LZ} \sim N(\pmb{0}, \Sigma)$ as desired. The final line specifies the model.
 
 This collection of techniques improved the model fit efficiency somewhat, which we discuss in the next section.
 
@@ -168,7 +168,7 @@ This collection of techniques improved the model fit efficiency somewhat, which 
 
 For all Stan fits, we used a 2012 Macbook Pro with a 2.5 GHz Intel processor, two cores, and 4 GB of RAM. In initial model fitting, using a test data set of $n = 25$ observations, to sample one 500 sample chain required approximately 50 seconds of computing time. Using the Cholesky decomposition described above reduced this time to 26 seconds. Proper priors on covariance parameters and noise on the covariance diagonal drastically reduced the number of numerical/sampling errors and warning messages, shaving another few seconds off the computing time. Using proper, non-informative priors for all elements of $\pmb{\beta}$ reduced computing time for $n=25$ observations to approximately 5 seconds. 
 
-However, increasing the number of observations to $n=500$ required approximately 100 minutes; increasing the observations by a factor of 20 increased the computing time by a factor of 1200. The $\pmb{QR}$ decomposition yielded significant further gains: $n = 1000$ observations required about 60 minutes. As a point of reference, fitting a GLM---without a spatial random effect---with the same number of observations required about six {\it seconds}. Despite these improvements, Stan-based modeling efforts ended at $n = 2000$, when an overnight MCMC fit attempt yielded only 350 of 500 samples.
+However, increasing the number of observations to $n=500$ required approximately 100 minutes; increasing the observations by a factor of 20 increased the computing time by a factor of 1200.\footnote{This is far less than a $\mathcal{O}(n^{3})$ increase, but recall $\mathcal{O}(n^{3})$ is an asymptotic rate of increase.} The $\pmb{QR}$ decomposition yielded significant further gains: $n = 1000$ observations required about 60 minutes. As a point of reference, fitting a GLM---without a spatial random effect---with the same number of observations required about six {\it seconds}. Despite these improvements, Stan-based modeling efforts ended at $n = 2000$, when an overnight MCMC fit attempt yielded only 350 of 500 samples from the posterior.
 
 Optimization in Stan proved inadequate for addressing the ``big N'' problem. Next, in an effort to address the big N problem in another way, we examine an approach that creates a reduced dimension representation of a SGLMM. 
 
@@ -185,7 +185,7 @@ PPMs provide a competitive modeling approach, and computational advantages speci
 \subsection{PPM Procedure}
 Consider again the SGLMM from equation \ref{eq:SGLMM}, defined as it was there, and Gaussian random field $\pmb{w}(\pmb{s})$:
 \begin{align}
-\text{logit}(\pi_{i}|\pmb{s}_{i}) &= \pmb{X}_{i}(s_{i}) \pmb{\beta}_{j} + w(\pmb{s}_{i}) \label{eq:orig} \\
+\text{logit}(\pi_{i}|\pmb{s}_{i}) &= \pmb{X}_{i}(s_{i}) \pmb{\beta} + w(\pmb{s}_{i}) \label{eq:orig} \\
 \pmb{w}(\pmb{s}) | \pmb{\theta} &\sim \text{GRF}(\pmb{0}, \Sigma(\pmb{\theta})) \label{eq:GRF}
 \end{align}
 Equation \ref{eq:GRF} defines a stationary GRF for an n $\times$ 1 vector of random effects $\pmb{w}$, at locations $\pmb{s}$, conditioned on covariance parameters $\pmb{\theta}$; with mean equal to the n $\times$ 1 zero vector, $\pmb{0}$; and a symmetric, positive-definite, n $\times$ n covariance matrix, $\Sigma(\pmb{\theta})$.
@@ -194,10 +194,10 @@ To define the PPM procedure, let $\Sigma(\pmb{s}_{i}, \pmb{s}_{k}; \pmb{\theta})
 \begin{equation}
 \pmb{w}^{*}|\pmb{\theta} \sim \text{GRF}\{\pmb{0}, \Sigma^{*}(\pmb{\theta})\}.
 \end{equation}
-Consider a new location $\pmb{s}_{0j}$. The PPM procedure uses the m knots, the covariance structure of the original GRF (of all $n$ observations, equation \ref{eq:GRF}) in the original model (\ref{eq:orig}), and kriging to interpolate $w$ at $\pmb{s}_{0j}$ \citep{Schabenberger2004}. To see this, let $\tilde{w}(\pmb{s}_{0j})$ represent this interpolated random effect, and let $\pmb{\sigma}(\pmb{s}_{0j};\pmb{\theta}) = \left[\Sigma(\pmb{s}_{0j}, \pmb{s}_{i}^{*}; \pmb{\theta})\right]_{i = 1}^{m}$ be an m $\times$ 1 covariance vector giving the covariance of the random effect at $\pmb{s}_{0j}$ with the knot random effects. Then, the kriging estimator
+Consider a new location $\pmb{s}_{0}$. The PPM procedure uses the m knots, the covariance structure of the original GRF (of all $n$ observations, equation \ref{eq:GRF}) in the original model (\ref{eq:orig}), and kriging to interpolate $w$ at $\pmb{s}_{0}$ \citep{Schabenberger2004}. To see this, let $\tilde{w}(\pmb{s}_{0})$ represent this interpolated random effect, and let $\pmb{\sigma}(\pmb{s}_{0};\pmb{\theta}) = \left[\Sigma(\pmb{s}_{0}, \pmb{s}_{i}^{*}; \pmb{\theta})\right]_{i = 1}^{m}$ be an m $\times$ 1 covariance vector giving the covariance of the random effect at $\pmb{s}_{0}$ with the knot random effects. Then, the kriging estimator
 \begin{align}
-\tilde{w}(\pmb{s}_{0j}) &= E[w(\pmb{s}_{0j})|\pmb{w}^{*}] \\ 
-&= \pmb{\sigma}^{T}(\pmb{s}_{0j};\pmb{\theta}) \cdot \Sigma^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*} \label{eq:krig}
+\tilde{w}(\pmb{s}_{0}) &= E[w(\pmb{s}_{0})|\pmb{w}^{*}] \\ 
+&= \pmb{\sigma}^{T}(\pmb{s}_{0};\pmb{\theta}) \cdot \Sigma^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*} \label{eq:krig}
 \end{align}
 minimizes the squared error loss function among all linear predictors \citep{Schabenberger2004}. Notice that the linear combination (\ref{eq:krig}) varies spatially. Accordingly, the predictive process $\tilde{w}(\pmb{s})$ defines the following GRF and covariance matrix.
 \begin{align}
@@ -206,9 +206,9 @@ minimizes the squared error loss function among all linear predictors \citep{Sch
 \end{align}
 Recall that the m $\times$ 1 vector $\pmb{\sigma}(\pmb{s};\pmb{\theta}) = \left[\Sigma(\pmb{s}, \pmb{s}_{i}^{*})\right]_{i = 1}^{m}$ gives the covariance of the random effect at $\pmb{s}$ with knot random effects. This last GRF replaces the original GRF (\ref{eq:GRF}) of all $n$ observations in the original model (\ref{eq:orig}), to give the following logistic regression model equation:
 \begin{equation}
-\text{logit}(p_{i}|\pmb{s}_{i}) = \pmb{X}_{i}(\pmb{s}_{i}) \pmb{\beta}_{j} + \tilde{w}(\pmb{s}_{i}).
+\text{logit}(p_{i}|\pmb{s}_{i}) = \pmb{X}_{i}(\pmb{s}_{i}) \pmb{\beta} + \tilde{w}(\pmb{s}_{i}).
 \end{equation}
-We used the R package {\bf spBayes} to implement the PPM approach to model the residual spatial autocorrelation in Jhonny Peralta's swing data \citep{Finley2013}. 
+We used the R package {\bf spBayes} \citep{Finley2013} to implement the PPM approach to model the residual spatial autocorrelation in Jhonny Peralta's swing data . 
 
 \subsection{Results} \label{PPMresults}
 
@@ -237,7 +237,7 @@ Our goal is a practical model, efficient enough to quickly re-fit with new data 
 
 \subsection{Introduction} % ========= ========= =========
 
-Integrated Nested Laplace Approximation (INLA) works well for parameter estimation in Bayesian hierarchical models with latent Gaussian {\it Markov} random fields (GMRFs), but not directly with GRFs \citep{Rue2007}.
+Integrated Nested Laplace Approximation (INLA) is an approximation technique, and does not use MCMC to generate samples from the posterior distribution of interest. Instead, INLA works by numerically integrating an approximation of the poserior distribution. INLA works well for parameter estimation in Bayesian hierarchical models with latent Gaussian {\it Markov} random fields (GMRFs), but not directly with GRFs \citep{Rue2007}.
 
 Adding a particular neighborhood structure to a GRF yields a GMRF \citep{Rue2007}. The neighborhood structure explicitly defines when two spatial random effects are neighbors, and the Markov structure assigns non-zero correlation to them if and only if they are neighbors. The importance of the distinction between GRFs and GMRFs lies in the GMRF's sparse precision matrix, because INLA's speedy computations rely on it.
 
@@ -245,9 +245,9 @@ Adding a particular neighborhood structure to a GRF yields a GMRF \citep{Rue2007
 
 \subsubsection{Gaussian Markov Random Fields} % ========= =========
 
-To formally define a GMRF , let $\pmb{w}(\pmb{s}) = \{w(\pmb{s}_{i}):i \in V\}$, where $V = \{1,\dots,n\}$. Now define graph $G = \{ V, E \}$, containing vertices $V$ and edges $E$. Vertices $w(\pmb{s}_{i})$ and $w(\pmb{s}_{k})$ are conditionally independent given all other elements of $\pmb{w}(\pmb{s})$, if and only if $\{\pmb{s}_{i}, \pmb{s}_{k}\} \notin E$. The neighborhood structure defined by this graph yields a GMRF, $\pmb{w}(\pmb{s})$, with respect to $G$, where $\pmb{s}_{i} \sim \pmb{s}_{k}$ denotes that $w(\pmb{s}_{i})$ neighbors $w(\pmb{s}_{k})$. The edges in $E$ correspond exactly to the non-zero elements of the GMRF precision matrix $\Sigma$: $\{\pmb{s}_{i}, \pmb{s}_{k}\} \in E$ if and only if $\Sigma_{ik} \neq 0 \text{ for } i \neq k$. Non-zero elements of $\Sigma_{ik}$ correspond to neighbors.
+To formally define a GMRF, consider random effect vector $\pmb{w}(\pmb{s})$ as a set of vertices in a graph, denoted $\pmb{w}(\pmb{s}) = \{w(\pmb{s}_{i}):i \in V\}$, where $V = \{1,\dots,n\}$. Now define graph $G = \{ V, E \}$, containing vertices $V$ and edges $E$. Vertices $w(\pmb{s}_{i})$ and $w(\pmb{s}_{k})$ are conditionally independent given all other elements of $\pmb{w}(\pmb{s})$, if and only if $\{\pmb{s}_{i}, \pmb{s}_{k}\} \notin E$. The neighborhood structure defined by this graph yields a GMRF, $\pmb{w}(\pmb{s})$, with respect to $G$, where $\pmb{s}_{i} \sim \pmb{s}_{k}$ denotes that $w(\pmb{s}_{i})$ neighbors $w(\pmb{s}_{k})$. The edges in $E$ correspond exactly to the non-zero elements of the GMRF precision matrix $\Sigma$: $\{\pmb{s}_{i}, \pmb{s}_{k}\} \in E$ if and only if $\Sigma_{ik} \neq 0 \text{ for } i \neq k$. Non-zero elements of $\Sigma_{ik}$ correspond to neighbors.
 
-INLA requires that latent random effect $\pmb{w}(\pmb{s})$ be a GMRF. We follow the method of \cite{Lindgren2011}, who use an SPDE to explicitly link a Mat\'ern GRF to a GMRF. 
+INLA requires that the latent random effect $\pmb{w}(\pmb{s})$ be a GMRF. We follow the method of \cite{Lindgren2011}, who use an SPDE to explicitly link a Mat\'ern GRF to a GMRF. 
 
 % ========= ========= ========= ========= ========= 
 \subsection{Stochastic Partial Differential Equation (SPDE)} \label{SPDE}
@@ -320,7 +320,8 @@ For points $\pmb{s}$ located in triangle interiors, $\widetilde{\pmb{w}}(\pmb{s}
 
 \subsubsection{Gaussian Weights} % ========= ========= =========
 
-Stochastic calculus identities provide a way to calculate the weights, $\omega$, in the basis representation of \ref{eq:basisrep}. To start, define notation: $$\langle f(\pmb{u}, g\pmb{u}) \rangle = \int f(\pmb{u}) g(\pmb{u}) d\pmb{u}.$$ 
+Stochastic calculus identities provide a way to calculate the weights, $\omega$, in the basis representation of \ref{eq:basisrep}. To start, define notation: 
+$$\langle f(\pmb{u}), g(\pmb{u}) \rangle = \int f(\pmb{u}) g(\pmb{u}) d\pmb{u}.$$ 
 Then find weights $\pmb{\omega}$ such that, for a set of test functions $\phi_{k}$ where $k = 1, \dots, n_{*}$, the following distributional equality of integral random vectors holds \citep{Lindgren2011}:
 \begin{equation}  \label{eq:stoch} % =======
 \left[ \left< \phi_{l}, (\kappa^{2} - \Delta) \pmb{w} \right> \right]_{l = 1, \hdots, n_{*}} 
@@ -410,13 +411,13 @@ This step begins with two sides of a familiar identity, and its subsequent rearr
 \end{enumerate} 
 Linking these together we have
 $$ p(\pmb{y} , \pmb{\rho} | \pmb{\theta}) = p(\pmb{\rho} | \pmb{y}, \pmb{\theta}) p(\pmb{y} | \pmb{\theta}) = p(\pmb{y} | \pmb{\rho}, \pmb{\theta}) p(\pmb{\rho} | \pmb{\theta}),$$
-and removing ``$p(\pmb{y} , \pmb{\rho} | \pmb{\theta})$'' from the far left-hand side leaves
+and removing $p(\pmb{y} , \pmb{\rho} | \pmb{\theta})$ from the far left-hand side leaves
 $$ p(\pmb{\rho} | \pmb{y}, \pmb{\theta}) p(\pmb{y} | \pmb{\theta}) = p(\pmb{y} | \pmb{\rho}, \pmb{\theta}) p(\pmb{\rho} | \pmb{\theta}). $$
 Now divide both sides by ``$p(\pmb{\rho} | \pmb{y}, \pmb{\theta})$'' to get 
 \begin{equation}
 p(\pmb{y} | \pmb{\theta}) = \frac{p(\pmb{y} | \pmb{\rho}, \pmb{\theta}) p(\pmb{\rho} | \pmb{\theta})} {p(\pmb{\rho} | \pmb{y}, \pmb{\theta})}.
 \end{equation}
-Next, substitute this last formulation of $p(\pmb{y}|\pmb{\theta})$ into Bayesian theorem:
+Next, substitute this last formulation of $p(\pmb{y}|\pmb{\theta})$ into Bayes theorem:
 \begin{align}
 p(\theta|\pmb{y}) & \propto p(\pmb{y}|\pmb{\theta})p(\pmb{\theta}) \nonumber \\
 & \propto \frac{p(\pmb{y} | \pmb{\rho}, \pmb{\theta}) p(\pmb{\rho} | \pmb{\theta})}{p(\pmb{\rho} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta})
@@ -445,8 +446,8 @@ The INLA model fit with n = 1000 observations required approximately 5 seconds; 
 	\caption{VR heat map, GLM fit heat map, and Integrated Nested Laplace Approximation (INLA) model fit heat map. The INLA fit with all n = 9177 Peralta observations required approximately 34 seconds.}
 	\label{fig:INLA}
 	\end{figure}
-The fit resembles the empirical map with approximately the same degree of similarity as the GLM. The GLM and INLA fit heat maps are very similar. We show GLM and INLA estimates in the tables below for comparison.  \\
-
+The fit resembles the empirical map with approximately the same degree of similarity as the GLM. The GLM and INLA fit heat maps are very similar. We show GLM and INLA estimates in the Table 1.1 for comparison.
+\begin{table}
 \begin{tabular}{| l | c | c | c |}
 \hline
 \multicolumn{4}{|c|}{} \\
@@ -478,8 +479,10 @@ $r^{2}$           & $\beta_{4}$ & -0.33 & 0.10 \\ \hline
 $\theta^{2}$      & $\beta_{5}$ & -3.93 & 1.14 \\ \hline
 $r^{2}*\theta^{2}$& $\beta_{6}$ & -0.48 & 0.22 \\ \hline 
 \end{tabular} \\
+\caption{GLM and INLA model estimates. Covariates are listed in the first column of each table, followed by coefficients, estimates, and standard erros. Coefficient parameter estimates and standard errors are quite similar. Covariance parameter estimates indicate long rande dependence on a low scale.}
+\end{table}
 
-The coefficient estimates and SEs are very similar for the GLM and INLA model fits. The INLA Mat\'ern covariance parameter estimate $\hat{\kappa}$ indicates long range correlation, albeit at a low scale indicated by $\hat{\sigma} = 0.11$.
+The coefficient estimates and SEs are very similar for the GLM and INLA model fits. The INLA Mat\'ern covariance parameter estimate $\hat{\kappa}$ indicates long range correlation, albeit at a low scale indicated by $\text{SE}(w(\pmb{s})) = \hat{\sigma} = 0.11$. Recall that the spatial random effect is on the $\text{logit}(p_{i})$ scale, where model fit values fall between approximately -8.4 and -1.75. On the success probability scale, an estimate of $p_{i} = 0.15$ has a $\pm 1*\text{SE}$ interval of (0.137 0.165), and a $\pm 2*\text{SE}$ interval of (0.125, 0.181).
 
 Most noteworthy, the INLA fit succeeded for this larger data set. The model fits required quantities of time sufficiently small to allow amateur and professional experimentation on personal computers, achieving one of our goals.
 
