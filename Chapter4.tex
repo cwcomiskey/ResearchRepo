@@ -4,42 +4,47 @@ Tobler's First Law of Geography says that things close together in space tend to
 
 Broadly speaking, we add a spatial random effect to improve the model by attempting to model residual spatial correlation. More narrowly, as a first step in that process, the research in this chapter examines three procedures and their effectiveness for fitting big data SGLMMs on a personal computer (PC).
 
-This chapter consists of four sections. The first section covers three topics for the remaining sections:  SGLMMs and Gaussian Random Fields (GRFs), big spatial data computational burdens, and Markov Chain Monte Carlo. The remaining three sections detail three approaches to dealing with the computational burdens of fitting our SGLMM: optimization, dimension reduction, and approximation.
+This chapter consists of four sections. The first section covers three topics for the remaining sections:  SGLMMs and Gaussian Random Fields (GRFs), big spatial data computational burdens, and Markov Chain Monte Carlo. The remaining three sections detail three approaches to dealing with the computational burdens of fitting our SGLMM: computational optimization, dimension reduction, and approximation.
 
-\subsection{Spatial Generalized Linear Mixed Model (SGLMM)} % ======= ======= ===
-Let $\pmb{w}(\pmb{s}_{ij})$ be a spatial random effect at location $\pmb{s}_{ij}$, and add it to the linear predictor in equation \ref{eq:glm} to give the following SGLMM:
-\begin{equation}
-Y_{ij}|\mathbf{X}_{ij}(\mathbf{s}_{ij}) \stackrel{ind}{\sim} \mbox{Bernoulli}(\pi_{ij}) 
+\subsection{Spatial Generalized Linear Mixed Model (SGLMM)} % ======= ==========
+
+In this chapter we fit models to hitter Jhonny Peralta only, and therefore drop hitter index $j$ (although we expect model parameters to depend on $j$). 
+
+Let $\pmb{w}(\pmb{s}) = (w(\pmb{s}_{1}), w(\pmb{s}_{2}), \dots, w(\pmb{s}_{N}))$  be a vector of spatial random effects, where $w(\pmb{s}_{i})$ is the spatial random effect at location $\pmb{s}_{i}$. Adding the spatial random effect to the linear predictor in equation \ref{eq:glm} gives the following SGLMM:
+\begin{equation} \label{eq:SGLMM}
+Y_{i}|\mathbf{X}_{i}(\mathbf{s}_{i}) \stackrel{ind}{\sim} \mbox{Bernoulli}(\pi_{i}) 
 \end{equation}
 with
-\begin{equation} \text{logit}(\pi_{ij}|\pmb{s}_{ij}) = \mathbf{X}_{ij}(\mathbf{s}_{ij})\beta + w(\pmb{s}_{ij}). 
+\begin{equation} \text{logit}(\pi_{i}|\pmb{s}_{i}) = \mathbf{X}_{i}(\mathbf{s}_{i})\beta + w(\pmb{s}_{i}),
 \end{equation}
+for swings $i = 1, 2, \dots, N$.
 
-A Gaussian random field (GRF) provides a tractable structure for $n \times 1$ vector of random effects $\pmb{w}(\pmb{s})$ \citep{Gelfand2010}. Accordingly, for vector of locations $\pmb{s} \in \pmb{D} \subseteq \pmb{R}^{2}$, with spatial domain $\pmb{D}$ (hitting zone) $\pmb{w}(\pmb{s})$: let $\pmb{w}(\pmb{s})$ be a multivariate Normal random vector, with mean $\pmb{0}$; and symmetric, positive definite covariance matrix $\Sigma(\pmb{\theta})$, with covariance parameters $\pmb{\theta}$ \citep{Haran2011}.
+A Gaussian random field (GRF) provides a tractable structure for an $n \times 1$ vector of random effects such as $\pmb{w}(\pmb{s})$ \citep{Gelfand2010}. Accordingly, for vector of locations $\pmb{s} \in \pmb{D} \subseteq \pmb{R}^{2}$, with spatial domain $\pmb{D}$ (hitting zone): let $\pmb{w}(\pmb{s})$ be a multivariate Normal random vector, with mean $\pmb{0}$; and symmetric, positive definite covariance matrix $\Sigma(\pmb{\theta})$, with covariance parameters $\pmb{\theta}$ \citep{Haran2011}. That is,
 \begin{equation} \label{eq:w}
-\pmb{w}(\pmb{s}) | \pmb{\theta} \sim MVN(\pmb{0}, \Sigma(\pmb{\theta})) 
+\pmb{w}(\pmb{s}) | \pmb{\theta} \sim MVN(\pmb{0}, \Sigma(\pmb{\theta})). 
 \end{equation}
-In sections \ref{stanopt} and \ref{ppm} we use an isotropic spatial exponential covariance structure for $\Sigma(\pmb{\theta})$. Element $i,k$ of the exponential covariance matrix, $\pmb{\Sigma}(\pmb{\theta})$, gives the covariance of the random effects $\pmb{w}(\pmb{s}_{ij})$ and $\pmb{w}(\pmb{s}_{kj})$ (two locations for hitter $j$):
+In the following sections (\ref{stanopt} and \ref{ppm}) we use an isotropic spatial exponential covariance structure for $\Sigma(\pmb{\theta})$. In the exponential covariance model the ($i^{th},k^{th}$) element of the matrix $\pmb{\Sigma}(\pmb{\theta})$---the covariance of the random effects $w(\pmb{s}_{i})$ and $w(\pmb{s}_{k})$---is defined as:
 \begin{equation} \label{eq:exp}
-\Sigma(\phi, \sigma^{2})_{i,k} = \sigma^{2} \text{exp}(-||\pmb{s}_{ij} - \pmb{s}_{kj}||/\phi),
+\Sigma(\phi, \sigma^{2})_{i,k} = \text{Cov}(w(\pmb{s}_{i}), w(\pmb{s}_{k})) =  \sigma^{2} \text{exp}(-||\pmb{s}_{i} - \pmb{s}_{k}||/\phi),
 \end{equation}
-with scale parameter $\sigma^{2}$, range parameter $\phi$, and where $||\pmb{s}_{ij} - \pmb{s}_{kj}||$ denotes the Euclidean distance between $\pmb{s}_{ij}$ and $\pmb{s}_{kj}$.
+with scale parameter $\sigma^{2}$, range parameter $\phi$, and where $||\pmb{s}_{i} - \pmb{s}_{k}||$ denotes the Euclidean distance between $\pmb{s}_{i}$ and $\pmb{s}_{k}$.
 
-This spatial model, containing a latent (unobserved) Gaussian random field, gives $\pmb{Y}$ a complicated correlation structure. Bayesian hierarchical spatial models most effectively accommodate this structure, and Markov chain Monte Carlo (MCMC) methods most effectively estimate model parameters \citep{Banerjee2014}. High dimensionality for this spatial model induces substantial computational costs, referred to as the ``Big N problem'' \citep{Lindgren2011}.
+This spatial model, containing a latent (unobserved) Gaussian random field, gives $\pmb{Y}$, the swing outcome (Bernoulli) random variable, a complicated correlation structure. Bayesian hierarchical spatial models most effectively accommodate this structure, and Markov chain Monte Carlo (MCMC) methods most effectively estimate model parameters \citep{Banerjee2014}. High dimensionality for this spatial model induces substantial computational costs, referred to as the ``Big N problem'' \citep{Lindgren2011}.
 
 \subsection{Three Approaches to the ``Big N Problem''}
 
-Recall the multivariate Normal probability distribution function, for $\pmb{w}$ in our case:
+Fitting the SGLMM in \ref{eq:SGLMM} involves evaluating the probability distribution function of $\pmb{w}$. In our case, the multivariate Normal probability distribution function for $\pmb{w}$ is:
 \begin{equation} \label{eq:mvn}
-f(\pmb{w}) = \frac{1}{(2\pi)^{n/2}|\Sigma|^{1/2}} \text{exp}\{ -\frac{1}{2}\pmb{w}'\Sigma^{-1}\pmb{w} \}
+f(\pmb{w}) = \frac{1}{(2\pi)^{n/2}|\Sigma|^{1/2}} \text{exp}\{ -\frac{1}{2}\pmb{w}'\Sigma^{-1}\pmb{w} \},
 \end{equation}
-$|\Sigma|^{1/2}$ denotes the square root of the determinant of the n $\times$ n covariance matrix, and $\Sigma^{-1}$ denotes its inverse. For large sample sizes, these two components of the MVN distribution lead to prohibitive computational costs.
+where $|\Sigma|^{1/2}$ denotes the square root of the determinant of the n $\times$ n covariance matrix, and $\Sigma^{-1}$ denotes its inverse. For large sample sizes, these two components of the MVN distribution lead to prohibitive computational costs.
 
-For a sequence of two increasing functions $f(n)$ and $g(n)$, we say $f(n) = \mathcal{O}(g(n))$ as $n \rightarrow \infty$, if and only if there exists some $n_{0}$ and a positive real number M such that
-  $$|f(n)| \leq \text{M} \cdot |g(n)| \text{ for all } n \geq n_0. $$
-In words, $\mathcal{O}(g(n))$ is read ``big oh of g(n).'' The computational costs of fitting a SGLMM with a latent GRF increase at a rate of $\mathcal{O}(n^{3})$ \citep{Finley2009}. We can define t(n) as time required to fit our model type to n observations; then:
+% For a sequence of two increasing functions $f(n)$ and $g(n)$, we say $f(n) = \mathcal{O}(g(n))$ as $n \rightarrow \infty$, if and only if there exists some $n_{0}$ and a positive real number M such that
+%   $$|f(n)| \leq \text{M} \cdot |g(n)| \text{ for all } n \geq n_0. $$
+% In words, $\mathcal{O}(g(n))$ is read ``big oh of g(n).'' 
+The computational costs of fitting a SGLMM with a latent GRF increase at a rate of $\mathcal{O}(n^{3})$ \citep{Finley2009}. That is, for time  required to fit our model to $n$ observations, $t(n)$, there exists an $M > 0$ such that:
 $$t(n) \leq M \cdot n^{3} \text{ as } n \rightarrow \infty.$$
-In less technical terms, this means the upper bound on the amount of time required for model fitting increases at the same rate as $n^{3}$. To understand why, refer back to the MVN pdf in equation \ref{eq:mvn}, and notice the n $\times$ n covariance matrix inverse and the determinant. Every MCMC algorithm iteration requires calculation and construction of these components; this accounts for the $\mathcal{O}(n^{3})$ rate of increase, prohibitively slow model fitting, and the ``Big N'' problem. 
+In less technical terms, this means the upper bound on the amount of time required for model fitting increases at the same rate as $n^{3}$. To understand why, refer back to the MVN pdf in equation \ref{eq:mvn}, and notice the n $\times$ n covariance matrix inverse and the determinant. Every MCMC algorithm iteration requires calculation and construction of these components; this accounts for the $\mathcal{O}(n^{3})$ rate of increase, prohibitively slow model fitting, and the ``Big N'' problem. Recall our baseball data set contains $N = 9177$ Jhonny Peralta swings, and the full data set contained approximately 1.5 million swings.
 
 To address these computational challenges, we used three model-fitting approaches.
 \begin{enumerate}
@@ -50,7 +55,7 @@ To address these computational challenges, we used three model-fitting approache
 
 \subsection{Markov Chain Monte Carlo (MCMC)}
 
-In Bayesian statistics we seek the posterior distribution of the parameter(s) of interest, given the observed data. The fundamental Bayesian proportionality, for observation vector $\pmb{y}$, and parameter vector $\theta$, takes the form \citep{Gelman2014}:
+MCMC methods are integral to applied Bayesian statistics. In Bayesian statistics we seek the posterior distribution of the parameter(s) of interest, given the observed data. The fundamental Bayesian proportionality, for observation vector $\pmb{y}$, and parameter vector $\theta$, takes the form \citep{Gelman2014}:
 \begin{equation} \label{eq:bayes}
 p(\pmb{\theta}|\pmb{y}) \propto f(\pmb{y}|\pmb{\theta})p(\pmb{\theta}).
 \end{equation}
@@ -58,17 +63,21 @@ Elementary Bayesian models sometimes yield closed form posterior distributions, 
 
 Markov chain properties supply the critical theoretical components of MCMC. Foremost among them, a sequence of (possibly multivariate) random variables $\pmb{X}_{1}, \pmb{X}_{2}, \hdots \pmb{X}_{n}$ possesses the Markov property if the distribution of $\pmb{X}_{n+1}|\pmb{X}_{1}, \pmb{X}_{2}, \hdots , \pmb{X}_{n}$ depends only on $\pmb{X}_{n}$. A sequence of random variables with the Markov property constitutes a Markov chain. MCMC algorithms use Markov chains with additional, necessary properties that ensure that an equilibrium distribution exists \citep{Brooks2011}. If such an equilibrium distribution exists for a particular MCMC, then that equilibrium distribution is equivalent to the posterior distribution of interest.
 
-Both Bayesian estimation programs used in this chapter use the Metropolis sampling algorithm \citep{Metropolis1953}. The R package {\bf rstan} uses HMC sampling and a ``Metropolis reject step'' \citep{rstan}; while the R package {\bf spBayes} uses a ``Metropolis-within-Gibbs'' sampler \citep{Finley2013}. 
+The first two Bayesian estimation procedures in this chapter use a Metropolis sampling algorithm \citep{Metropolis1953}. The R package {\bf rstan} uses Hamiltonian Monte Carlo (HMC) sampling and a ``Metropolis reject step'' \citep{rstan}; while the R package {\bf spBayes} uses a ``Metropolis-within-Gibbs'' sampler \citep{Finley2013}. 
 
 \section{Optimization in Stan} \label{stanopt} % =================
 
-The Metropolis algorithm requires a proposal generating mechanism or a proposal distribution at each step. Often a random walk distribution, or some other accessible distribution, plays this role. On the other hand, Stan uses a proposal mechanism that originated in physics, Hamiltonian Monte Carlo (HMC), to generate proposals for the Metropolis reject step. HMC generates well-mixed, high probability proposals---two important factors. Mixing refers to the degree to which proposals explore the parameter space, and acceptance rates refer to the likelihood that the algorithm accepts proposals. Insufficient mixing and low acceptance rates delay, or even prevent, the Markov chain from converging to its equilibrium distribution. On the other hand, an acceptance rate too high signals insufficient mixing and potentially overly correlated draws. In Stan's MCMC, HMC balances the proposal mechanism demands well \citep{Neal2011}. 
+\subsection{Introduction}
 
-\subsection{Hamiltonian Monte Carlo} 
+Stan is a well known, ``state of the art platform'' for Bayesian statistical analysis and model fitting \citep{stanwebsite}, with an R interface \citep{rstan}. We hoped for sufficient speed based on its reputed efficient statistical and programming techniques, such as using a Hamiltonian Monte Carlo method and incorporating the lower level programming language C++. In the next few sections we describe HMC in detail to help understand why Stan is a good starting point, discuss techniques for fast implementation, and present results.
+
+\subsection{Hamiltonian Monte Carlo (HMC)} 
+
+Stan uses the Metropolis algorithm, which requires a proposal generating mechanism or a proposal distribution at each step. Often a random walk distribution, or some other accessible distribution, plays this role. On the other hand, Stan uses a proposal mechanism that originated in physics, HMC, to generate proposals for the Metropolis reject step. HMC generates well-mixed, high probability proposals---two important factors. Mixing refers to the degree to which proposals explore the parameter space, and acceptance rates refer to the likelihood that the algorithm accepts proposals. Insufficient mixing and low acceptance rates delay, or even prevent, the Markov chain from converging to its equilibrium distribution. On the other hand, an acceptance rate too high signals insufficient mixing and potentially overly correlated draws. In Stan's MCMC, HMC balances the proposal mechanism demands well \citep{Neal2011}. 
 
 HMC history essentially unfolded in four stages. First, \cite{Metropolis1953} developed MCMC while conducting research into molecular states. Second, \cite{Alder1959} introduced {\it Hamiltonian dynamics} as an alternate representation of Newtonian mechanics, while modeling molecular motion as a deterministic process \citep{Newt}. Third, almost 30 years later, \cite{Duane1987} combined the two methods to create ``hybrid Monte Carlo,'' for simulating quantum mechanical processes. Over time, the name morphed into {\it Hamilton} Monte Carlo (HMC). Fourth, eventually HMC made its way into statistics, when \cite{Neal1996} used HMC to study neural networks.
 
-To understand HMC, imagine a solid disk with known position and momentum on a frictionless surface, then randomly changing the momentum of the disk to alter its course, and caluclating the new position. HMC treats the variables of interest as position variables, and uses randomly generated auxiliary Gaussian variables to change the momentum. Then, the new position, calculated with a set of differential equations, provides proposals for Metropolis updates. The differential equation solutions estimate trajectories of the hypothetical physical object (the disk), which then occupies a new position after a time step of some chosen duration. This crafty formulation provides distant (well mixed), yet high probability (high acceptance rate) proposals. This contrasts favorably with the random walk proposal generation process commonly used.\footnote{I dedicate this section to my high school physics teacher, the late William T. Meyers. He helped instill in me a love of physics, and emphasized that in his class we would learn critical thinking skills that we could use in our life.}
+To understand HMC, imagine a solid disk with known position and momentum on a frictionless surface, then randomly changing the momentum of the disk to alter its course, and calculating the new position. HMC treats the variables of interest as position variables, and uses randomly generated auxiliary Gaussian variables to change the momentum. Then, the new position, calculated with a set of differential equations, provides proposals for Metropolis updates. The differential equation solutions estimate trajectories of the hypothetical physical object (the disk), which then occupies a new position after a time step of some chosen duration. This crafty formulation provides distant (well mixed), yet high probability (high acceptance rate) proposals. This contrasts favorably with the random walk proposal generation process commonly used.\footnote{I dedicate this section to my high school physics teacher, the late William T. Meyers. He helped instill in me a love of physics, and emphasized that in his class we would learn critical thinking skills that we could use in our life.}
 
 \subsection{The Hamilton Equations} % =================
 
@@ -97,11 +106,11 @@ The differential equation solutions give the position and momentum at time t. Wi
 In summary, the HMC algorithm samples from the auxiliary Normal distribution, and then calculates the proposal as the positions vector in the Hamilton equation. This method yields high probability, well mixed Metropolis proposals. This combination, and Stan's efficient Bayesian model fitting, motivated us to use Stan for model fitting.
 
 \subsection{Optimization Techniques} % =================
-With the techniques presented in this section, we aimed to improve Stan model fitting efficiency enough to successfully fit our SGLMM to thousands, or tens of thousands, of observations. The techiques include Bayesian, linear algebra, and purely computational strategies. We start with techniques related to the Bayesian model components.
+With the techniques presented in this section, we aimed to improve Stan model fitting efficiency enough to successfully fit our SGLMM to thousands, or tens of thousands, of observations. The techniques include Bayesian, linear algebra, and purely computational strategies. We start with techniques related to the Bayesian model components.
 
 Stan permits users to omit prior distributions for parameters, but then assumes a non-informative, uniform prior for that parameter. However, prominent Bayesian statistician and Stan developer Andrew Gelman pointed out in personal correspondence that the exponential covariance range parameter, $\phi$ in equation \ref{eq:exp}, requires an informative prior for model identifiability (uniqueness) \citep{Gelman2014}. In this vein, Stan developer Rob Trangucci recommended, also in personal correspondence, a sharp tailed prior distribution for range parameter $\phi$, such as the normal or log-normal, to act as soft upper and lower bound constraints \citep{Trangucci}. Even further, for practical computing time and convergence considerations, Trangucci indicated complex models---such as spatial hierarchical models---require proper priors for all $\beta$ coefficients \citep{Trangucci}. The next two techniques combine linear algebra and computational considerations.
 
-For all operations in Stan, matrix algebra and vectors acheive greater speed and efficiency than loops and scalars \citep{STANtheMan}. For example, 
+For all operations in Stan, matrix algebra and vectors achieve greater speed and efficiency than loops and scalars \citep{STANtheMan}. For example, 
 \begin{verbatim}
 hit ~ bernoulli_logit(X*beta + Z)
 \end{verbatim}
@@ -120,7 +129,7 @@ Trangucci also suggested a QR factorization on covariate matrix $\pmb{X}$, in th
 \end{align}
 and the model
 \begin{equation} \label{eq:reparam}
-\text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{Q}_{ij}(\pmb{s}_{ij}) \pmb{\theta}_{j} + w_{ij}.
+\text{logit}(p_{i}|\pmb{s}_{i}) = \pmb{Q}_{i}(\pmb{s}_{i}) \pmb{\theta}_{j} + w_{i}.
 \end{equation}
 With this parameterization we incorporate prior information about $\pmb{\beta}$ in the $\pmb{\theta}$ prior distributions. 
 
@@ -176,16 +185,16 @@ PPMs provide a competitive modeling approach, and computational advantages speci
 \subsection{PPM Procedure}
 Consider again the SGLMM from equation \ref{eq:SGLMM}, defined as it was there, and Gaussian random field $\pmb{w}(\pmb{s})$:
 \begin{align}
-\text{logit}(\pi_{ij}|\pmb{s}_{ij}) &= \pmb{X}_{ij}(s_{ij}) \pmb{\beta}_{j} + w(\pmb{s}_{ij}) \label{eq:orig} \\
+\text{logit}(\pi_{i}|\pmb{s}_{i}) &= \pmb{X}_{i}(s_{i}) \pmb{\beta}_{j} + w(\pmb{s}_{i}) \label{eq:orig} \\
 \pmb{w}(\pmb{s}) | \pmb{\theta} &\sim \text{GRF}(\pmb{0}, \Sigma(\pmb{\theta})) \label{eq:GRF}
 \end{align}
 Equation \ref{eq:GRF} defines a stationary GRF for an n $\times$ 1 vector of random effects $\pmb{w}$, at locations $\pmb{s}$, conditioned on covariance parameters $\pmb{\theta}$; with mean equal to the n $\times$ 1 zero vector, $\pmb{0}$; and a symmetric, positive-definite, n $\times$ n covariance matrix, $\Sigma(\pmb{\theta})$.
 
-To define the PPM procedure, let $\Sigma(\pmb{s}_{ij}, \pmb{s}_{kj}; \pmb{\theta})$ denote the hitter $j$ covariance of random effects at locations $\pmb{s}_{ij}$ and $\pmb{s}_{kj}$, so that $\Sigma(\pmb{\theta}) = [\Sigma(\pmb{s}_{ij}, \pmb{s}_{kj}; \pmb{\theta})]_{i,k=1}^{n}$. Next, let $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ give a set of $m << n$ knot locations, not necessarily a subset of observed locations.\footnote{Knot selection is equivalent to the area of study known as spatial sampling design \citep{Finley2009}. See \citep{Xia2006} for a summary of spatial sampling approaches.} We denote knot location random effects with the m $\times$ 1 vector $\pmb{w}^{*} = \left[w(\pmb{s}_{ij}^{*})\right]_{i=1}^{m}$, and the m $\times$ m knot covariance matrix and its elements as $\Sigma^{*}(\pmb{\theta}) = \left[\Sigma(\pmb{s}_{ij}^{*}, \pmb{s}_{kj}^{*})\right]_{i,k = 1}^{m}$. The knot random effects constitute a distinct m-dimensional GRF:
+To define the PPM procedure, let $\Sigma(\pmb{s}_{i}, \pmb{s}_{k}; \pmb{\theta})$ denote the hitter $j$ covariance of random effects at locations $\pmb{s}_{i}$ and $\pmb{s}_{k}$, so that $\Sigma(\pmb{\theta}) = [\Sigma(\pmb{s}_{i}, \pmb{s}_{k}; \pmb{\theta})]_{i,k=1}^{n}$. Next, let $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ give a set of $m << n$ knot locations, not necessarily a subset of observed locations.\footnote{Knot selection is equivalent to the area of study known as spatial sampling design \citep{Finley2009}. See \citep{Xia2006} for a summary of spatial sampling approaches.} We denote knot location random effects with the m $\times$ 1 vector $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m}$, and the m $\times$ m knot covariance matrix and its elements as $\Sigma^{*}(\pmb{\theta}) = \left[\Sigma(\pmb{s}_{i}^{*}, \pmb{s}_{k}^{*})\right]_{i,k = 1}^{m}$. The knot random effects constitute a distinct m-dimensional GRF:
 \begin{equation}
 \pmb{w}^{*}|\pmb{\theta} \sim \text{GRF}\{\pmb{0}, \Sigma^{*}(\pmb{\theta})\}.
 \end{equation}
-Consider a new loction $\pmb{s}_{0j}$. The PPM procedure uses the m knots, the covariance structure of the original GRF (of all $n$ observations, equation \ref{eq:GRF}) in the original model (\ref{eq:orig}), and kriging to interpolate $w$ at $\pmb{s}_{0j}$ \citep{Schabenberger2004}. To see this, let $\tilde{w}(\pmb{s}_{0j})$ represent this interpolated random effect, and let $\pmb{\sigma}(\pmb{s}_{0j};\pmb{\theta}) = \left[\Sigma(\pmb{s}_{0j}, \pmb{s}_{ij}^{*}; \pmb{\theta})\right]_{i = 1}^{m}$ be an m $\times$ 1 covariance vector giving the covariance of the random effect at $\pmb{s}_{0j}$ with the knot random effects. Then, the kriging estimator
+Consider a new location $\pmb{s}_{0j}$. The PPM procedure uses the m knots, the covariance structure of the original GRF (of all $n$ observations, equation \ref{eq:GRF}) in the original model (\ref{eq:orig}), and kriging to interpolate $w$ at $\pmb{s}_{0j}$ \citep{Schabenberger2004}. To see this, let $\tilde{w}(\pmb{s}_{0j})$ represent this interpolated random effect, and let $\pmb{\sigma}(\pmb{s}_{0j};\pmb{\theta}) = \left[\Sigma(\pmb{s}_{0j}, \pmb{s}_{i}^{*}; \pmb{\theta})\right]_{i = 1}^{m}$ be an m $\times$ 1 covariance vector giving the covariance of the random effect at $\pmb{s}_{0j}$ with the knot random effects. Then, the kriging estimator
 \begin{align}
 \tilde{w}(\pmb{s}_{0j}) &= E[w(\pmb{s}_{0j})|\pmb{w}^{*}] \\ 
 &= \pmb{\sigma}^{T}(\pmb{s}_{0j};\pmb{\theta}) \cdot \Sigma^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*} \label{eq:krig}
@@ -195,15 +204,15 @@ minimizes the squared error loss function among all linear predictors \citep{Sch
 \tilde{\pmb{w}}(\pmb{s}) &\sim \text{GRF}\{0, \widetilde{\Sigma}(\cdot)\} \\
 \widetilde{\Sigma}(\pmb{s}, \pmb{s}'; \pmb{\theta}) &= \pmb{\sigma}^{T}(\pmb{s};\pmb{\theta}) \cdot \Sigma^{*-1}(\pmb{\theta}) \cdot \pmb{\sigma}(\pmb{s}';\pmb{\theta})
 \end{align}
-Recall that the m $\times$ 1 vector $\pmb{\sigma}(\pmb{s};\pmb{\theta}) = \left[\Sigma(\pmb{s}, \pmb{s}_{ij}^{*})\right]_{i = 1}^{m}$ gives the covariance of the random effect at $\pmb{s}$ with knot random effects. This last GRF replaces the original GRF (\ref{eq:GRF}) of all $n$ observations in the original model (\ref{eq:orig}), to give the following logistic regression model equation:
+Recall that the m $\times$ 1 vector $\pmb{\sigma}(\pmb{s};\pmb{\theta}) = \left[\Sigma(\pmb{s}, \pmb{s}_{i}^{*})\right]_{i = 1}^{m}$ gives the covariance of the random effect at $\pmb{s}$ with knot random effects. This last GRF replaces the original GRF (\ref{eq:GRF}) of all $n$ observations in the original model (\ref{eq:orig}), to give the following logistic regression model equation:
 \begin{equation}
-\text{logit}(p_{ij}|\pmb{s}_{ij}) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j} + \tilde{w}(\pmb{s}_{ij}).
+\text{logit}(p_{i}|\pmb{s}_{i}) = \pmb{X}_{i}(\pmb{s}_{i}) \pmb{\beta}_{j} + \tilde{w}(\pmb{s}_{i}).
 \end{equation}
 We used the R package {\bf spBayes} to implement the PPM approach to model the residual spatial autocorrelation in Jhonny Peralta's swing data \citep{Finley2013}. 
 
 \subsection{Results} \label{PPMresults}
 
-The R package {\bf spBayes} includes a function \verb|spGLM(...)|, which we used to fit our SGLMM \citep{Finley2013}. Using PPMs requires knot selection, and the number of knots (some $m < < n$) directly impacts the computational costs. Using a range of values for $m$, in terms of speed PPMs drastically outperformed Stan optimization big N model fitting on the Jhonny Peralta data. However, PPM model MCMC chains failed to converge in all attempts in our study. Therefore, as with Stan optimzation, this approach to the ``big N'' problem did not provide parameter estimates. Nonetheless, we provide computing times for the iterations we ran, even though MCMC chains did not converge within the number of iterations we prescribed.
+The R package {\bf spBayes} includes a function \verb|spGLM(...)|, which we used to fit our SGLMM \citep{Finley2013}. Using PPMs requires knot selection, and the number of knots (some $m < < n$) directly impacts the computational costs. Using a range of values for $m$, in terms of speed PPMs drastically outperformed Stan optimization big N model fitting on the Jhonny Peralta data. However, PPM model MCMC chains failed to converge in all attempts in our study. Therefore, as with Stan optimization, this approach to the ``big N'' problem did not provide parameter estimates. Nonetheless, we provide computing times for the iterations we ran, even though MCMC chains did not converge within the number of iterations we prescribed.
 
 In our model fits with PPMs, we used as knots VR heat map box centers, specifically from the Jhonny Peralta data VR heat map with stopping rule $N_{b} < 200$. In our first set of model fits, we chose all 97 (final) VR heat map box centers as knots, an amount comparable to knot quantities in the \cite{Finley2009_2} study of ``tree species assemblages.'' 
   \begin{figure}[H]
@@ -212,7 +221,7 @@ In our model fits with PPMs, we used as knots VR heat map box centers, specifica
 	\caption{This map shows 97 PPM knots as variable-resolution heat map box centers. This Jhonny Peralta map used stopping rule $n_{b} < 200$.}
 	\label{fig:knots}
 	\end{figure}
-For all results below, we again used a 2012 Macbook Pro with a 2.5 GHz Intel processor, two cores, and 4 GB of RAM. Using the 97 knots in Figure \ref{fig:knots}, for $n = 300$ observations, the \verb|spGLM| fucntion generated 10,000 (nonconvergent) MCMC iterations in three minutes. For $n = 500$ observation, 10,000 (nonconvergent) iterations required 4 minutes. For the same number of knots, but $n = 1000$ observations, 10,000 (nonconvergent) iterations required approximately seven minutes; and 37,500 (nonconvergent) iterations required 23 minutes. 
+For all results below, we again used a 2012 Macbook Pro with a 2.5 GHz Intel processor, two cores, and 4 GB of RAM. Using the 97 knots in Figure \ref{fig:knots}, for $n = 300$ observations, the \verb|spGLM| function generated 10,000 (nonconvergent) MCMC iterations in three minutes. For $n = 500$ observation, 10,000 (nonconvergent) iterations required 4 minutes. For the same number of knots, but $n = 1000$ observations, 10,000 (nonconvergent) iterations required approximately seven minutes; and 37,500 (nonconvergent) iterations required 23 minutes. 
 
 In our second set of model fits, we chose as knots all 49 VR heat map box centers from the penultimate ($4^{th}$) iteration. Still using $n = 1000$ observations, the \verb|spGLM| function generated 30,000 iterations in seven minutes. For $n = 3000$ observations (still with 49 knots), \verb|spGLM| generated 37,500 iterations in 27 minutes. Notice that the elapsed time increased by only four minutes, despite going from $n = 1000$ to $n = 3000$ observations. This small increase resulted from reducing the number of knots from 97 to 49. These two factors---the number of observations and the number of knots---interactively influence the computational costs. 
 
@@ -236,7 +245,7 @@ Adding a particular neighborhood structure to a GRF yields a GMRF \citep{Rue2007
 
 \subsubsection{Gaussian Markov Random Fields} % ========= =========
 
-To formally define a GMRF , let $\pmb{w}(\pmb{s}) = \{w(\pmb{s}_{ij}):i \in V\}$, where $V = \{1,\dots,n\}$. Now define graph $G = \{ V, E \}$, containing vertices $V$ and edges $E$. Vertices $w(\pmb{s}_{ij})$ and $w(\pmb{s}_{kj})$ are conditionally independent given all other elements of $\pmb{w}(\pmb{s})$, if and only if $\{\pmb{s}_{ij}, \pmb{s}_{kj}\} \notin E$. The neighborhood structure defined by this graph yields a GMRF, $\pmb{w}(\pmb{s})$, with respect to $G$, where $\pmb{s}_{ij} \sim \pmb{s}_{kj}$ denotes that $w(\pmb{s}_{ij})$ neighbors $w(\pmb{s}_{kj})$. The edges in $E$ correspond exactly to the non-zero elements of the GMRF precision matrix $\Sigma$: $\{\pmb{s}_{ij}, \pmb{s}_{kj}\} \in E$ if and only if $\Sigma_{ik} \neq 0 \text{ for } i \neq k$. Non-zero elements of $\Sigma_{ik}$ correspond to neighbors.
+To formally define a GMRF , let $\pmb{w}(\pmb{s}) = \{w(\pmb{s}_{i}):i \in V\}$, where $V = \{1,\dots,n\}$. Now define graph $G = \{ V, E \}$, containing vertices $V$ and edges $E$. Vertices $w(\pmb{s}_{i})$ and $w(\pmb{s}_{k})$ are conditionally independent given all other elements of $\pmb{w}(\pmb{s})$, if and only if $\{\pmb{s}_{i}, \pmb{s}_{k}\} \notin E$. The neighborhood structure defined by this graph yields a GMRF, $\pmb{w}(\pmb{s})$, with respect to $G$, where $\pmb{s}_{i} \sim \pmb{s}_{k}$ denotes that $w(\pmb{s}_{i})$ neighbors $w(\pmb{s}_{k})$. The edges in $E$ correspond exactly to the non-zero elements of the GMRF precision matrix $\Sigma$: $\{\pmb{s}_{i}, \pmb{s}_{k}\} \in E$ if and only if $\Sigma_{ik} \neq 0 \text{ for } i \neq k$. Non-zero elements of $\Sigma_{ik}$ correspond to neighbors.
 
 INLA requires that latent random effect $\pmb{w}(\pmb{s})$ be a GMRF. We follow the method of \cite{Lindgren2011}, who use an SPDE to explicitly link a Mat\'ern GRF to a GMRF. 
 
@@ -244,16 +253,16 @@ INLA requires that latent random effect $\pmb{w}(\pmb{s})$ be a GMRF. We follow 
 \subsection{Stochastic Partial Differential Equation (SPDE)} \label{SPDE}
 
 \cite{Whittle1954} declared the $\text{Mat\'ern}_{\nu = 1}$ spatial correlation structure---not the exponential ($\text{Mat\'ern}_{\nu = 1/2}$)---the ``elementary correlation'' function in two dimensions. The following defines the Mat\'ern family of covariance functions.
-$$\text{C}\left(w(\pmb{s}_{ij}), w(\pmb{s}_{kj}) \right)= \frac{\sigma^{2}}{2^{\nu - 1}\Gamma(\nu)}(\kappa ||\pmb{s}_{ij} - \pmb{s}_{kj}||)^{\nu}K_{\nu}(\kappa ||\pmb{s}_{ij} - \pmb{s}_{kj}||)$$
+$$\text{C}\left(w(\pmb{s}_{i}), w(\pmb{s}_{k}) \right)= \frac{\sigma^{2}}{2^{\nu - 1}\Gamma(\nu)}(\kappa ||\pmb{s}_{i} - \pmb{s}_{k}||)^{\nu}K_{\nu}(\kappa ||\pmb{s}_{i} - \pmb{s}_{k}||)$$
 This parameterization includes range parameter $\kappa > 0$, smoothness parameter $\nu > 0$, scale parameter $\sigma^{2}$, and modified Bessel function $K_{\nu}(\cdot)$ \citep{Schabenberger2004}.
 
 In order to use INLA, based on \cite{Whittle1954}, \cite{Mondal2017}, and \cite{Lindgren2015}, we now assume a $\text{Mat\'ern}_{\nu = 1}$ covariance structure for the GRF (Equation \ref{eq:w}). This gives the model:
-$$ Y_{ij}|\mathbf{X}_{ij}(\mathbf{s}_{ij}) \stackrel{ind}{\sim} \mbox{Bernoulli}(\pi_{ij}), $$
-$$ \text{logit}(\pi_{ij}|\pmb{s}_{ij}) = \mathbf{X}_{ij}(\mathbf{s}_{ij})\beta + w(\pmb{s}_{ij}), $$
+$$ Y_{i}|\mathbf{X}_{i}(\mathbf{s}_{i}) \stackrel{ind}{\sim} \mbox{Bernoulli}(\pi_{i}), $$
+$$ \text{logit}(\pi_{i}|\pmb{s}_{i}) = \mathbf{X}_{i}(\mathbf{s}_{i})\beta + w(\pmb{s}_{i}), $$
 $$ \pmb{w}(\pmb{s}) | \sigma, \kappa \sim MVN(\pmb{0}, \Sigma(\sigma, \kappa)), $$
 for
 \begin{equation}
-\Sigma_{i,k} = \sigma^{2}(\kappa ||\pmb{s}_{ij} - \pmb{s}_{kj}||)K_{1}(\kappa ||\pmb{s}_{ij} - \pmb{s}_{kj}||).
+\Sigma_{i,k} = \sigma^{2}(\kappa ||\pmb{s}_{i} - \pmb{s}_{k}||)K_{1}(\kappa ||\pmb{s}_{i} - \pmb{s}_{k}||).
 \end{equation}
 We adopt a Mat\'ern covariance structure for the GRF because  Mat\'ern random fields solve the SPDE used to explicitly link a GRF to a GMRF \citep{Whittle1954}. The SPDE,
 \begin{equation} \label{eq:spde1}
@@ -436,7 +445,7 @@ The INLA model fit with n = 1000 observations required approximately 5 seconds; 
 	\caption{VR heat map, GLM fit heat map, and Integrated Nested Laplace Approximation (INLA) model fit heat map. The INLA fit with all n = 9177 Peralta observations required approximately 34 seconds.}
 	\label{fig:INLA}
 	\end{figure}
-The fit resembles the empirical map with approximately the same degree of similarity as the GLM. The GLM and INLA fit heat maps are very similar. We show GLM and INLA estimates in the tables below for compairson.  \\
+The fit resembles the empirical map with approximately the same degree of similarity as the GLM. The GLM and INLA fit heat maps are very similar. We show GLM and INLA estimates in the tables below for comparison.  \\
 
 \begin{tabular}{| l | c | c | c |}
 \hline
@@ -470,12 +479,12 @@ $\theta^{2}$      & $\beta_{5}$ & -3.93 & 1.14 \\ \hline
 $r^{2}*\theta^{2}$& $\beta_{6}$ & -0.48 & 0.22 \\ \hline 
 \end{tabular} \\
 
-The coefficient estimates and SEs are very similary for the GLM and INLA model fits. The INLA Mat\'ern covariance parameter estimate $\hat{\kappa}$ indicates long range correlation, albeit at a low scale indicated by $\hat{\sigma} = 0.11$.
+The coefficient estimates and SEs are very similar for the GLM and INLA model fits. The INLA Mat\'ern covariance parameter estimate $\hat{\kappa}$ indicates long range correlation, albeit at a low scale indicated by $\hat{\sigma} = 0.11$.
 
 Most noteworthy, the INLA fit succeeded for this larger data set. The model fits required quantities of time sufficiently small to allow amateur and professional experimentation on personal computers, achieving one of our goals.
 
 \section{Conclusion}
-In this chapter we saw that optimized Stan code and PPMs both inadequately address the coputational burden of fitting an SGLMM to our data. Our final approach, INLA, approximates parameters and thereby avoids the $\mathcal{O}(n^{3})$ computational burden of using MCMC to fit SGLMMs. INLA fit the SGLMM to all n = 9177 observations, in 34 seconds.
+In this chapter we saw that optimized Stan code and PPMs both inadequately address the computational burden of fitting an SGLMM to our data. Our final approach, INLA, approximates parameters and thereby avoids the $\mathcal{O}(n^{3})$ computational burden of using MCMC to fit SGLMMs. INLA fit the SGLMM to all n = 9177 observations, in 34 seconds.
 
 PPMs necessarily sacrifice some spatial information in reducing dimensionality. This dimension reduction possibly contributed to non-convergence; trace plots indicated non-convergence of most parameters after 30,000 draws with n = 97 knots and n = 1000 observations. Despite requiring 60 minutes for as many observations, Stan fit trace plots exhibited no such convergence difficulties. In future attempts to use PPMs, convergence diagnostics should precede substantive modeling and analysis for inference. The \verb|CODA| package offers diagnostic tools to assess mixing, autocorrelation, and convergence, such as the Gelman-Rubin convergence diagnostic \citep{CODA}, \citep{Gelman2014}, \citep{Brooks1998}
 
@@ -483,4 +492,4 @@ Partially counterbalancing its model fitting speed, INLA for spatial Bernoulli d
 
 When satisfactory model fitting occurs, model comparison of GLMs and SGLMMs fit with INLA should follow. Comparisons can follow the example of \cite{Finley2009_2}, and use probability model scoring rules to compare fits \citep{Bickel2007}, \citep{Gneiting2007}. The essential question to answer: does the random effect enhance the model sufficiently to justify the increased computational costs?
 
-In summary, this chapter reviewed and detailed three approaches to fitting SGLMMs to big N, spatial, strike zone data. Future researchers, depending on goals and speed requirements, can bypass model fitting in Stan; focus on convergence and convergence diagnotics of long MCMC runs for PPM fitting; and investigate INLA variance properties as just described. 
+In summary, this chapter reviewed and detailed three approaches to fitting SGLMMs to big N, spatial, strike zone data. Future researchers, depending on goals and speed requirements, can bypass model fitting in Stan; focus on convergence and convergence diagnostics of long MCMC runs for PPM fitting; and investigate INLA variance properties as just described. 
