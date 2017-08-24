@@ -20,6 +20,9 @@
 \usepackage{amsmath, amsthm, amssymb, amsfonts}
 \usepackage{mathtools}
 
+\usepackage{graphicx}
+
+
 \usepackage{natbib}
 \bibliographystyle{unsrtnat}
 
@@ -438,94 +441,90 @@
 % 	\end{figure}
 % \end{frame}
 
-\begin{frame}{PPM Procedure}{Nuts and Bolts} % ===== ====== ===== ===== =====
-\begin{align*}
-\text{logit}(\pi_{i}|\pmb{s}_{i}) &= \pmb{X}_{i}(\pmb{s}_{i}) \pmb{\beta} + w(\pmb{s}_{i}) \\
-\pmb{w}(\pmb{s}) | \pmb{\theta} &\sim \text{GRF}(\pmb{0}, \pmb{\Sigma}(\pmb{\theta}))
-\end{align*}
-\begin{itemize}
-\addtolength{\itemsep}{0.5\baselineskip}
-\item $\pmb{w}(\pmb{s})$ - $n \times 1$ vector of random effects, at locations $\pmb{s}$
-\item $\pmb{0}$ - $n \times 1$ zero vector
-\item $\Sigma(\pmb{\theta})$ - $n \times n$, symmetric, positive-definite covariance matrix
-    \begin{itemize}
-    \item $\pmb{\theta}$ - covariance parameters
-    \end{itemize}
-\item $\Sigma(\pmb{s}_{i}, \pmb{s}_{k}; \pmb{\theta})$ - covariance of random effects at locations $\pmb{s}_{i}$ and $\pmb{s}_{k}$
-      \begin{itemize}
-      \addtolength{\itemsep}{0.5\baselineskip}
-      \item $\Sigma(\pmb{\theta}) = [\Sigma(\pmb{s}_{i}, \pmb{s}_{k}; \pmb{\theta})]_{i,k=1}^{n}$
-      \end{itemize}
-\end{itemize}
-\end{frame}
-
-\begin{frame}{PPM Knots} % ===== ====== ===== ===== =====
-\begin{itemize}
-\addtolength{\itemsep}{0.5\baselineskip}
-\item $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ --- $m$ knot locations
-  \begin{itemize}
-  \item $m < < n$
-  \end{itemize}
-\item $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m}$ -- knot location random effects
-
-
-\item $\pmb{w}^{*}|\pmb{\theta} \sim \text{GRF}\{\pmb{0}, \Sigma^{*}(\pmb{\theta})\}$ -- $m$-dimensional GRF \\
-    \begin{itemize}
-    \item $\Sigma^{*}(\pmb{\theta}) = \left[\Sigma(\pmb{s}_{i}^{*}, \pmb{s}_{k}^{*})\right]_{i,k = 1}^{m}$ -- $m \times m$ knot covariance matrix
-    \end{itemize}
-\end{itemize}
-\end{frame}
-
-\begin{frame}{PPM, Krig $w(\pmb{s}_{0})$} % ===== ====== ===== ===== =====
-\begin{itemize}
-\addtolength{\itemsep}{0.5\baselineskip}
-\item  $\widetilde{w}(\pmb{s}_{0})$ - interpolated random effect
-\begin{align*}
-\widetilde{w}(\pmb{s}_{0}) &= E[w(\pmb{s}_{0})|\pmb{w}^{*}] \\
-&= \pmb{\sigma}^{T}(\pmb{s}_{0};\pmb{\theta}) \cdot \Sigma^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*}
-\end{align*}
-\item $\pmb{\sigma}(\pmb{s}_{0};\pmb{\theta}) = \left[\Sigma(\pmb{s}_{0}, \pmb{s}_{k}^{*}; \pmb{\theta})\right]_{k = 1}^{m}$ --- $m \times 1$ vector, $\text{Cov}(w(\pmb{s}_{0}), \text{ knots})$
-\item Spatially varying linear combination
-\item Minimizes squared error loss function (linear predictors, GRFs)
-\end{itemize}
-
-Now replace $w(\pmb{s}_{i})$ with $\widetilde{w}(\pmb{s}_{i})$.
-\end{frame}
-
-\begin{frame}[fragile]{The Predictive Process: $\tilde{w}(\pmb{s})$}
-Another Gaussian Random Field
-\begin{align*}
-\widetilde{\pmb{w}}(\pmb{s}) &\sim \text{GRF}\{0, \widetilde{\Sigma}(\cdot)\} \\
-\widetilde{\Sigma}(\pmb{s}, \pmb{s}'; \pmb{\theta}) &= \pmb{\sigma}^{T}(\pmb{s};\pmb{\theta}) \cdot \textcolor{blue}{\pmb{\Sigma}^{*-1}(\pmb{\theta})} \cdot \pmb{\sigma}(\pmb{s}';\pmb{\theta})
-\end{align*}
-Predictive process model:
-    \begin{equation}
-    \text{logit}(\pi_{i}|\pmb{s}_{i}) = \pmb{X}_{i}(\pmb{s}_{i}) \pmb{\beta} + \widetilde{w}(\pmb{s}_{i}) \nonumber
-    \end{equation}
-    \begin{itemize}
-    \item Note dimension of \textcolor{blue}{covariance matrix}.
-    \item Implement in \verb|spBayes| \citep{Finley2013}.
-    \item Faster?
-    \end{itemize}
-\end{frame}
-
-\begin{frame}{PPM ``Results''}
-
-      \begin{itemize}
-      \addtolength{\itemsep}{0.5\baselineskip}
-      \item n = 500, knots = 97, 10K samples, $\approx$ 4 mins
-      \item n = 1000, knots = 97, 10K samples, $\approx$ 6.7 mins
-      \item n = 1000, knots = 49, 30K samples, $\approx$ 7 mins
-      \item n = 3000, knots = 49, 80K samples, $\approx$ 54 mins
-      \end{itemize}
-
-
-\end{frame}
+% \begin{frame}{PPM Procedure}{Nuts and Bolts} % ===== ====== ===== ===== =====
+% \begin{align*}
+% \text{logit}(\pi_{i}|\pmb{s}_{i}) &= \pmb{X}_{i}(\pmb{s}_{i}) \pmb{\beta} + w(\pmb{s}_{i}) \\
+% \pmb{w}(\pmb{s}) | \pmb{\theta} &\sim \text{GRF}(\pmb{0}, \pmb{\Sigma}(\pmb{\theta}))
+% \end{align*}
+% \begin{itemize}
+% \addtolength{\itemsep}{0.5\baselineskip}
+% \item $\pmb{w}(\pmb{s})$ - $n \times 1$ vector of random effects, at locations $\pmb{s}$
+% \item $\pmb{0}$ - $n \times 1$ zero vector
+% \item $\Sigma(\pmb{\theta})$ - $n \times n$, symmetric, positive-definite covariance matrix
+%     \begin{itemize}
+%     \item $\pmb{\theta}$ - covariance parameters
+%     \end{itemize}
+% \item $\Sigma(\pmb{s}_{i}, \pmb{s}_{k}; \pmb{\theta})$ - covariance of random effects at locations $\pmb{s}_{i}$ and $\pmb{s}_{k}$
+%       \begin{itemize}
+%       \addtolength{\itemsep}{0.5\baselineskip}
+%       \item $\Sigma(\pmb{\theta}) = [\Sigma(\pmb{s}_{i}, \pmb{s}_{k}; \pmb{\theta})]_{i,k=1}^{n}$
+%       \end{itemize}
+% \end{itemize}
+% \end{frame}
+% 
+% \begin{frame}{PPM Knots} % ===== ====== ===== ===== =====
+% \begin{itemize}
+% \addtolength{\itemsep}{0.5\baselineskip}
+% \item $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ --- $m$ knot locations
+%   \begin{itemize}
+%   \item $m < < n$
+%   \end{itemize}
+% \item $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m}$ -- knot location random effects
+% \item $\pmb{w}^{*}|\pmb{\theta} \sim \text{GRF}\{\pmb{0}, \Sigma^{*}(\pmb{\theta})\}$ -- $m$-dimensional GRF \\
+% \item $\Sigma^{*}(\pmb{\theta}) = \left[\Sigma(\pmb{s}_{i}^{*}, \pmb{s}_{k}^{*})\right]_{i,k = 1}^{m}$ -- $m \times m$ knot covariance matrix
+% \end{itemize}
+% \end{frame}
+% 
+% \begin{frame}{PPM, Kriging} % ===== ====== ===== ===== =====
+% \begin{itemize}
+% \addtolength{\itemsep}{0.5\baselineskip}
+% \item $\pmb{\sigma}(\pmb{s}_{0};\pmb{\theta}) = \left[\Sigma(\pmb{s}_{0}, \pmb{s}_{k}^{*}; \pmb{\theta})\right]_{k = 1}^{m}$ --- $m \times 1$ vector, $\text{Cov}(w(\pmb{s}_{0}), \text{ knots})$
+% \item  $\widetilde{w}(\pmb{s}_{0})$ - interpolated random effect
+%         \begin{align*}
+%         \widetilde{w}(\pmb{s}_{0}) &= E[w(\pmb{s}_{0})|\pmb{w}^{*}] \\
+%         &= \pmb{\sigma}^{T}(\pmb{s}_{0};\pmb{\theta}) \cdot \Sigma^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*}
+%         \end{align*}
+% \item Spatially varying linear combination
+% \item Minimizes squared error loss function (linear predictors, GRFs)
+% \end{itemize}
+% 
+% Now replace $w(\pmb{s}_{i})$ with $\widetilde{w}(\pmb{s}_{i})$.
+% \end{frame}
+% 
+% \begin{frame}[fragile]{The Predictive Process: $\widetilde{w}(\pmb{s})$}
+% Another Gaussian Random Field
+% \begin{align*}
+% \widetilde{\pmb{w}}(\pmb{s}) &\sim \text{GRF}\{0, \widetilde{\Sigma}(\cdot)\} \\
+% \widetilde{\Sigma}(\pmb{s}, \pmb{s}'; \pmb{\theta}) &= \pmb{\sigma}^{T}(\pmb{s};\pmb{\theta}) \cdot \textcolor{blue}{\pmb{\Sigma}^{*-1}(\pmb{\theta})} \cdot \pmb{\sigma}(\pmb{s}';\pmb{\theta})
+% \end{align*}
+% Predictive process model:
+%     \begin{equation}
+%     \text{logit}(\pi_{i}|\pmb{s}_{i}) = \pmb{X}_{i}(\pmb{s}_{i}) \pmb{\beta} + \widetilde{w}(\pmb{s}_{i}) \nonumber
+%     \end{equation}
+%     \begin{itemize}
+%     \item Note dimension of \textcolor{blue}{covariance matrix}.
+%     \item Implement in \verb|spBayes| \citep{Finley2013}.
+%     \item Faster?
+%     \end{itemize}
+% \end{frame}
+% 
+% \begin{frame}{PPM ``Results''}
+% 
+% \textcolor{red}{*No convergence.*}
+% 
+%       \begin{itemize}
+%       \addtolength{\itemsep}{0.5\baselineskip}
+%       \item n = 500, knots = 97, 10K samples, $\approx$ 4 mins
+%       \item n = 1000, knots = 97, 10K samples, $\approx$ 6.7 mins
+%       \item n = 1000, knots = 49, 30K samples, $\approx$ 7 mins
+%       \item n = 3000, knots = 49, 80K samples, $\approx$ 54 mins
+%       \end{itemize}
+% \end{frame}
 
 \section{Integrated Nested Laplace Approximation (INLA)}
 
 \begin{frame}{INLA Overview}
-
+$$ \text{logit}(\pi_{i}) = \pmb{X}_{i}(\pmb{s}_{i})\pmb{\beta} + w(\pmb{s}_{i}) $$
 \begin{itemize}
 \addtolength{\itemsep}{0.5\baselineskip}
 \item Approximation for Bayesian hierarchical models with latent GRF
@@ -540,59 +539,161 @@ Predictive process model:
 	\centering
 	\includegraphics[scale=.02]{Images/BL.jpg}
 	\end{figure}
+\end{frame}
+
+\begin{frame}{Part 1: Mat\'ern GRF as GMRF \citep{Lindgren2011}}
+
+\begin{itemize}
+\addtolength{\itemsep}{0.5\baselineskip}
+% \item Use Mat\'ern covariance structure for GRF $\pmb{w}(\pmb{s})$
+% \item Goal: represent GRF $\pmb{w}(\pmb{s})$ as GMRF $\widetilde{\pmb{w}}(\pmb{s})$ 
+%   \begin{itemize}
+%   \addtolength{\itemsep}{0.5\baselineskip}
+%   \item Sparse precision matrix
+%   \end{itemize}
+\item Finite Element Method: project SPDE onto basis representation
+\item Stochastic partial differential equation (SPDE)
+$$ (\kappa^{2} - \Delta)\pmb{w}(\pmb{s}) = \pmb{W}(\pmb{s})$$
+\item Piecewise linear basis representation
+$$ \widetilde{w}(\pmb{s}) = \sum_{k} \psi_{k}(\pmb{s})\omega_{k}$$
+        \begin{itemize}
+        \addtolength{\itemsep}{0.5\baselineskip}
+        \item Triangulation of domain
+        \item $\psi_{k}(\pmb{s})$ --- deterministic basis functions
+        \item $\omega_{k}$ --- weights, explicit and sparse precision matrix
+        \end{itemize}
+\end{itemize}
 
 \end{frame}
 
-\begin{frame}{Approximation Part 1, SPDE}
-SPDE - Stochastic partial differential equation \citep{Lindgren2011}
-$$ (\kappa^{2} - \Delta)^{\alpha/2}x(\pmb{s}) = \mathcal{W}(\pmb{s})$$
+\begin{frame}{Part 1: Mat\'ern GRF as GMRF \citep{Lindgren2011}}{(Continued)}
+
 \begin{itemize}
 \addtolength{\itemsep}{0.5\baselineskip}
-\item Convert GRF to Gaussian {\bf Markov} Random Field (GMRF)
-    \begin{itemize}
-    \item Sparse precision matrix
-    \end{itemize}
-\item Finite Element Method: project SPDE onto basis representation
-\item Triangular mesh, defines piecewise linear basis representation
-$$ \tilde{x}(\pmb{s}) = \sum_{k} \psi_{k}(\pmb{s})x_{k}$$
-                  \begin{itemize}
-                  \addtolength{\itemsep}{0.5\baselineskip}
-                  \item $\psi_{k}(\pmb{s})$ --- deterministic basis functions
-                  \item $x_{k}$ --- weights, explicit and sparse precision matrix
-                  \item $\tilde{x}(\pmb{s})$ approximates SPDE solution
-                  \end{itemize}
+\item Definition: $\langle f(\pmb{u}), g(\pmb{u}) \rangle = \int f(\pmb{u}) g(\pmb{u}) d\pmb{u}$
+
+\item Basis representation and SPDE:
+$$ \widetilde{w}(\pmb{s}) = \sum_{k} \psi_{k}(\pmb{s})\omega_{k} \longrightarrow (\kappa^{2} - \Delta)\widetilde{\pmb{w}}(\pmb{s}) = \pmb{W}(\pmb{s})  $$
+\item Galerkin solution:
+$$ \left(
+\kappa^{2} \pmb{C} + \pmb{G} \right) \pmb{\omega} \overset{D}{=} \text{N}(\pmb{0},\pmb{C})$$
+Where $\pmb{C} = \langle \psi_{l}, \psi_{k} \rangle$, and $ \pmb{G} = \langle \psi_{l}, - \Delta \psi_{k} \rangle$
+\item $\pmb{\omega} \sim \text{N}(\pmb{0}, \pmb{Q}^{-1})$ for 
+$$\pmb{Q} = \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right)^{T} \pmb{C}^{-1} \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right).$$
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Part 2, Integrated Nested Laplace Approximation (INLA) \citep{Rue2009}}
+
+\begin{itemize}
+\addtolength{\itemsep}{0.5\baselineskip}
+\item Parameter vector: $\pmb{\rho} = ( \pmb{\beta}^{\text{T}}, \widetilde{\pmb{w}}^{\text{T}} )^{\text{T}}$
+            \begin{itemize}
+            \addtolength{\itemsep}{0.5\baselineskip}
+            \item Let $\pmb{Q}$ denote the precision matrix of $\pmb{\rho}$
+            \end{itemize}
+\item Hyperparameter vector: $\pmb{\theta} = \{\kappa, \sigma \}$
+\end{itemize}
+INLA Steps
+\begin{itemize}
+\item Gaussian approximation:
+$$ p_{G}(\pmb{\rho}|\pmb{\theta}, \pmb{y}) \propto \text{exp} \left( -\frac{1}{2}(\pmb{\rho-\mu})^{T} (\pmb{Q} + \text{diag}(\pmb{c}) ) (\pmb{\rho - \mu}) \right) $$
+              \begin{itemize}
+              \item $\pmb{c}$ and $\pmb{\mu}$ depend on second order Taylor expansions of $f(\pmb{\rho}) = \sum_{i} \text{log }p(y_{i}|\pmb{\rho},\pmb{\theta})$
+              \end{itemize}
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Approximation Part 2, INLA}
-INLA - Integrated Nested Laplace Approximation \citep{Rue2009} \\
 
-        \begin{enumerate}
-        \addtolength{\itemsep}{0.5\baselineskip}
-        \item Gaussian approximation: $\tilde{p}(\pmb{w}|\pmb{\theta, y})$
-        (match mode and curvature at mode \citep{Rue2005})
-        \item Posterior mode: $\pmb{w}^{*}(\pmb{\theta}) = \text{argmax}_{w}p(\pmb{w}|\pmb{\theta, y})$
-        \item Laplace approximation:
-        $$ p(\pmb{\theta} | \pmb{y}) \propto \frac{p(\pmb{\theta, y, w})}{p(\pmb{w}|\pmb{\theta, y})} \Big|_{\pmb{w} = \pmb{w}^{*}(\pmb{\theta})} \approx \frac{p(\pmb{\theta, y, w})}{\tilde{p}(\pmb{w}|\pmb{\theta, y})} \Big|_{\pmb{w} = \pmb{w}^{*}(\pmb{\theta})}$$
-        \begin{itemize}
-        \item $\pmb{w}^{*}(\pmb{\theta}) = \text{argmax}_{w}\tilde{p}(\pmb{w}|\pmb{\theta, y})$
-        \end{itemize}
-        (unnormalized posterior at any point, numerically optimize for mode)
-        \item Numerical integration:
-        $ p(\theta_{k} | \pmb{y}) \approx \int \tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta}_{-k} $
-        \item Numerical integration:
-        $ p(w_{j} | \pmb{y}) \approx \int \tilde{p}(w_{j}|\pmb{\theta, y})\tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta} $
-        \end{enumerate}
+\begin{frame}{Part 2, INLA \citep{Rue2009}}{Continued}
+\begin{itemize}
+\addtolength{\itemsep}{0.5\baselineskip}
+\item For a given $\pmb{\theta}$, let $\pmb{\rho}_{0} = \text{argmax}_{\rho}p(\pmb{\rho}|\pmb{y},\pmb{\theta})$. Then,
+$$  p(\pmb{\theta}|\pmb{y}) \approx \tilde{p}(\pmb{\theta}|\pmb{y}) \propto  \frac{p(\pmb{y} | \pmb{\rho}_{0}, \pmb{\theta}) p(\pmb{\rho}_{0} | \pmb{\theta})}{p_{G}(\pmb{\rho}_{0} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta}) $$
+$\longrightarrow \hat{\pmb{\theta}}_{\text{ML}} \approx \text{argmax}_{\theta} \tilde{p}(\pmb{\theta}|\pmb{y})$
+\item Numerical integration: 
+        $$ p(\rho_{j} | \pmb{y}) \approx \int p_{\text{G}}(\rho_{j}|\pmb{\theta, y})\tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta} $$
+\item Numerical integration: 
+$$ p(\theta_{k} | \pmb{y}) \approx \int \tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta}_{-k} $$
+\end{itemize}
+
 \end{frame}
+
+\begin{frame}{3000 Words}{Variable-resolution, GLM, SGLMM with INLA}
+  \begin{figure}[H]
+	\centering 	
+	\includegraphics[scale=.04]{Images/Peralta_var-res2.jpg}
+	\includegraphics[scale=.04]{Images/Peralta_fit.jpg}
+	\includegraphics[scale=.04]{Images/INLA.jpg}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Estimates}
+
+
+\begin{table}
+\scalebox{0.85}{
+\begin{tabular}{| l | c | c | c |}
+\hline
+\multicolumn{4}{|c|}{} \\
+\multicolumn{4}{|c|}{} \\
+\multicolumn{4}{|c|}{GLM} \\
+\hline
+Covariate         & $\beta_{i}$ & MLE   & SE   \\ \hline
+1                 & $\beta_{0}$ & -4.08 & 0.70 \\ \hline
+r                 & $\beta_{1}$ &  1.19 & 0.51 \\ \hline
+$\theta$          & $\beta_{2}$ & -1.93 & 1.90 \\ \hline
+$r*\theta$        & $\beta_{3}$ & -1.64 & 0.70 \\ \hline
+$r^{2}$           & $\beta_{4}$ & -0.32 & 0.09 \\ \hline
+$\theta^{2}$      & $\beta_{5}$ & -3.92 & 1.10 \\ \hline
+$r^{2}*\theta^{2}$& $\beta_{6}$ & -0.46 & 0.21 \\ \hline
+\end{tabular}
+\quad
+\begin{tabular}{| l | c | c | c |}
+\hline
+\multicolumn{4}{|c|}{INLA} \\
+\hline
+Covariate         & $\rho _{i}$ & $\hat{\rho}_{i}$ & SE \\ \hline
+N/A               & $\kappa$    &  3.23 & $\pm$ 1 SE: (1.35, 7.54) \\ \hline
+N/A               & $\sigma$    &  0.11 & $\pm$ 1 SE: (0.05, 0.26) \\ \hline
+1                 & $\beta_{0}$ & -4.14 & 0.76 \\ \hline
+r                 & $\beta_{1}$ &  1.25 & 0.55 \\ \hline
+$\theta$          & $\beta_{2}$ & -1.90 & 1.96 \\ \hline
+$r*\theta$        & $\beta_{3}$ & -1.70 & 0.93 \\ \hline
+$r^{2}$           & $\beta_{4}$ & -0.33 & 0.10 \\ \hline
+$\theta^{2}$      & $\beta_{5}$ & -3.93 & 1.14 \\ \hline
+$r^{2}*\theta^{2}$& $\beta_{6}$ & -0.48 & 0.22 \\ \hline
+\end{tabular}
+}
+\end{table}
+\begin{itemize}
+\item $\hat{\kappa}$ - long range correlation; $\text{SE}(w(\pmb{s})) = 0.11$. 
+\item $\rightarrow 0.15 \pm 1 \cdot \text{SE} = (0.137, 0.165)$
+\item $\rightarrow 0.15 \pm 2 \cdot \text{SE} = (0.125, 0.181)$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Summary}
+\begin{itemize}
+\item Resolution selection? Variable-resolution heat maps and {\bf varyres}
+\item Heat map confidence intervals? Interactive HMCIs and {\bf mapapp}
+\item Fitting big data SGLMMs to baseball data?
+  \begin{itemize}
+  \item Stan - insufficicent
+  \item PPM - Slow and did not converge; to be continued...
+  \item INLA - Fast, successful; to be continued...
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
 % 
-% \begin{frame}{Current Work, SPDE-INLA}
 % \begin{itemize}
 % \addtolength{\itemsep}{0.5\baselineskip}
-% \item Implement in R-INLA \citep{Lindgren2015}
 % \item Computational costs - increase at a rate of $\mathcal{O}(n^{3/2})$
 % \item Trade-offs - speed for bias (Binomial data)
 % \end{itemize}
-% \end{frame}
 % 
 % \begin{frame}{Next Steps}
 % \begin{itemize}
@@ -600,22 +701,15 @@ INLA - Integrated Nested Laplace Approximation \citep{Rue2009} \\
 % \item Cool SPDE-INLA pictures
 % \item Model evaluation, scoring rules \citep{Bickel2007}
 % \item Cross validation study
-% \item Variable-resolution heat map R package?
-% \item Dynamic Heat Map CIs -- R package?
 % \end{itemize}
 % \end{frame}
 % 
-% \begin{frame}{}
-% \begin{center}
-% \Huge{Thanks for listening. \\
-% Questions?}
-% \end{center}
-%   \begin{figure}[H]
-% 	\centering
-% 	\includegraphics[scale=.105]{Images/Alix.jpg}
-% 	\includegraphics[scale=.055]{Images/Ewan.jpg}
-% 	\end{figure}
-% \end{frame}
+\begin{frame}{}
+\begin{center}
+\Huge{Thanks for listening.
+Questions?}
+\end{center}
+\end{frame}
 
 \bibliography{Baseball}
 
