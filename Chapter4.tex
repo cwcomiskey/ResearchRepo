@@ -49,7 +49,7 @@ In less technical terms, this means the upper bound on the amount of time requir
 To address these computational challenges, we used three model-fitting approaches.
 \begin{enumerate}
 \item Computational optimization in Bayesian computing software Stan \citep{rstan}.
-\item Dimension reduction with Predictive process models, implemented in R with the R package {\bf spBayes} \citep{Eidsvik2012}, \citep{Finley2013}.
+\item Dimension reduction with Predictive process models \citep{Finley2012}, implemented in R with the R package {\bf spBayes} , \citep{Finley2013}.
 \item Integrated Nested Laplace Approximations \citep{Rue2009} with Stochastic Partial Differential Equations \citep{Lindgren2011}, implemented in the R with the package \verb|INLA-R| \citep{Lindgren2015}.
 \end{enumerate}
 
@@ -194,21 +194,21 @@ To define the PPM procedure, let $\Sigma(\pmb{s}_{i}, \pmb{s}_{k}; \pmb{\theta})
 \begin{equation}
 \pmb{w}^{*}|\pmb{\theta} \sim \text{GRF}\{\pmb{0}, \Sigma^{*}(\pmb{\theta})\}.
 \end{equation}
-Consider a new location $\pmb{s}_{0}$. The PPM procedure uses the m knots, the covariance structure of the original GRF (of all $n$ observations, equation \ref{eq:GRF}) in the original model (\ref{eq:orig}), and kriging to interpolate $w$ at $\pmb{s}_{0}$ \citep{Schabenberger2004}. To see this, let $\tilde{w}(\pmb{s}_{0})$ represent this interpolated random effect, and let $\pmb{\sigma}(\pmb{s}_{0};\pmb{\theta}) = \left[\Sigma(\pmb{s}_{0}, \pmb{s}_{i}^{*}; \pmb{\theta})\right]_{i = 1}^{m}$ be an m $\times$ 1 covariance vector giving the covariance of the random effect at $\pmb{s}_{0}$ with the knot random effects. Then, the kriging estimator
+Consider a new location $\pmb{s}_{0}$. The PPM procedure uses the m knots, the covariance structure of the original GRF (of all $n$ observations, equation \ref{eq:GRF}) in the original model (\ref{eq:orig}), and kriging to interpolate $w$ at $\pmb{s}_{0}$ \citep{Schabenberger2004}. To see this, let $\widetilde{w}(\pmb{s}_{0})$ represent this interpolated random effect, and let $\pmb{\sigma}(\pmb{s}_{0};\pmb{\theta}) = \left[\Sigma(\pmb{s}_{0}, \pmb{s}_{i}^{*}; \pmb{\theta})\right]_{i = 1}^{m}$ be an m $\times$ 1 covariance vector giving the covariance of the random effect at $\pmb{s}_{0}$ with the knot random effects. Then, the kriging estimator
 \begin{align}
-\tilde{w}(\pmb{s}_{0}) &= E[w(\pmb{s}_{0})|\pmb{w}^{*}] \\ 
+\widetilde{w}(\pmb{s}_{0}) &= E[w(\pmb{s}_{0})|\pmb{w}^{*}] \\ 
 &= \pmb{\sigma}^{T}(\pmb{s}_{0};\pmb{\theta}) \cdot \Sigma^{*-1}(\pmb{\theta}) \cdot \pmb{w}^{*} \label{eq:krig}
 \end{align}
-minimizes the squared error loss function among all linear predictors \citep{Schabenberger2004}. Notice that the linear combination (\ref{eq:krig}) varies spatially. Accordingly, the predictive process $\tilde{w}(\pmb{s})$ defines the following GRF and covariance matrix.
+minimizes the squared error loss function among all linear predictors \citep{Schabenberger2004}. Notice that the linear combination (\ref{eq:krig}) varies spatially. Accordingly, the predictive process $\widetilde{w}(\pmb{s})$ defines the following GRF and covariance matrix.
 \begin{align}
-\tilde{\pmb{w}}(\pmb{s}) &\sim \text{GRF}\{0, \widetilde{\Sigma}(\cdot)\} \\
+\widetilde{\pmb{w}}(\pmb{s}) &\sim \text{GRF}\{0, \widetilde{\Sigma}(\cdot)\} \\
 \widetilde{\Sigma}(\pmb{s}, \pmb{s}'; \pmb{\theta}) &= \pmb{\sigma}^{T}(\pmb{s};\pmb{\theta}) \cdot \Sigma^{*-1}(\pmb{\theta}) \cdot \pmb{\sigma}(\pmb{s}';\pmb{\theta})
 \end{align}
 Recall that the m $\times$ 1 vector $\pmb{\sigma}(\pmb{s};\pmb{\theta}) = \left[\Sigma(\pmb{s}, \pmb{s}_{i}^{*})\right]_{i = 1}^{m}$ gives the covariance of the random effect at $\pmb{s}$ with knot random effects. This last GRF replaces the original GRF (\ref{eq:GRF}) of all $n$ observations in the original model (\ref{eq:orig}), to give the following logistic regression model equation:
 \begin{equation}
-\text{logit}(p_{i}|\pmb{s}_{i}) = \pmb{X}_{i}(\pmb{s}_{i}) \pmb{\beta} + \tilde{w}(\pmb{s}_{i}).
+\text{logit}(\pi_{i}|\pmb{s}_{i}) = \pmb{X}_{i}(\pmb{s}_{i}) \pmb{\beta} + \widetilde{w}(\pmb{s}_{i}).
 \end{equation}
-We used the R package {\bf spBayes} \citep{Finley2013} to implement the PPM approach to model the residual spatial autocorrelation in Jhonny Peralta's swing data . 
+We used the R package {\bf spBayes} \citep{Finley2013} to implement the PPM approach to model the residual spatial autocorrelation in Jhonny Peralta's swing data. 
 
 \subsection{Results} \label{PPMresults}
 
@@ -237,7 +237,7 @@ Our goal is a practical model, efficient enough to quickly re-fit with new data 
 
 \subsection{Introduction} % ========= ========= =========
 
-Integrated Nested Laplace Approximation (INLA) is an approximation technique, and does not use MCMC to generate samples from the posterior distribution of interest. Instead, INLA works by numerically integrating an approximation of the poserior distribution. INLA works well for parameter estimation in Bayesian hierarchical models with latent Gaussian {\it Markov} random fields (GMRFs), but not directly with GRFs \citep{Rue2007}.
+Integrated Nested Laplace Approximation (INLA) is an approximation technique, and does not use MCMC to generate samples from the posterior distribution of interest. Instead, INLA works by numerically integrating an approximation of the posterior distribution. INLA works well for parameter estimation in Bayesian hierarchical models with latent Gaussian {\it Markov} random fields (GMRFs), but not directly with GRFs \citep{Rue2007}.
 
 Adding a particular neighborhood structure to a GRF yields a GMRF \citep{Rue2007}. The neighborhood structure explicitly defines when two spatial random effects are neighbors, and the Markov structure assigns non-zero correlation to them if and only if they are neighbors. The importance of the distinction between GRFs and GMRFs lies in the GMRF's sparse precision matrix, because INLA's speedy computations rely on it.
 
@@ -279,7 +279,7 @@ Based on the SPDE-Mat\'ern relationship and $\nu = 1$, we have the following for
 where d = 2 because our domain is a subset of $\mathbb{R}^{2}$;
 \begin{align}
 \sigma^{2} &= \frac{\Gamma(\nu)}{\Gamma(\alpha)(4\pi)^{d/2}\kappa^{2\nu}} \nonumber \nonumber \\
-&= \frac{1}{4 \pi \kappa} \nonumber
+&= \frac{1}{4 \pi \kappa^{2}} \nonumber
 \end{align}
 and 
 \begin{equation} \label{eq:spde}
@@ -294,25 +294,25 @@ The Finite Element Method projects the SPDE onto a piecewise linear basis repres
 \begin{equation} \label{eq:basisrep}
 \widetilde{\pmb{w}}(\pmb{s}) = \sum_{k=1}^{n_{v}} \psi_{k}(\pmb{s})\omega_{k},
 \end{equation}
-contains deterministic basis functions, $\psi_{k}(\cdot)$; and GMRF weights $\pmb{\omega} = \{\omega_{1},\dots,\omega_{n_{v}}\}$, where $n_{v}$ is the total number of {\it vertices}; let $V_{k}$ represent triangulation vertex $k$ (as described in the next Section, \ref{dbf}). The two combine in \ref{eq:basisrep} so that the distribution of $\widetilde{\pmb{w}}(\pmb{s})$ approximates the Mat\'ern GRF that solves the SPDE, but retains a sparse precision matrix and its accordant computational advantages \citep{Lindgren2011}. 
+contains deterministic basis functions, $\psi_{k}(\cdot)$; and GMRF weights $\pmb{\omega} = \{\omega_{1},\dots,\omega_{n_{v}}\}$, where $n_{v}$ is the total number of {\it vertices}; let $v_{k}$ represent triangulation vertex $k$ (as described in the next Section, \ref{dbf}). The two combine in \ref{eq:basisrep} so that the distribution of $\widetilde{\pmb{w}}(\pmb{s})$ approximates the Mat\'ern GRF that solves the SPDE in \ref{eq:spde}, but retains a sparse precision matrix and its accordant computational advantages \citep{Lindgren2011}. 
 
 \subsubsection{Deterministic Basis Function} \label{dbf} % ========= =========
 
-A triangulation of the spatial domain defines the deterministic component, $\psi_{k}(\pmb{s})$, of the basis representation in equation \ref{eq:basisrep}. Figure \ref{fig:basis} shows how a discrete piecewise linear basis function uses domain triangulation to approximate a continuous function \citep{Simpson2012}.
+A triangulation of the spatial domain defines the deterministic component, $\psi_{k}(\pmb{s})$, of the basis representation in equation \ref{eq:basisrep}. Figure \ref{fig:basis} (reproduced from \cite{Simpson2012}) shows how a discrete piecewise linear basis function uses domain triangulation to approximate a continuous function .
   \begin{figure}[H]
 	\centering
 	\includegraphics[scale=.4]{Images/PLBF.jpg}
-	\caption{A Gaussian Markov random field, defined as the piecewise linear basis function $\pmb{w}(\pmb{s}) = \sum_{k=1}^{n_{v}} \protect\psi_{k}(\pmb{s})\protect\omega_{k}$, approximates a Mat\'ern GRF. This image illustrates how a triangular mesh over the domain determines basis functions $\protect\psi_{k}(\pmb{s})$ (Reproduced from \cite{Simpson2012}).}
+	\caption{A Gaussian Markov random field, defined as the piecewise linear basis function $w(\pmb{s}) = \sum_{k=1}^{n_{v}} \protect\psi_{k}(\pmb{s})\protect\omega_{k}$, approximates a Mat\'ern GRF. This image illustrates how a triangular mesh over the domain determines basis functions $\protect\psi_{k}(\pmb{s})$ (Reproduced from \cite{Simpson2012}).}
 	\label{fig:basis}
 	\end{figure}
-Figure \ref{fig:basis} (b) shows a domain triangulation, under the surface it is used to approximate. In equation \ref{eq:basisrep}, $n_{v}$ represents the number of {\it vertices} in the domain triangulation. The basis functions $\psi_{k}$ are piecewise linear in each triangle, with basis function $k$ equal to one at vertex $k$: $\psi_{k}(V_{k}) = 1$; and basis function $k$ equal to zero at all other vertices: $\psi_{k}(V_{k'}) = 0$ for $k'\neq k$. This implies that the approximation at vertex $k$, $\widetilde{\pmb{w}}(V_{k})$,  is equal to the value of the GRF weight, $\omega_{k}$, at that vertex.
+Figure \ref{fig:basis} (b) shows a domain triangulation, under the surface it is used to approximate. In equation \ref{eq:basisrep}, $n_{v}$ represents the number of {\it vertices} in the domain triangulation. The basis functions $\psi_{k}$ are piecewise linear in each triangle, with basis function $k$ equal to one at vertex $k$: $\psi_{k}(v_{k}) = 1$; and basis function $k$ equal to zero at all other vertices: $\psi_{k}(v_{k'}) = 0$ for $k'\neq k$. This implies that the approximation at vertex $k$, $\widetilde{w}(v_{k})$,  is equal to the value of the GRF weight, $\omega_{k}$, at that vertex.
 \begin{align}
-\widetilde{\pmb{w}}(V_{k}) &= \psi_{k}(V_{k}) \omega_{k} \\
-&= 1 \cdot \omega_{k}
+\widetilde{w}(v_{k}) &= \psi_{k}(v_{k}) \omega_{k} \nonumber \\
+&= 1 \cdot \omega_{k} \nonumber
 \end{align}
-For points $\pmb{s}$ located in triangle interiors, $\widetilde{\pmb{w}}(\pmb{s})$ equals a linear combination of the GRF weights, $\omega$, at the three vertices that form the containing triangle. That is, for triangle $T$ made from vertices $t_{1}, t_{2}, t_{3}$; location $\pmb{s} \in T$; and constants $c_{1}, c_{2}, c_{3}$:
+For points $\pmb{s}$ located in triangle interiors, $\widetilde{w}(\pmb{s})$ equals a linear combination of the GRF weights, $\omega$, at the three vertices that form the containing triangle. That is, for triangle $T$ made from vertices $t_{1}, t_{2}, t_{3}$; location $\pmb{s} \in T$; and constants $c_{1}, c_{2}, c_{3}$:
 \begin{align}
-\widetilde{\pmb{w}}(\pmb{s}) &= \psi_{t_{1}}(\pmb{s})\omega_{t_{1}} + \psi_{t_{2}}(\pmb{s})\omega_{t_{2}} 
+\widetilde{w}(\pmb{s}) &= \psi_{t_{1}}(\pmb{s})\omega_{t_{1}} + \psi_{t_{2}}(\pmb{s})\omega_{t_{2}} 
 + \psi_{t_{2}}(\pmb{s})\omega_{t_{2}} \nonumber \\
 &= c_{1}\omega_{t_{1}} + c_{2}\omega_{t_{2}} 
 + c_{3}\omega_{t_{2}} \nonumber
@@ -320,26 +320,31 @@ For points $\pmb{s}$ located in triangle interiors, $\widetilde{\pmb{w}}(\pmb{s}
 
 \subsubsection{Gaussian Weights} % ========= ========= =========
 
-Stochastic calculus identities provide a way to calculate the weights, $\omega$, in the basis representation of \ref{eq:basisrep}. To start, define notation: 
+Stochastic calculus identities provide a way to calculate the distribution of the weights, $\omega$, in the basis representation of \ref{eq:basisrep}. To start, define notation: 
 $$\langle f(\pmb{u}), g(\pmb{u}) \rangle = \int f(\pmb{u}) g(\pmb{u}) d\pmb{u}.$$ 
-Then find weights $\pmb{\omega}$ such that, for a set of test functions $\phi_{k}$ where $k = 1, \dots, n_{*}$, the following distributional equality of integral random vectors holds \citep{Lindgren2011}:
-\begin{equation}  \label{eq:stoch} % =======
+Then find the distribution of weights $\pmb{\omega}$ such that, for a set of test functions $\phi_{k}$ where $k = 1, \dots, n_{*}$, the following distributional equality of integral random vectors holds \citep{Lindgren2011}:
+\begin{equation} % =======
 \left[ \left< \phi_{l}, (\kappa^{2} - \Delta) \pmb{w} \right> \right]_{l = 1, \hdots, n_{*}} 
+\overset{D}{=}
+\left[ \langle \phi_{l}, \pmb{W} \rangle \right]_{l = 1, \hdots, n_{*}}, \nonumber
+\end{equation}
+and we replace $\pmb{w}$ with $\widetilde{\pmb{w}}$ to solve
+\begin{equation}  \label{eq:stoch} % =======
+\left[ \left< \phi_{l}, (\kappa^{2} - \Delta) \widetilde{\pmb{w}} \right> \right]_{l = 1, \hdots, n_{*}} 
 \overset{D}{=}
 \left[ \langle \phi_{l}, \pmb{W} \rangle \right]_{l = 1, \hdots, n_{*}}.
 \end{equation}
-
-The solution---weight vector $\pmb{\omega}$ in basis representation $\widetilde{\pmb{w}}$ (equation \ref{eq:basisrep})---gives the stochastic weak solution solution to the SPDE in Equation \ref{eq:spde} \citep{Mao2007}, \citep{Lindstrom2014}. 
+The solution---the distribution of weight vector $\pmb{\omega}$ in basis representation $\widetilde{\pmb{w}}$ (equation \ref{eq:basisrep})---gives the stochastic weak solution solution to the SPDE in Equation \ref{eq:spde} \citep{Mao2007}, \citep{Lindstrom2014}. 
 
 We follow \cite{Lindgren2011} and use the {\it Galerkin} solution, where the deterministic basis functions, $\psi_{k}$,  of section \ref{dbf} serve as test functions: $\phi_{k} = \psi_{k}$. Substituting these into \ref{eq:stoch} gives:
 
 \begin{equation} \label{eq:stoch2} % =======
-\left[ \left< \psi_{l}, (\kappa^{2} - \Delta) \pmb{w} \right> \right]_{l = 1, \hdots, n_{v}} 
+\left[ \left< \psi_{l}, (\kappa^{2} - \Delta) \widetilde{\pmb{w}} \right> \right]_{l = 1, \hdots, n_{v}} 
 \overset{D}{=}
 \left[ \langle \psi_{l}, \pmb{W} \rangle \right]_{l = 1, \hdots, n_{v}}.
 \end{equation}
 
-Then, substitute the basis function representation in Equation \ref{eq:basisrep}, $\widetilde{\pmb{w}}$, in for $\pmb{w}$ and simplify:
+Then, substitute the basis function representation of $\widetilde{\pmb{w}}$ (\ref{eq:basisrep}), and simplify:
 % $\widetilde{w} = \Sigma_{k}\psi_{k}w_{k}$:
 
 % \left[ \left< \psi_{l}, (\kappa^{2} - \Delta) \left( \sum_{k=1}^{n_{v}} \psi_{k}\omega_{k} \right) \right> \right]_{l = 1, \hdots, n_{*}} \overset{D}{=} \Big[ \langle \psi_{l}, \pmb{W} \rangle \Big]_{l = 1, \hdots, n_{*}}.
@@ -380,27 +385,27 @@ $$ \widetilde{\pmb{C}}_{i,i} = \langle \psi_{i}, \pmb{1} \rangle = \int \psi_{i}
 \pmb{Q} = \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right)^{T} \pmb{C}^{-1} \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right).
 \end{equation}
 
-Note that this solution specifies the distribution of the vector of weights $\pmb{\omega}_{k}$ in the piecewise linear basis function representation of $\widetilde{\pmb{w}}(\pmb{s})$ (equation \ref{eq:basisrep}), not the distribution of $\widetilde{\pmb{w}}(\pmb{s})$ itself.
+Note that this solution specifies the distribution of the vector of weights $\pmb{\omega}$ in the piecewise linear basis function representation $\widetilde{\pmb{w}}(\pmb{s})$ (equation \ref{eq:basisrep}), not the distribution of $\widetilde{\pmb{w}}(\pmb{s})$ itself.
 
 % ========= ========= ========= ========= ========= =========
 \subsection{Integrated Nested Laplace Approximations (INLA)}
 
-To explain INLA in this section, define hyperparameter vector $\pmb{\theta} = \{\kappa, \sigma \}$; parameter vector $\pmb{\rho} = \{ \pmb{\beta}^{\text{T}}, \widetilde{w} \}^{\text{T}}$; and let $\pmb{Q}$ denote the precision matrix of $\pmb{\rho}$.
+To explain INLA in this section, define hyperparameter vector $\pmb{\theta} = \{\kappa, \sigma \}$; parameter vector $\pmb{\rho} = \{ \pmb{\beta}^{\text{T}}, \widetilde{\pmb{w}} \}^{\text{T}}$; and let $\pmb{Q}$ denote the precision matrix of $\pmb{\rho}$.
 
 INLA estimates the marginal posterior distributions for latent field parameters, $p(\rho_{i}|\pmb{y})$; and covariance hyperparameter posterior $p(\pmb{\theta}|\pmb{y})$. This means INLA does not estimate posteriors $p(\pmb{\rho}|\pmb{y})$ and $p(\pmb{\rho},\pmb{\theta}|\pmb{y})$. We break the INLA procedure into three steps to facilitate explanation.
 
 \subsubsection{Step 1, Gaussian Approximation} % ======= ======
 
-INLA begins by ``matching the mode and curvature at the mode'' of Gaussian estimator $p_{G}(\pmb{\rho}|\pmb{\theta}, \pmb{y})$ to that of $p(\pmb{\rho}|\pmb{\theta}, \pmb{y})$ \citep{Rue2005}. Note that INLA requires Gaussian priors for all parameters in $\pmb{\rho}$, excluding covariance hyperparameters in $\pmb{\theta}$. INLA also requires conditional independence: $p(\pmb{y}|\pmb{\rho}, \pmb{\theta}) = \prod_{i} p(y_{i}|\pmb{\rho}_{i},\pmb{\theta})$. In our case, with a spatial random effect, if we condition on the random effect, we essentially fix it, and thus what remains is independent. Therefore 
+INLA begins by ``matching the mode and curvature at the mode'' of Gaussian estimator $p_{G}(\pmb{\rho}|\pmb{\theta}, \pmb{y})$ to that of $p(\pmb{\rho}|\pmb{\theta}, \pmb{y})$ \citep{Rue2005}. Note that INLA requires Gaussian priors for all parameters in $\pmb{\rho}$, excluding covariance hyperparameters in $\pmb{\theta}$. INLA also requires conditional independence: $p(\pmb{y}|\pmb{\rho}, \pmb{\theta}) = \prod_{i} p(y_{i}|\pmb{\rho},\pmb{\theta})$. In our case, with a spatial random effect, if we condition on the random effect, we essentially fix it, and thus what remains is independent. Therefore 
 \begin{align}
 p(\pmb{\rho} |\pmb{\theta},\pmb{y}) & \propto p(\pmb{y}|\pmb{\rho}, \pmb{\theta}) p(\pmb{\rho}|\pmb{\theta}) p(\pmb{\theta}) \nonumber \\
-p(\pmb{\rho}|\pmb{\theta},\pmb{y}) & \propto \text{exp}\left(-\frac{1}{2}\pmb{\rho}^{T}\pmb{Q \rho} + \sum_{i} \text{log }p(y_{i}|\pmb{\rho}_{i},\pmb{\theta}) \right). \nonumber
+p(\pmb{\rho}|\pmb{\theta},\pmb{y}) & \propto \text{exp}\left(-\frac{1}{2}\pmb{\rho}^{T}\pmb{Q \rho} + \sum_{i} \text{log }p(y_{i}|\pmb{\rho},\pmb{\theta}) \right). \nonumber
 \end{align}
 Assuming Gaussian priors and conditional independence, the INLA Gaussian approximation for $p(\pmb{\rho}|\pmb{\theta}, \pmb{y})$ takes the form
 \begin{equation} \label{eq:ga}
 p_{G}(\pmb{\rho}|\pmb{\theta},\pmb{y}) \propto \text{exp} \left( -\frac{1}{2}(\pmb{\rho-\mu})^{T} (\pmb{Q} + \text{diag}(\pmb{c}) ) (\pmb{\rho - \mu}) \right),
 \end{equation}
-where the vectors $\pmb{c}$ and $\pmb{\mu}$ depend on second order Taylor expansions of $f(\pmb{\rho}) = \sum_{i} \text{log }p(y_{i}|\pmb{\rho}_{i},\pmb{\theta})$ about the mode \citep{Lindstrom2014}. A Newton-Raphson algorithm iteratively computes the mode and precision matrix until convergence \citep{Rue2009}. Step 2 uses the approximation in \ref{eq:ga} to approximate $p(\pmb{\theta}|\pmb{y})$.
+where the vectors $\pmb{c}$ and $\pmb{\mu}$ depend on second order Taylor expansions of $f(\pmb{\rho}) = \sum_{i} \text{log }p(y_{i}|\pmb{\rho},\pmb{\theta})$ about the mode \citep{Lindstrom2014}. A Newton-Raphson algorithm iteratively computes the mode and precision matrix until convergence \citep{Rue2009}. Step 2 uses the approximation in \ref{eq:ga} to approximate $p(\pmb{\theta}|\pmb{y})$.
 
 \subsubsection{Step 2, Laplace Approximation}  % ====== ======
 
@@ -413,24 +418,24 @@ Linking these together we have
 $$ p(\pmb{y} , \pmb{\rho} | \pmb{\theta}) = p(\pmb{\rho} | \pmb{y}, \pmb{\theta}) p(\pmb{y} | \pmb{\theta}) = p(\pmb{y} | \pmb{\rho}, \pmb{\theta}) p(\pmb{\rho} | \pmb{\theta}),$$
 and removing $p(\pmb{y} , \pmb{\rho} | \pmb{\theta})$ from the far left-hand side leaves
 $$ p(\pmb{\rho} | \pmb{y}, \pmb{\theta}) p(\pmb{y} | \pmb{\theta}) = p(\pmb{y} | \pmb{\rho}, \pmb{\theta}) p(\pmb{\rho} | \pmb{\theta}). $$
-Now divide both sides by ``$p(\pmb{\rho} | \pmb{y}, \pmb{\theta})$'' to get 
+Now divide both sides by $p(\pmb{\rho} | \pmb{y}, \pmb{\theta})$ to get 
 \begin{equation}
 p(\pmb{y} | \pmb{\theta}) = \frac{p(\pmb{y} | \pmb{\rho}, \pmb{\theta}) p(\pmb{\rho} | \pmb{\theta})} {p(\pmb{\rho} | \pmb{y}, \pmb{\theta})}.
 \end{equation}
 Next, substitute this last formulation of $p(\pmb{y}|\pmb{\theta})$ into Bayes theorem:
 \begin{align}
-p(\theta|\pmb{y}) & \propto p(\pmb{y}|\pmb{\theta})p(\pmb{\theta}) \nonumber \\
+p(\pmb{\theta}|\pmb{y}) & \propto p(\pmb{y}|\pmb{\theta})p(\pmb{\theta}) \nonumber \\
 & \propto \frac{p(\pmb{y} | \pmb{\rho}, \pmb{\theta}) p(\pmb{\rho} | \pmb{\theta})}{p(\pmb{\rho} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta})
 \end{align}
 For a given $\pmb{\theta}$, let $\pmb{\rho}_{0} = \text{argmax}_{\rho}p(\pmb{\rho}|\pmb{y},\pmb{\theta})$. Then,
 \begin{equation} \label{eq:la}
 p(\pmb{\theta}|\pmb{y}) \approx \tilde{p}(\pmb{\theta}|\pmb{y}) \propto  \frac{p(\pmb{y} | \pmb{\rho}_{0}, \pmb{\theta}) p(\pmb{\rho}_{0} | \pmb{\theta})}{p_{G}(\pmb{\rho}_{0} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta}),
 \end{equation}
-with the Taylor approximation of $f(\pmb{\rho}) = \sum_{i} \text{log }p(y_{i}|\rho_{i})$ in $p_{G}(\pmb{\rho} | \pmb{y}, \pmb{\theta})$ expanded about $\pmb{\rho}_{0}$. Then, we have approximate maximum likelihood estimate $\hat{\pmb{\theta}}_{\text{ML}} \approx \text{argmax}_{\theta} \tilde{p}(\pmb{\theta}|\pmb{y})$. \cite{Tierney1986} showed this approximation matches the Laplace approximation. 
+with the Taylor approximation of $f(\pmb{\rho}) = \sum_{i} \text{log }p(y_{i}|\pmb{\rho}, \pmb{\theta})$ in $p_{G}(\pmb{\rho} | \pmb{y}, \pmb{\theta})$ expanded about $\pmb{\rho}_{0}$. Then, we have approximate maximum likelihood estimate $\hat{\pmb{\theta}}_{\text{ML}} \approx \text{argmax}_{\theta} \tilde{p}(\pmb{\theta}|\pmb{y})$. \cite{Tierney1986} showed this approximation matches the Laplace approximation. 
 Next, in Step 3, we use the results of Step 1 and Step 2 to nest and numerically integrate the Laplace approximations to obtain approximate marginal posteriors.
 
 \subsubsection{Step 3, Numerical Integration} % === === === === ===
-Using the Gaussian approximation, $p_{\text{G}}(\rho_{j}|\pmb{\theta, y})$, from equation \ref{eq:ga} in Step 1; and the Laplace approximation, $\tilde{p}(\pmb{\theta}|\pmb{y})$, from equation \ref{eq:la} in Step 2; we can now integrate numerically to find posterior marginals $p(\rho_{i}|\pmb{y})$ and $p(\theta_{i}|\pmb{y})$. 
+Using the Gaussian approximation, $p_{\text{G}}(\rho_{j}|\pmb{\theta, y})$, from equation \ref{eq:ga} in Step 1; and the Laplace approximation, $\tilde{p}(\pmb{\theta}|\pmb{y})$, from equation \ref{eq:la} in Step 2; we now integrate numerically to find posterior marginals $p(\rho_{j}|\pmb{y})$ and $p(\theta_{k}|\pmb{y})$. 
         $$ p(\rho_{j} | \pmb{y}) \approx \int p_{\text{G}}(\rho_{j}|\pmb{\theta, y})\tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta} $$
         $$ p(\theta_{k} | \pmb{y}) \approx \int \tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta}_{-k} $$
         
@@ -479,7 +484,7 @@ $r^{2}$           & $\beta_{4}$ & -0.33 & 0.10 \\ \hline
 $\theta^{2}$      & $\beta_{5}$ & -3.93 & 1.14 \\ \hline
 $r^{2}*\theta^{2}$& $\beta_{6}$ & -0.48 & 0.22 \\ \hline 
 \end{tabular} \\
-\caption{GLM and INLA model estimates. Covariates are listed in the first column of each table, followed by coefficients, estimates, and standard erros. Coefficient parameter estimates and standard errors are quite similar. Covariance parameter estimates indicate long rande dependence on a low scale.}
+\caption{GLM and INLA model estimates. Covariates are listed in the first column of each table, followed by coefficients, estimates, and standard errors. Coefficient parameter estimates and standard errors are quite similar. Covariance parameter estimates indicate long range dependence on a low scale.}
 \end{table}
 
 The coefficient estimates and SEs are very similar for the GLM and INLA model fits. The INLA Mat\'ern covariance parameter estimate $\hat{\kappa}$ indicates long range correlation, albeit at a low scale indicated by $\text{SE}(w(\pmb{s})) = \hat{\sigma} = 0.11$. Recall that the spatial random effect is on the $\text{logit}(p_{i})$ scale, where model fit values fall between approximately -8.4 and -1.75. On the success probability scale, an estimate of $p_{i} = 0.15$ has a $\pm 1*\text{SE}$ interval of (0.137 0.165), and a $\pm 2*\text{SE}$ interval of (0.125, 0.181).
