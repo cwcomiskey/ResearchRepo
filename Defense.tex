@@ -41,7 +41,7 @@
 % ==============================
 
 \usepackage{listings}
-
+\usepackage{relsize}
 
 
 
@@ -60,12 +60,12 @@
  \end{frame}
 }
 
-% \AtBeginSubsection[]
-% {
-%  \begin{frame}<beamer>{Outline}
-%    \tableofcontents[currentsection,currentsubsection]
-%  \end{frame}
-% }
+\AtBeginSubsection[]
+{
+ \begin{frame}<beamer>{Outline}
+   \tableofcontents[currentsection,currentsubsection]
+ \end{frame}
+}
 
 \begin{document}
 
@@ -132,22 +132,7 @@
 \end{columns}
 \end{frame}
 
-\begin{frame}{Contributions (Sections) Road map}{}
-\begin{enumerate}
-\addtolength{\itemsep}{0.5\baselineskip}
-\item Variable-resolution heat maps ({\bf varyres})
-\item Interactive confidence intervals ({\bf mapapp})
-\item Approaches to Big N Spatial Generalized Linear Mixed Models for baseball data \\
-  \begin{itemize}
-  \addtolength{\itemsep}{0.5\baselineskip}
-  \item Optimizing in Stan \citep{STANtheMan}
-  \item Predictive Process Models (PPMs) \citep{Banerjee2008}
-  \item Integrated Nested Laplace Approximations (INLA) \citep{Rue2009}
-  \end{itemize}
-\end{enumerate}
-\end{frame}
-
-\section{Varible-Resolution Heat Maps}
+\section{Variable-Resolution Heat Maps}
 
 \begin{frame}{Empirical Success Probability Heat Map} % =============
 \begin{columns}
@@ -198,7 +183,7 @@
 	\end{figure}
 \end{frame}
 
-\begin{frame}{A Thing of Beauty}{Variable-Resolution (VR) Heat Map}
+\begin{frame}{A Thing of Beauty}{}
   \begin{figure}[H]
 	\centering
 	\includegraphics[scale=.075]{Images/Peralta_var-res.jpg}
@@ -206,14 +191,15 @@
   \end{figure}
 \end{frame}
 
-\begin{frame}{VR Heat Maps Combine Resolutions}{Jhonny Peralta}
+\begin{frame}{Variable-Resolution Heat Maps}{Jhonny Peralta}
 \begin{itemize}
 \item Stopping rule
-\item Subdivision algorithm
+\item Subdivision method
+\item VR algorithm
 \end{itemize}
   \begin{figure}[H]
 	\centering
-	\includegraphics[scale=.0375]{Images/6_200.jpg}
+	\includegraphics[scale=.037]{Images/6_200.jpg}
 	\end{figure}
 \end{frame}
 
@@ -331,6 +317,27 @@ $$ \text{logit}(\pi_{i}|\pmb{s}_{i}) = \mathbf{X}_{i}(\mathbf{s}_{i})\pmb{\beta}
 {\bf mapapp}: An R Package
 \end{frame}
 
+\begin{frame}[fragile]{{\bf mapapp}: An R Package}
+\begin{itemize}
+\addtolength{\itemsep}{0.5\baselineskip}
+\item Challenge: Where does user stop and package begin?
+\item Future improvement
+\end{itemize}
+
+\begin{verbatim}
+all_in_one <- get_CI(model, x, y, levels)
+shinyHMCI(all_in_one)
+\end{verbatim}
+
+\begin{enumerate}
+\addtolength{\itemsep}{0.5\baselineskip}
+\item User supplies model output/object
+\item \verb|get_CI(...)| --- creates proper data structure w/ specified locations, levels, CIs from model object
+\item \verb|shinyHMCI(all_in_one)| --- creates Shiny app
+\end{enumerate}
+
+\end{frame}
+
 \section{Approaches to Big Data Spatial Generalized Linear Mixed Models for Baseball Data}
 
 \begin{frame}{Spatial Random Effect}{}
@@ -338,10 +345,10 @@ $$ Y_{i}|\mathbf{X}_{i}(\mathbf{s}_{i}) \stackrel{ind}{\sim} \mbox{Bernoulli}(\p
 $$\text{logit}(\pi_{i}|\pmb{s}_{i}) = \mathbf{X}_{i}(\mathbf{s}_{i})\pmb{\beta} + w(\pmb{s}_{i}) $$
 \begin{itemize}
 \addtolength{\itemsep}{0.5\baselineskip}
-\item $w(\pmb{s}_{i})$ - spatial random effect at location $\pmb{s}_{i}$.
-\item $\pmb{w}(\pmb{s}) = (w(\pmb{s}_{1}), w(\pmb{s}_{2}), \dots, w(\pmb{s}_{N}))$  
-\item $\rightarrow$ Spatial Generalized Linear Mixed Model (SGLMM)
+\item $w(\pmb{s}_{i})$ --- spatial random effect, location $\pmb{s}_{i}$.
+\item $\pmb{w}(\pmb{s}) = (w(\pmb{s}_{1}), w(\pmb{s}_{2}), \dots, w(\pmb{s}_{N}))$ --- vector
 \item $\pmb{w}(\pmb{s})$ - Gaussian Random Field (GRF)
+\item Spatial Generalized Linear Mixed Model (SGLMM)
 \end{itemize}
 
 \end{frame}
@@ -349,7 +356,7 @@ $$\text{logit}(\pi_{i}|\pmb{s}_{i}) = \mathbf{X}_{i}(\mathbf{s}_{i})\pmb{\beta} 
 \begin{frame}{Gaussian Random Field: \pmb{w}(\pmb{s})}{} % ======
 $$\text{logit}(\pi_{i}|\pmb{s}_{i}) = \mathbf{X}_{i}(\mathbf{s}_{i})\pmb{\beta} + w(\pmb{s}_{i}) $$
 $$\pmb{w}(\pmb{s}) | \pmb{\theta} \sim \text{MVN}(\pmb{0}, \Sigma(\pmb{\theta}))$$
-$$\Sigma(\phi, \sigma^{2})_{i,k} = \text{Cov}(w(\pmb{s}_{i}), w(\pmb{s}_{k})) =  \sigma^{2} \text{exp}(-||\pmb{s}_{i} - \pmb{s}_{k}||/\phi)$$
+$$\Sigma(\phi, \sigma^{2})_{i,k} = \sigma^{2} \text{exp}(-||\pmb{s}_{i} - \pmb{s}_{k}||/\phi)$$
 \begin{itemize}
 \addtolength{\itemsep}{0.5\baselineskip}
 \item Spatial exponential covariance
@@ -359,7 +366,7 @@ $$\Sigma(\phi, \sigma^{2})_{i,k} = \text{Cov}(w(\pmb{s}_{i}), w(\pmb{s}_{k})) = 
   \item $\sigma^{2}$ - scale parameter
   \item $\phi$ - range parameter.
   \end{itemize}
-\item $\Sigma(\pmb{\theta})$ --- $n \times n$
+\item Notice: $\Sigma(\pmb{\theta})$ --- $n \times n$
 \end{itemize}
 
 \end{frame}
@@ -369,10 +376,11 @@ $$\Sigma(\phi, \sigma^{2})_{i,k} = \text{Cov}(w(\pmb{s}_{i}), w(\pmb{s}_{k})) = 
 \begin{itemize}
 \addtolength{\itemsep}{0.5\baselineskip}
 \item Peralta: $n = 9177$
-\item GRF $\pmb{w}(\pmb{s})$: $n \times n$ correlation matrix
+\item $\pmb{w}(\pmb{s})$: $9177 \times 9177$ cov. matrix
 \item MCMC iterations require: $\Sigma^{-1}$, determinant of $\Sigma$
-\item Rate of increase: $\mathcal{O}(n^{3})$
-$$t(n) \leq M \cdot n^{3} \text{ as } n \rightarrow \infty$$
+\item $\mathcal{O}(n^{3})$ rate of increase: 
+$$t(n) \leq M \cdot n^{3}$$ 
+$$ \text{as } n \rightarrow \infty$$
 \end{itemize}
 \end{frame}
 
@@ -381,8 +389,9 @@ $$t(n) \leq M \cdot n^{3} \text{ as } n \rightarrow \infty$$
 \begin{frame}{Hamiltonian Monte Carlo (HMC)}
 \begin{itemize}
 \addtolength{\itemsep}{0.5\baselineskip}
-\item Stan uses HMC proposal mechanism
-\item HMC:
+\item Stan uses Hamiltonian proposal mechanism
+\item {\bf Short version}: randomly sample momentum p (auxiliary), calculate new position q  --- that's your Metropolis proposal.
+\item Longer version:
   \begin{itemize}
   \addtolength{\itemsep}{0.5\baselineskip}
   \item $H(q(t),p(t)) = U(\textcolor{blue}{q(t)}) + K(p(t))$
@@ -390,23 +399,18 @@ $$t(n) \leq M \cdot n^{3} \text{ as } n \rightarrow \infty$$
   \item t = time
   \item \textcolor{blue}{q = position} (variables of interest), U = potential energy
   \item p = momentum (auxiliary), K = kinetic energy
+  \item $H(q,p) = -\log \textcolor{blue}{f_{q}(q)} + p^{T}\pmb{M}^{-1}p/2$
+  \item Tidy partial derivatives
   \end{itemize}
-\item $H(q,p) = -\text{log}\textcolor{blue}{f_{q}(q)} + p^{T}\pmb{M}^{-1}p/2$
-\item Tidy partial derivatives
-\item {\bf Short version}: randomly sample momentum p (auxiliary), calculate new position q  --- that's your Metropolis proposal.
+
 \end{itemize}
 \end{frame}
 
 
-\begin{frame}[fragile]{Stan Optimization}{}
+\begin{frame}[fragile]{Stan Computational Optimization}{}
 \begin{itemize}
 \addtolength{\itemsep}{0.5\baselineskip}
-\item Prior distributions
-  \begin{itemize}
-  \addtolength{\itemsep}{0.5\baselineskip}
-  \item $\phi$: informative, sharp-tailed prior for model identifiability
-  \item  $\pmb{\beta}$: proper priors for cost/convergence
-  \end{itemize}
+\item  $\phi$, $\pmb{\beta}$: informative/proper priors $\rightarrow$ identifiability/cost/convergence
 \item QR factorization of X
 \begin{align*}
 \pmb{X} &= \pmb{QR} \\
@@ -414,13 +418,6 @@ $$t(n) \leq M \cdot n^{3} \text{ as } n \rightarrow \infty$$
 \pmb{X \beta} &= \pmb{Q \theta} \\
 \pmb{\beta} &= \pmb{R^{-1}\theta}
 \end{align*}
-\end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]{Stan Optimization}{}
-\begin{itemize}
-\addtolength{\itemsep}{0.5\baselineskip}
-\item Covariance matrix diagonal noise, numerical positive-definiteness
 \item Cholesky decomposition
     \begin{verbatim}
     L = cholesky_decompose(Sigma);
@@ -428,15 +425,7 @@ $$t(n) \leq M \cdot n^{3} \text{ as } n \rightarrow \infty$$
     Z_mod = L * Z;
     Y ~ bernoulli_logit(Q*theta + Z_mod);
     \end{verbatim}
-\item Matrices and vectors
-\begin{verbatim}
-hit ~ bernoulli_logit(X*beta + Z)
-\end{verbatim}
-...faster than...
-\begin{verbatim}
-for (n in 1:N)
-    hit[n] = bernoulli_logit(X[n]*beta[n] + Z[n]);
-\end{verbatim}
+\item Matrices \& vectors faster than loops \& scalars
 \end{itemize}
 \end{frame}
 
@@ -446,39 +435,31 @@ for (n in 1:N)
 \addtolength{\itemsep}{0.5\baselineskip}
 \item N = 1000: 7 hours 45 mins for 1500 draws
   \begin{itemize}
-  \item Note: w/o spatial effect: 6 seconds.
+  \item Note: GLM (w/o spatial effect): 6 seconds.
   \end{itemize}
 \item N = 2000 overnight, 350 draws
 \end{itemize}
   \begin{figure}[H]
 	\centering
-	\includegraphics[scale=.32]{Images/Turtle.png}
+	\includegraphics[scale=.25]{Images/Turtle.png}
 	\end{figure}
 \end{frame}
 
 \subsection{Predictive Process Models}
 
-\begin{frame}{Predictive Process Models (PPMs)}{\citep{Banerjee2008}} % ===== ====== ===== ===== =====
-$$ \text{logit}(\pi_{i}|\pmb{s}_{i}) = \pmb{X}_{i}(\pmb{s}_{i}) \pmb{\beta} + w(\pmb{s}_{i}) $$
-$$ \pmb{w}(\pmb{s}) | \pmb{\theta} \sim \text{GRF}(\pmb{0}, \pmb{\Sigma}(\pmb{\theta})) $$
+\begin{frame}{Predictive Process Models (PPMs) }{\citep{Banerjee2008}} % ===== ====== ===== ===== =====
 \begin{itemize}
-\addtolength{\itemsep}{0.5\baselineskip}
-\item $\Sigma(\pmb{s}_{i}, \pmb{s}_{k}; \pmb{\theta})$ = $\text{Cov}\left(w(\pmb{s}_{i}), w(\pmb{s}_{k}) \right)$
-\item $\Sigma(\pmb{\theta}) = [\Sigma(\pmb{s}_{i}, \pmb{s}_{k}; \pmb{\theta})]_{i,k=1}^{n}$
-\end{itemize}
-\end{frame}
-
-\begin{frame}{PPM Knots} % ===== ====== ===== ===== =====
-\begin{itemize}
-\addtolength{\itemsep}{0.5\baselineskip}
-\item $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$ --- $m$ knot locations
+\addtolength{\itemsep}{1\baselineskip}
+\item $\text{Cov}\left(w(\pmb{s}_{i}), w(\pmb{s}_{k}) \right) = \Sigma(\pmb{s}_{i}, \pmb{s}_{k}; \pmb{\theta})= \big[\Sigma(\pmb{s}_{i}, \pmb{s}_{k}; \pmb{\theta}) \big]_{i,k=1}^{n}$
+\item Knots: $\pmb{S}^{*} = \{\pmb{s}_{1}^{*}, \dots, \pmb{s}_{m}^{*}\}$
   \begin{itemize}
   \item $m < < n$
   \end{itemize}
-\item $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m}$ -- knot random effects
-\item $\pmb{w}^{*}|\pmb{\theta} \sim \text{GRF}\{\pmb{0}, \Sigma^{*}(\pmb{\theta})\}$ -- $m$-dim GRF \\
+\item Knot random effects: $\pmb{w}^{*} = \left[w(\pmb{s}_{i}^{*})\right]_{i=1}^{m}$
+\item Knot GRF: $\pmb{w}^{*}|\pmb{\theta} \sim \text{MVN}\{\pmb{0}, \Sigma^{*}(\pmb{\theta})\}$ --- $m$-dim \\
   \begin{itemize}
-  \item $\Sigma^{*}(\pmb{\theta}) = \left[\Sigma(\pmb{s}_{i}^{*}, \pmb{s}_{k}^{*})\right]_{i,k = 1}^{m}$
+  \addtolength{\itemsep}{0.5\baselineskip}
+  \item Knot covariance: $\Sigma^{*}(\pmb{\theta}) = \big[\Sigma(\pmb{s}_{i}^{*}, \pmb{s}_{k}^{*})\big]_{i,k = 1}^{m}$
   \end{itemize}
 \item $\pmb{\sigma}(\pmb{s}_{0};\pmb{\theta}) = \left[\Sigma(\pmb{s}_{0}, \pmb{s}_{k}^{*}; \pmb{\theta})\right]_{k = 1}^{m}$ --- $m \times 1$ vector
 \end{itemize}
@@ -507,7 +488,7 @@ $$ \pmb{w}(\pmb{s}) | \pmb{\theta} \sim \text{GRF}(\pmb{0}, \pmb{\Sigma}(\pmb{\t
 \begin{frame}[fragile]{The Predictive Process: $\widetilde{w}(\pmb{s})$}
 Another Gaussian Random Field
 \begin{align*}
-\widetilde{\pmb{w}}(\pmb{s}) &\sim \text{GRF}\{0, \widetilde{\Sigma}(\cdot)\} \\
+\widetilde{\pmb{w}}(\pmb{s}) &\sim \text{MVN}\{0, \widetilde{\Sigma}(\cdot)\} \\
 \widetilde{\Sigma}(\pmb{s}, \pmb{s}'; \pmb{\theta}) &= \pmb{\sigma}^{T}(\pmb{s};\pmb{\theta}) \cdot \textcolor{blue}{\pmb{\Sigma}^{*-1}(\pmb{\theta})} \cdot \pmb{\sigma}(\pmb{s}';\pmb{\theta})
 \end{align*}
 Predictive process model:
@@ -542,16 +523,16 @@ Predictive process model:
 	\end{figure}
 \end{frame}
 
-\subsection{Integrated Nested Laplace Approximation (INLA)}
+\subsection{Integrated Nested Laplace Approximation}
 
 \begin{frame}{INLA Overview}
 $$ \text{logit}(\pi_{i}) = \pmb{X}_{i}(\pmb{s}_{i})\pmb{\beta} + w(\pmb{s}_{i}) $$
 $$\pmb{w}(\pmb{s}) | \pmb{\theta} \sim \text{MVN}(\pmb{0}, \textcolor{blue}{\Sigma(\pmb{\theta})})$$
 \begin{itemize}
 \addtolength{\itemsep}{0.5\baselineskip}
-\item Approx. for Bayesian hierarchical models w/ latent GRF
+\item Bayesian hierarchical models w/ latent GRF
 \item Assume \textcolor{blue}{Mat\'ern} covariance
-\item Two parts (for continuous domain)
+\item Two parts (continuous domain) \\
   \begin{itemize}
   \addtolength{\itemsep}{0.5\baselineskip}
   \item Part 1: Represent GRF as GMRF 
@@ -573,12 +554,12 @@ $$\pmb{w}(\pmb{s}) | \pmb{\theta} \sim \text{MVN}(\pmb{0}, \textcolor{blue}{\Sig
 $$ (\kappa^{2} - \Delta)\textcolor{blue}{\pmb{w}(\pmb{s})} = \pmb{W}(\pmb{s})$$
 \item Finite Element Method: project SPDE onto basis representation
 \item Piecewise linear basis representation
-$$ \textcolor{blue}{\widetilde{w}(\pmb{s})} = \sum_{k} \psi_{k}(\pmb{s})\omega_{k}$$
+$$ \textcolor{blue}{\widetilde{w}(\pmb{s})} = \sum_{k} \psi_{k}(\pmb{s})\textcolor{red}{\omega_{k}}$$
         \begin{itemize}
         \addtolength{\itemsep}{0.5\baselineskip}
         \item Domain triangulation
         \item $\psi_{k}(\pmb{s})$ --- deterministic basis functions
-        \item $\omega_{k}$ --- weights, explicit with sparse precision matrix
+        \item \textcolor{red}{$\omega_{k}$} --- weights, explicit with sparse precision matrix
         \end{itemize}
 \end{itemize}
 
@@ -587,17 +568,24 @@ $$ \textcolor{blue}{\widetilde{w}(\pmb{s})} = \sum_{k} \psi_{k}(\pmb{s})\omega_{
 
 \begin{frame}{Part 1: Stochastic Partial Differential Equation (SPDE)}{\citep{Lindgren2011}}
 \begin{itemize}
-\item For $\langle f(\pmb{u}), g(\pmb{u}) \rangle = \int f(\pmb{u}) g(\pmb{u}) d\pmb{u}$,
-\begin{equation} % =======
-\left[ \left< \phi_{l}, (\kappa^{2} - \Delta) \pmb{w} \right> \right]_{l} 
+\item For $\langle f(\pmb{u}), g(\pmb{u}) \rangle = \int f(\pmb{u}) g(\pmb{u}) d\pmb{u}$:
+$$ \left[ \left< \phi_{l}, (\kappa^{2} - \Delta) \textcolor{blue}{\widetilde{\pmb{w}}} \right> \right]_{l} 
 \overset{D}{=}
-\left[ \left< \phi_{l}, \pmb{W} \right> \right]_{l}. \nonumber
-\end{equation}
-\item Galerkin solution: $\pmb{\phi} = \pmb{\psi}$
+\left[ \left< \phi_{l}, \pmb{W} \right> \right]_{l} $$
+% $$ \left[ \left< \phi_{l}, (\kappa^{2} - \Delta)
+% \big[ \mathlarger{\pmb{\Psi}\textcolor{red}{\pmb{\omega}}} \big]
+% \right> \right]_{l}
+% \overset{D}{=}
+% \left[ \left< \phi_{l}, \pmb{W} \right> \right]_{l}. $$
+
+\item Galerkin solution, $\pmb{\phi} = \pmb{\psi}$:
+$$ \left[ \left< \psi_{l}, (\kappa^{2} - \Delta) \left( \sum_{k=1}^{n_{v}} \psi_{k} \textcolor{red}{\omega_{k}} \right) \right> \right]_{l} 
+\overset{D}{=}
+\left[ \langle \psi_{l}, \pmb{W} \rangle \right]_{l} $$
 $$ \left(
-\kappa^{2} \pmb{C} + \pmb{G} \right) \pmb{\omega} \overset{D}{=} \text{N}(\pmb{0},\pmb{C})$$
-where $\pmb{C} = \langle \psi_{l}, \psi_{k} \rangle$ and $ \pmb{G} = \langle \psi_{l}, - \Delta \psi_{k} \rangle$
-\item $\pmb{\omega} \sim \text{N}(\pmb{0}, \pmb{Q}^{-1})$ for
+\kappa^{2} \pmb{C} + \pmb{G} \right) \textcolor{red}{\pmb{\omega}} \overset{D}{=} \text{N}(\pmb{0},\pmb{C})$$
+where $\pmb{C} = \langle \psi_{l}, \psi_{k} \rangle$ and $ \pmb{G} = \langle \psi_{l}, - \Delta \psi_{k} \rangle$ \\
+\item $\textcolor{red}{\pmb{\omega}} \sim \text{N}(\pmb{0}, \pmb{Q}^{-1})$ for
 $$\pmb{Q} = \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right)^{T} \pmb{C}^{-1} \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right).$$
 \end{itemize}
 \end{frame}
@@ -608,7 +596,7 @@ $$\pmb{Q} = \left( \kappa^{2} \widetilde{\pmb{C}} + \pmb{G} \right)^{T} \pmb{C}^
 \item Parameter vector: $\pmb{\rho} = ( \pmb{\beta}^{\text{T}}, \widetilde{\pmb{w}}^{\text{T}} )^{\text{T}}$
             \begin{itemize}
             \addtolength{\itemsep}{0.5\baselineskip}
-            \item Let $\pmb{Q}$ denote the precision matrix of $\pmb{\rho}$
+            \item $\pmb{Q}$: precision matrix of $\pmb{\rho}$
             \end{itemize}
 \item Hyperparameter vector: $\pmb{\theta} = (\kappa, \sigma )$
 \end{itemize}
@@ -629,20 +617,23 @@ $$ p_{G}(\pmb{\rho}|\pmb{\theta}, \pmb{y}) \propto \text{exp} \left( -\frac{1}{2
 \setcounter{enumi}{1}
 \addtolength{\itemsep}{0.5\baselineskip}
 \item For a given $\pmb{\theta}$, let $\pmb{\rho}_{0} = \text{argmax}_{\rho}p(\pmb{\rho}|\pmb{y},\pmb{\theta})$. Then,
-$$  p(\pmb{\theta}|\pmb{y}) \approx \tilde{p}(\pmb{\theta}|\pmb{y}) \propto  \frac{p(\pmb{y} | \pmb{\rho}_{0}, \pmb{\theta}) p(\pmb{\rho}_{0} | \pmb{\theta})}{p_{G}(\pmb{\rho}_{0} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta}) $$
-$\longrightarrow \hat{\pmb{\theta}}_{\text{ML}} \approx \text{argmax}_{\theta} \tilde{p}(\pmb{\theta}|\pmb{y})$
+\begin{align}
+\textcolor{purple}{ \tilde{p}(\pmb{\theta}|\pmb{y})} & \propto \tilde{p}(\pmb{y}|\pmb{\theta}) p(\pmb{\theta}) \nonumber \\
+\textcolor{purple}{\tilde{p}(\pmb{\theta}|\pmb{y})} & \propto  \frac{p(\pmb{y} | \pmb{\rho}_{0}, \pmb{\theta}) p(\pmb{\rho}_{0} | \pmb{\theta})}{p_{G}(\pmb{\rho}_{0} | \pmb{y}, \pmb{\theta})} \cdot p(\pmb{\theta}). \nonumber
+\end{align}
+$\longrightarrow \hat{\pmb{\theta}}_{\text{ML}} \approx \text{argmax}_{\pmb{\theta}} \textcolor{purple}{\tilde{p}(\pmb{\theta}|\pmb{y})}$
 \item Numerical integration:
-        $$ p(\rho_{j} | \pmb{y}) \approx \int p_{\text{G}}(\rho_{j}|\pmb{\theta, y})\tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta} $$
+        $$ p(\rho_{j} | \pmb{y}) \approx \int p_{\text{G}}(\rho_{j}|\pmb{\theta, y}) \textcolor{purple}{\tilde{p}(\pmb{\theta}|\pmb{y})} d\pmb{\theta} $$
 \item Numerical integration:
-$$ p(\theta_{k} | \pmb{y}) \approx \int \tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\theta}_{-k} $$
+$$ p(\theta_{k} | \pmb{y}) \approx \int \textcolor{purple}{\tilde{p}(\pmb{\theta}|\pmb{y})} d\pmb{\theta}_{-k} $$
 \end{enumerate}
 
 \end{frame}
 
 \begin{frame}{3000 Words}{}
-\begin{itemize}
-\item Variable-resolution, GLM, and SGLMM w/ INLA
-\end{itemize}
+\begin{center}
+\huge{34 seconds!}
+\end{center}
   \begin{figure}[H]
 	\centering
 	\includegraphics[scale=.045]{Images/Peralta_var-res2.jpg}
@@ -652,7 +643,6 @@ $$ p(\theta_{k} | \pmb{y}) \approx \int \tilde{p}(\pmb{\theta}|\pmb{y}) d\pmb{\t
 \end{frame}
 
 \begin{frame}{Estimates}
-
 
 \begin{table}
 \scalebox{0.85}{
@@ -690,7 +680,8 @@ $r^{2}*\theta^{2}$& $\beta_{6}$ & -0.48 & 0.22 \\ \hline
 }
 \end{table}
 \begin{itemize}
-\item $\hat{\kappa}$ - long range correlation; $\text{SE}(w(\pmb{s})) = 0.11$.
+\item $\hat{\kappa}$ --- long range correlation
+\item $\text{SE}(w(\pmb{s})) = 0.11$.
 \item $\rightarrow 0.15 \pm 1 \cdot \text{SE} = (0.137, 0.165)$
 \item $\rightarrow 0.15 \pm 2 \cdot \text{SE} = (0.125, 0.181)$
 \end{itemize}
@@ -704,13 +695,12 @@ $r^{2}*\theta^{2}$& $\beta_{6}$ & -0.48 & 0.22 \\ \hline
 \item Fitting big data SGLMMs to baseball data?
   \begin{itemize}
   \addtolength{\itemsep}{0.5\baselineskip}
-  \item Stan - insufficicent
+  \item Stan - insufficient
   \item PPM - Slow and did not converge; to be continued...
   \item INLA - Fast, successful; to be continued...
   \end{itemize}
 \end{itemize}
 \end{frame}
-
 
 %
 % \begin{itemize}
@@ -729,20 +719,10 @@ $r^{2}*\theta^{2}$& $\beta_{6}$ & -0.48 & 0.22 \\ \hline
 %
 \begin{frame}{}
 \begin{center}
-\Huge{Thanks for listening.
-Questions?}
+\Huge{Thanks for listening.}
 \end{center}
 \end{frame}
 
 \bibliography{Baseball}
 
-
-
 \end{document}
-
-
-
-
-
-
-
