@@ -129,7 +129,7 @@ Substitute in $\pmb{\theta} = \pmb{R \beta}$, which gives:
 $$ \pmb{X \beta} = \pmb{Q \theta}. $$
 The resulting model is:
 \begin{equation} \label{eq:reparam}
-\text{logit}(p_{i}|\pmb{s}_{i}) = \pmb{Q}_{i}(\pmb{s}_{i}) \pmb{\theta}_{j} + w_{i}.
+\text{logit}(p_{i}|\pmb{s}_{i}) = \pmb{Q}_{i}(\pmb{s}_{i}) \pmb{\theta} + w_{i}.
 \end{equation}
 With this parameterization we must incorporate prior information about $\pmb{\beta}$ in the $\pmb{\theta}$ prior distributions. 
 
@@ -390,13 +390,13 @@ Note that this solution specifies the distribution of the vector of weights $\pm
 % ========= ========= ========= ========= ========= =========
 \subsection{Integrated Nested Laplace Approximations (INLA)}
 
-To explain INLA in this section, define hyperparameter vector $\pmb{\theta} = \{\kappa, \sigma \}$; parameter vector $\pmb{\rho} = \{ \pmb{\beta}^{\text{T}}, \widetilde{\pmb{w}} \}^{\text{T}}$; and let $\pmb{Q}$ denote the precision matrix of $\pmb{\rho}$.
+To explain INLA in this section, define hyperparameter vector $\pmb{\theta} = \{\kappa, \sigma \}$; parameter vector $\pmb{\rho} = \{ \pmb{\beta}^{\text{T}}, \widetilde{\pmb{w}} \}^{\text{T}}$; and let $\pmb{Q}^{*}$ denote the precision matrix of $\pmb{\rho}$.
 
 INLA estimates the marginal posterior distributions for latent field parameters, $p(\rho_{i}|\pmb{y})$; and covariance hyperparameter posterior $p(\pmb{\theta}|\pmb{y})$. This means INLA does not estimate posteriors $p(\pmb{\rho}|\pmb{y})$ and $p(\pmb{\rho},\pmb{\theta}|\pmb{y})$. We break the INLA procedure into three steps to facilitate explanation.
 
 \subsubsection{Step 1, Gaussian Approximation} % ======= ======
 
-INLA begins by ``matching the mode and curvature at the mode'' of Gaussian estimator $p_{G}(\pmb{\rho}|\pmb{\theta}, \pmb{y})$ to that of $p(\pmb{\rho}|\pmb{\theta}, \pmb{y})$ \citep{Rue2005}. Note that INLA requires Gaussian priors for all parameters in $\pmb{\rho}$, excluding covariance hyperparameters in $\pmb{\theta}$. INLA also requires conditional independence: $p(\pmb{y}|\pmb{\rho}, \pmb{\theta}) = \prod_{i} p(y_{i}|\pmb{\rho},\pmb{\theta})$. In our case, with a spatial random effect, if we condition on the random effect, we essentially fix it, and thus what remains is independent. Therefore 
+INLA begins by ``matching the mode and curvature at the mode'' of Gaussian estimator $p_{G}(\pmb{\rho}|\pmb{\theta}, \pmb{y})$ (equation \ref{eq:ga} below) to that of $p(\pmb{\rho}|\pmb{\theta}, \pmb{y})$ \citep{Rue2005}. Note that INLA requires Gaussian priors for all parameters in $\pmb{\rho}$, excluding covariance hyperparameters in $\pmb{\theta}$. INLA also requires conditional independence: $p(\pmb{y}|\pmb{\rho}, \pmb{\theta}) = \prod_{i} p(y_{i}|\pmb{\rho},\pmb{\theta})$. In our case, with a spatial random effect, if we condition on the random effect, we essentially fix it, and thus what remains is independent. Therefore 
 \begin{align}
 p(\pmb{\rho} |\pmb{\theta},\pmb{y}) & \propto p(\pmb{y}|\pmb{\rho}, \pmb{\theta}) p(\pmb{\rho}|\pmb{\theta}) p(\pmb{\theta}) \nonumber \\
 p(\pmb{\rho}|\pmb{\theta},\pmb{y}) & \propto \text{exp}\left(-\frac{1}{2}\pmb{\rho}^{T}\pmb{Q \rho} + \sum_{i} \text{log }p(y_{i}|\pmb{\rho},\pmb{\theta}) \right). \nonumber

@@ -47,7 +47,7 @@ Since our interest lies in modeling swing success with respect to a batter's bio
 
 \item $i  = 1,\ldots,N_j$, where $N_j$ denotes the total number of swings that batter $j$ takes over all at bats, against all pitchers, in all games, during all seasons.
 
-\item $j = 1,\ldots,N$, where $N$ is the total number of batters in the dataset, in this case $N = 1,932$\footnote{Right-handed hitters.}.
+\item $j = 1,\ldots,N$, where $N$ is the total number of batters in the dataset, in this case $N = 1,932$.\footnote{Right-handed hitters.}
 
 \end{itemize}
 
@@ -61,7 +61,7 @@ with
 \bdm
 \log\left(\frac{\pi_{ij}}{1-\pi_{ij}}\right) = \mathbf{X}_{ij}(\mathbf{s}_{ij})\beta,
 \edm
-where $\beta$ are unknown regression parameters.\footnote{We extend this model to include a spatial random effect in Chatper 4.}  We describe the biomechanical covariates next.
+where $\beta$ are unknown regression parameters.\footnote{We extend this model to include a spatial random effect in Chapter 4.}  We describe the biomechanical covariates next.
 
 \subsection{Rotational Biomechanics} % ==============
 
@@ -102,7 +102,7 @@ As in golf and tennis, hitter-to-ball distances---too close to/far from the hitt
 Further biomechanical research extends beyond the scope of this study. Therefore, without biomechanical knowledge to inform us otherwise, we use $r$ and $\theta$ linear, quadratic, and interaction terms as covariates in our GLM linear predictor; $\pmb{X}_{ij}(\pmb{s}_{ij}) = \{r_{ij}, \theta_{ij}, r_{ij}\theta_{ij}, r_{ij}^{2}, \theta_{ij}^{2}, r_{ij}^{2}\theta_{ij}^{2}\}$. With $6 \times 1$ covariate vector $\pmb{X}_{ij}(\pmb{s}_{ij})$ in hand, we can define $\pmb{\beta}_{j}' =  \{\beta_{j0}, \beta_{j1}, \dots, \beta_{j6}\}$, and recall:
 
 \begin{equation} \label{eq:glm}
-\text{logit}(p_{ij}|\pmb{X}_{ij}(\pmb{s}_{ij})) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j}.
+\text{logit}(\pi_{ij}|\pmb{X}_{ij}(\pmb{s}_{ij})) = \pmb{X}_{ij}(\pmb{s}_{ij}) \pmb{\beta}_{j}.
 \end{equation}
 
 Note that given a hitter $j$, and pitch location $\pmb{s}_{ij}$, the elements of $\pmb{X}_{ij}$ are simply a trigonometric function of $\pmb{s}_{ij}$ and the translated origin.
@@ -119,7 +119,7 @@ We turn to an established goodness of fit test for statistical validation.
 
 \subsection{Hosmer-Lemeshow Goodness of Fit Test} % ================
 
-The widely used Pearson $\chi^{2}$ test assesses goodness of fit for models with covariates that provide natural groupings \citep{Pagano2000}. Continuous covariate models, however, need an imposed grouping mechanism for a similar test. The Homer-Lemeshow test uses a grouping mechanism to imitate Pearson $\chi^{2}$ test structure, and tests logistic regression model goodness of fit \citep{Hosmer2013}. Conceptually, the test compares the observed results in each grouping to the expected results under the null hypothesis of a well fit model, and then assesses the overall degree to which observed and expected results differ. Under the null hypothesis the difference approximately follows a $\chi^{2}$ distribution. 
+The widely used Pearson $\chi^{2}$ test assesses goodness of fit for models with covariates that provide natural groupings \citep{Pagano2000}. Continuous covariate models, however, need an imposed grouping mechanism for a similar test. The Homer-Lemeshow test uses a grouping mechanism to imitate Pearson $\chi^{2}$ test structure, and tests logistic regression model goodness of fit \citep{Hosmer2013}. Conceptually, the test induces groups by dividing the observations based on their fitted probabilities. Then the observed success rate in each group is compared to the average of their predicted success probabilities using the usual chi-squared statistic.
 
 To construct the Hosmer-Lemeshow test, first define Bernoulli outcome vector $\pmb{y} = \{y_{1}, y_{2}, \dots, y_{n}\}^{\text{T}}$, and logistic regression model fitted probability vector $\hat{\pmb{y}} = \{\hat{p}_{1}, \hat{p}_{2}, \dots, \hat{p}_{n}\}^{\text{T}}$, where $E(y_{i}) = p_{i}$. Next, arrange fitted values $\hat{p}_{1}, \hat{p}_{2}, \dots, \hat{p}_{n}$ in ascending order, and divide them into $g$ evenly spaced groups, partitioned by the quantiles: $\frac{1}{g}, \frac{2}{g}, \dots \frac{g}{g}$. For example, $\text{Group 1} = \{\hat{p}_{i}\text{ }|\text{ }0 < \hat{p}_{i} < p_{1}\}$ where $\hat{\text{F}}_{\hat{p}}(p_{1})=1/\text{g}$, for the empirical cumulative distribution function $\hat{\text{F}}_{\hat{p}}(p)$. 
 
@@ -139,15 +139,15 @@ Notice $\widehat{C}$ matches the Pearson $\chi^{2}$ statistic under this groupin
 H_{0}: & \text{ Model well fit.} \\
 H_{1}: & \text{ Model not well fit.}
 \end{align}
-We use \verb|hoslem.test()| in the R package {\bf ResourceSelection} to perform the test \citep{hoslem}, with g = 10 following the recommendation of \cite{Hosmer2013} based on their simulations \citep{Hosmer1980}. The test statistic for Jhonny Peralta's data, $\widehat{C} = 4.3758$, with eight degrees of freedom, gives a p-value of p = 0.8217. In Figure \ref{fig:hoslem} we compare the model fit with observed results using two graphics: a plot of the probability of success as estimated by the model fit against the empirical estimate, for each quantile group; and a plot of observed and predicted number of successes for each quantile group.
+We use \verb|hoslem.test()| in the R package {\bf ResourceSelection} to perform the test \citep{hoslem}, with g = 10 following the recommendation of \cite{Hosmer2013} based on their simulations \citep{Hosmer1980}. The test statistic for Jhonny Peralta's data, $\widehat{C} = 4.3758$, with eight degrees of freedom, gives a p-value of p = 0.8217. In Figure \ref{fig:hoslem} we compare the model fit with observed results using two graphics: a plot of the probability of success as estimated by the model fit against the empirical estimate, for each quantile group; and a plot of observed ($\text{o}_{1k}, k = 1,\dots,10$) and predicted ($\hat{e}_{1k}, k = 1,\dots,10$) number of successes for each quantile group.
   \begin{figure}[!ht]
     \centering
     \includegraphics[scale=.08]{Images/ppredVSpobs.jpg}
     \includegraphics[scale=.08]{Images/OvE.jpg}
-    \caption{Regarding the Hosmer-Lemshow goodness-of-fit test, in the first plot (LHS) we show model fit against empirical probabilities of success, for each of the quantile groups $k$, for $k = 1, \dots, g$. The probabilities are similar, with most points close to the 1:1 line, indicating a well fit model. In the second plot we show the number of successes for each quantile group, where color denotes model predicted or observed frequency. The observed and predicted successes in each group are quite close together, again indicating a well fit model.}
+    \caption{Regarding the Hosmer-Lemshow goodness-of-fit test, in the first plot (LHS) we show model fit against empirical probabilities of success, for each of the quantile groups $k$, for $k = 1, \dots, g$. The probabilities are similar, with most points close to the 1:1 line, indicating a well fit model. In the second plot we show the number of successes for each quantile group, where shape denotes model predicted or observed frequency. The observed and predicted successes in each group are quite close together, again indicating a well fit model.}
     \label{fig:hoslem}
   \end{figure}
-In the first plot (LHS) in Figure \ref{fig:hoslem}, the closeness of the points to the reference line indicates the similarity of predicted and observed probabilities of success. In the second plot of Figure \ref{fig:hoslem}, the proximity of the blue and pink points to one another shows the similarity of the observed and predicted number of successes, in each Hosmer-Lemeshow test quantile. 
+In the first plot (LHS) in Figure \ref{fig:hoslem}, the closeness of the points to the reference line indicates the similarity of predicted and observed probabilities of success. In the second plot of Figure \ref{fig:hoslem}, the proximity of the circles and triangles points to one another shows the similarity of the observed and predicted number of successes, in each Hosmer-Lemeshow test quantile. 
 
 These observations and the test p-value lend credibility to the biomechanical covariate approach. This validation will suffice for now, and it sets the stage for the more substantial innovation in this chapter, an interactive heat map confidence interval.
 
@@ -164,7 +164,7 @@ Current heat map confidence interval technology consists of including two additi
 	\includegraphics[scale=.07]{Images/CrossHMCI.jpg}
 	\caption{In line with best practices, \cite{Cross2015} present four percentiles to convey confidence interval information for the point estimate heat map in the center. Plots reproduced from cite{Cross2015}, Figure 8}
 	\end{figure}
-We find this heat map confidence interval method to be relatively inaccessible, both conceptually and intuitively, especially compared to typical confidence interval for a univariate parameter. For example, consider a hypothetical parameter, $\theta$, with point estimate $\hat{\theta} = 2$, and hypothetical confidence interval for $\theta$ of (0,4). This combination makes plain its information content and structure; our familiarity with the number line contributes to easy comprehension.
+We find this heat map confidence interval method to be relatively inaccessible, both conceptually and intuitively, especially compared to typical confidence intervals for a univariate parameter. For example, consider a hypothetical parameter, $\theta$, with point estimate $\hat{\theta} = 2$, and hypothetical confidence interval for $\theta$ of (0,4). This combination makes plain its information content and structure; our familiarity with the number line contributes to easy comprehension.
   \begin{figure}[H]
   \centering
 	\includegraphics[scale=.6]{Images/NumberLine.jpg}
@@ -191,7 +191,7 @@ This presentation seems to improve comprehension. But, how do we achieve this fo
 \subsection{Shiny Implementation}
 The inimitable RStudio created the Shiny framework to facilitate interactive web application development. Deployed directly out of the RStudio integrated development environment (IDE) \citep{IDE} or on the web, Shiny applications provide a powerful new tool for presenting analytic results. Ordinarily one needs to program in HTML to present results on interactive webpages, but Shiny provides a platform to enable such development directly from R. We developed a heat map confidence interval method and used Shiny to implement it.
 
-Recall the GLM model heat map for Johnny Peralta's data. In Figure \ref{fig:LPU} we show lower and upper pointwise 95\% confidence interval heat maps, calculated with the variance-covariance estimates from the IRLS procedure \citep{Myers2012}.
+Recall the GLM model heat map for Johnny Peralta's data. In Figure \ref{fig:LPU} we show lower and upper pointwise 95\% confidence interval heat maps, calculated with the variance-covariance estimates for $\pmb{\beta}$ from the IRLS procedure \citep{Myers2012}.
   \begin{figure}[H]
 	\centering
 	\includegraphics[scale=.19]{Images/Lower.pdf}
@@ -205,7 +205,7 @@ The heat map on the left gives the lower bound of the 95\% confidence interval, 
 In Figure \ref{fig:Shiny} we show a static image of the interactive application. It includes a slider in the lower left. The user adjusts the slider to move {\it through} the entire two-dimensional color spectrum defined by the ``confidence surface.''
   \begin{figure}[H]
 	\centering
-	\includegraphics[scale=.32]{Images/95.png}
+	\includegraphics[scale=.32]{Images/99.png}
 	\caption{A static image of an interactive heat map confidence interval implemented with Shiny. The user adjusts the slider in the lower left to move {\it through} confidence surfaces, controlled by confidence levels. As the user adjusts the slider, the heat map bounds on the left and right give the appropriate layer or confidence surface.}
 	\label{fig:Shiny}
 	\end{figure}
@@ -214,15 +214,14 @@ The slider specifies a confidence interval level. As the user lowers the confide
 In Figure \ref{fig:sequence} we show a sequence of static images in which the slider progressively narrows the confidence interval.
   \begin{figure}[H]
 	\centering
-	\includegraphics[scale=.25]{Images/1.png}
-	\includegraphics[scale=.25]{Images/25.png}
-	\includegraphics[scale=.25]{Images/50.png}
-	\includegraphics[scale=.25]{Images/75.png}
-	\includegraphics[scale=.25]{Images/99.png}
-	\caption{An interactive confidence interval in Shiny lets the user move ``through'' the interval \citep{Shiny}. As the user adjusts the slider in the lower left (shown with first set of three maps), the heat map bounds respond accordingly. In the middle column the point estimate map remains fixed. The lower (column one) and upper (column three) bounds get wider moving from top row to bottom row: 1\%, 25\%, 50\%, 75\%, 99\%.}
+	\includegraphics[scale=.30]{Images/1.png}
+	\includegraphics[scale=.30]{Images/50.png}
+	\includegraphics[scale=.30]{Images/75.png}
+	\includegraphics[scale=.30]{Images/99B.png}
+	\caption{An interactive confidence interval in Shiny lets the user move ``through'' the interval \citep{Shiny}. As the user adjusts the slider (Figure \ref{fig:Shiny}, the heat map bounds respond accordingly. In the middle column the point estimate map remains fixed. The lower (column one) and upper (column three) bounds get wider moving from top row to bottom row: 1\%, 50\%, 75\%, 99\%.}
 	\label{fig:sequence}
 	\end{figure}
-In Figure \ref{fig:sequence} we show the slider for the first row only. The unchanging middle column contains the point estimate map. The top row shows a 1\% confidence interval, followed by 25\%, 50\%, 75\%, and 99\% in the following rows; the first column contains all lower bounds, the third column all upper bounds. The first row contains three virtually identical maps, with the point estimate in the middle. Moving down the third (upper bound) column of maps, notice how the angled red oval shape subtly grows and elongates. This slow morphing culminates in the final image, where the red oval bleeds out of the strike zone to the upper left, and off the map to right. On the other hand, moving down the first (lower bound) column notice the red oval shrinking. The live, interactive application animates these effects, conveying them more vividly.
+The unchanging middle column contains the point estimate map. The top row shows a 1\% confidence interval, followed by 50\%, 75\%, and 99\% in the following rows; the first column contains all lower bounds, the third column all upper bounds. The first row contains three virtually identical maps, with the point estimate in the middle. Moving down the third (upper bound) column of maps, notice how the angled red oval shape subtly grows and elongates. This slow morphing culminates in the final image, where the red oval bleeds out of the strike zone to the upper left, and off the map to right. On the other hand, moving down the first (lower bound) column notice the red oval shrinking. The live, interactive application animates these effects, conveying them more vividly.
 
 \subsection{Discussion}
 
@@ -230,11 +229,15 @@ While the paper version resembles the customary presentation, the actual interac
 
 To provide wider access to our interactive confidence intervals, we created a R package called {\bf mapapp} that automates creating interactive heat map confidence intervals. The vignette in the next section introduces users to {\bf mapapp}, and guides them through some of its features. 
 
-\section{{\bf mapapp}: An R Package}
-
 \section{Conclusion}
 
-In this chapter we accomplished three primary objectives. First, we developed a GLM to help explain spatial variation in success probability for baseball hitters. We used biomechanical principles and polar coordinates to create covariates related to pitch location. Second, we developed a new, interactive tool for presenting heat map confidence intervals. We implemented the method in RStudio's Shiny, a web application development framwork. Third, we introduced our newly launched package {\bf mapapp}, designed to help users create their own interactive heat map confidence intervals in Shiny. The last section consists of a {\bf mapapp} instructional vignette.
+In this chapter we accomplished three primary objectives. First, we developed a GLM to help explain spatial variation in success probability for baseball hitters. We used biomechanical principles and polar coordinates to create covariates related to pitch location. Second, we developed a new, interactive tool for presenting heat map confidence intervals. We implemented the method in RStudio's Shiny, a web application development framework. Third, we introduced our newly launched package {\bf mapapp}, available on GitHub (https://github.com/cwcomiskey), designed to help users create their own interactive heat map confidence intervals in Shiny. The {\bf mapapp} instructional vignette follows this conclusion.
 
-In the next chapter we augment the GLM with a spatial random effect, and explore approaches for dealing with the vastly increased computational burden.
+In the next chapter, following the vignette, we augment the GLM with a spatial random effect, and explore approaches for dealing with the vastly increased computational burden.
+
+\section{mapapp: An R Package}
+
+\includepdf[pages=-, scale=0.9, pagecommand={}]{mapapp.pdf}
+
+
 
